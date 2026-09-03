@@ -30,22 +30,8 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      background:
-        radial-gradient(circle at 15% 0%, rgba(112, 225, 232, .13), transparent 30rem),
-        radial-gradient(circle at 95% 15%, rgba(174, 91, 255, .16), transparent 34rem),
-        linear-gradient(160deg, #0d0b1a, var(--bg) 58%, #171027);
+      background: var(--bg);
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-
-    body::before {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      opacity: .24;
-      background-image: radial-gradient(circle, rgba(255, 255, 255, .65) 1px, transparent 1.5px);
-      background-size: 46px 46px;
-      content: "";
-      mask-image: linear-gradient(to bottom, #000, transparent 72%);
     }
 
     button { font: inherit; }
@@ -105,9 +91,8 @@
     .game {
       border: 1px solid var(--line);
       border-radius: 28px;
-      background: rgba(26, 23, 48, .92);
-      box-shadow: 0 24px 70px rgba(0, 0, 0, .32);
-      backdrop-filter: blur(10px);
+      background: var(--panel);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .24);
     }
 
     .intro {
@@ -290,7 +275,7 @@
 
     .dialogue {
       display: grid;
-      grid-template-columns: 84px minmax(0, 1fr) 84px 90px;
+      grid-template-columns: 64px minmax(0, 1fr) 90px;
       align-items: center;
       gap: 16px;
       margin-bottom: 18px;
@@ -300,28 +285,17 @@
       background: linear-gradient(135deg, rgba(112, 225, 232, .07), rgba(255, 209, 102, .055));
     }
 
-    .watcher {
-      text-align: center;
-      opacity: .45;
-      transition: opacity .2s, transform .2s;
-    }
-
-    .watcher.active { opacity: 1; transform: translateY(-3px); }
-
-    .avatar {
+    .speaker-avatar {
       display: grid;
       width: 58px;
       height: 58px;
-      margin: 0 auto 6px;
       place-items: center;
-      border: 2px solid var(--line);
+      border: 2px solid var(--gold);
       border-radius: 18px;
       background: #302a4c;
       font-size: 1.85rem;
+      box-shadow: 0 0 20px rgba(255, 209, 102, .15);
     }
-
-    .watcher.active .avatar { border-color: var(--gold); box-shadow: 0 0 24px rgba(255, 209, 102, .22); }
-    .watcher strong { display: block; font-size: .75rem; }
 
     .speech small {
       display: block;
@@ -345,23 +319,6 @@
     .collector .box-body { height: 46px; border-width: 3px; border-radius: 4px 4px 9px 9px; }
     .collector .box-body::before { top: 9px; width: 18px; height: 22px; border-width: 2px; }
     .collector .box-lid { height: 22px; border-width: 3px; border-radius: 10px 10px 3px 3px; }
-
-    .facts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .fact {
-      padding: 8px 11px;
-      border-radius: 999px;
-      color: #dcd7e9;
-      background: #302c49;
-      font-size: .84rem;
-    }
-
-    .fact strong { color: var(--gold); }
 
     .board-wrap {
       overflow: hidden;
@@ -496,6 +453,7 @@
     }
 
     .instruction strong { color: var(--gold); }
+    .instruction span { color: var(--muted); font-size: .9rem; }
 
     .actionbar {
       display: flex;
@@ -513,7 +471,6 @@
     }
 
     .feedback {
-      min-height: 52px;
       margin-top: 14px;
       padding: 13px 15px;
       border: 1px solid transparent;
@@ -521,6 +478,8 @@
       color: var(--muted);
       line-height: 1.45;
     }
+
+    .feedback:empty { display: none; }
 
     .feedback.error { border-color: rgba(255, 113, 137, .45); color: #ffd5dc; background: rgba(255, 113, 137, .09); }
     .feedback.success { border-color: rgba(110, 231, 160, .45); color: #cffbe1; background: rgba(110, 231, 160, .09); }
@@ -574,8 +533,8 @@
       .intro { grid-template-columns: 1fr; text-align: center; }
       .box-scene { min-height: 210px; order: -1; }
       .known { text-align: left; }
-      .dialogue { grid-template-columns: 52px minmax(0, 1fr) 52px; gap: 9px; }
-      .avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 1.45rem; }
+      .dialogue { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+      .speaker-avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 1.45rem; }
       .collector { grid-column: 1 / -1; width: 54px; height: 46px; margin-top: -5px; }
       .collector .box-body { height: 35px; }
       .collector .box-lid { height: 17px; }
@@ -601,7 +560,7 @@
     <header class="hero">
       <p class="eyebrow">7. osztály · logikai játék</p>
       <h1>Pandora szelencéje</h1>
-      <p>Skibidi-riadó! Tíz különös lény szabadult ki. Három kijelentésből kell kiderítened, melyikük Hope.</p>
+      <p>Találd meg Hope-ot három igaz kijelentésből!</p>
     </header>
 
     <section class="intro" id="intro" aria-labelledby="intro-title">
@@ -613,11 +572,11 @@
         </div>
       </div>
       <div class="intro-copy">
-        <h2 id="intro-title">Valami kiszabadult…</h2>
-        <p>Haragos, Kapzsi, Lusta és Falánk Skibidik lepték el a táblát. Egyikük azonban nem démon: ő az álruhában rejtőző Hope.</p>
+        <h2 id="intro-title">Keresd meg Hope-ot!</h2>
+        <p>A tíz Skibidi közül csak egyikük Hope.</p>
         <ul class="known" aria-label="A feladvány ismert adatai">
-          <li><span aria-hidden="true">🅰️</span><span><strong>A</strong> ismeri Hope típusát.</span></li>
-          <li><span aria-hidden="true">🅱️</span><span><strong>B</strong> tudja, hány szeme van Hope-nak.</span></li>
+          <li><span aria-hidden="true">🧩</span><span><strong>Típusfigyelő</strong> ismeri Hope típusát.</span></li>
+          <li><span aria-hidden="true">👁️</span><span><strong>Szemszámláló</strong> tudja, hány szeme van Hope-nak.</span></li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
       </div>
@@ -636,28 +595,15 @@
       </div>
 
       <div class="dialogue">
-        <div class="watcher active" id="watcherA">
-          <span class="avatar" aria-hidden="true">🅰️</span>
-          <strong>A: típust tud</strong>
-        </div>
+        <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🧩</div>
         <div class="speech">
-          <small id="speaker">A mondja B-nek:</small>
+          <small id="speaker">Típusfigyelő mondja Szemszámlálónak:</small>
           <blockquote id="statement">„Tudom, hogy te nem tudod!”</blockquote>
-        </div>
-        <div class="watcher" id="watcherB">
-          <span class="avatar" aria-hidden="true">🅱️</span>
-          <strong>B: szemet tud</strong>
         </div>
         <div class="collector pandora-box" id="collectorBox" aria-label="Pandora szelencéje">
           <div class="box-body"></div>
           <div class="box-lid"></div>
         </div>
-      </div>
-
-      <div class="facts" aria-label="Mit tudnak a szereplők?">
-        <span class="fact"><strong>A</strong> a típust ismeri</span>
-        <span class="fact"><strong>B</strong> a szemszámot ismeri</span>
-        <span class="fact">Minden kijelentés igaz</span>
       </div>
 
       <div class="board-wrap">
@@ -666,7 +612,7 @@
         </div>
       </div>
 
-      <p class="instruction" id="instruction"><strong>Feladat:</strong> Jelöld ki mindazokat a Skibidiket, akik A kijelentése után már nem lehetnek Hope! Kattinthatsz egy sor nevére, egy szemszámra vagy külön-külön a lényekre.</p>
+      <p class="instruction" id="instruction"><strong>Jelöld ki az összes Skibidit, aki már nem lehet Hope!</strong><br><span>Sort, szemszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
 
       <div class="actionbar" id="actionbar">
         <span class="selection-count" id="selectionCount">Nincs kijelölés.</span>
@@ -674,18 +620,18 @@
         <button class="primary" id="collect" type="button">Begyűjtés a szelencébe</button>
       </div>
 
-      <div class="feedback" id="feedback" role="status" aria-live="polite">Gondolkodj A szemével: mit tudhat biztosan B tudásáról?</div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
 
       <section class="victory" id="victory" aria-labelledby="victory-title" hidden>
         <div class="victory-mark" aria-hidden="true">✨</div>
         <h2 id="victory-title">Megtaláltad Hope-ot!</h2>
-        <p>A hatszemű Lusta Skibidi álruhája lehullik. A világot ugyan ellepték a Skibidik, de legalább maradt egy kis remény. :))</p>
+        <p>Hope a hatszemű Lusta Skibidi.</p>
         <details>
-          <summary>Miért csak ő maradhatott?</summary>
+          <summary>A logika három sorban</summary>
           <ol>
-            <li>A három- és ötszemű lényt B azonnal felismerte volna. Ezért A biztos kijelentése kizárta a teljes Haragos és Kapzsi sort.</li>
-            <li>Ezután az egyszeműekből még kettő maradt. B csak akkor tudhatta a választ, ha Hope nem egyszemű.</li>
-            <li>A Falánk sorban még két lehetőség volt, a Lusta sorban viszont már csak a hatszemű. Ezért A is csak őt ismerhette fel.</li>
+            <li>Típusfigyelő kijelentése kizárja a Haragos és Kapzsi sort.</li>
+            <li>Szemszámláló kijelentése kizárja az egyszeműeket.</li>
+            <li>A Falánk sorban kettő maradna, a Lusta sorban csak egy.</li>
           </ol>
         </details>
         <button class="secondary" id="restartWin" type="button">Játék újra</button>
@@ -708,31 +654,25 @@
 
       const rounds = [
         {
-          speaker: "A mondja B-nek:",
+          speaker: "Típusfigyelő mondja Szemszámlálónak:",
+          icon: "🧩",
           statement: "„Tudom, hogy te nem tudod!”",
-          watcher: "A",
           expected: ["haragos-2", "haragos-3", "haragos-6", "kapzsi-4", "kapzsi-5"],
-          instruction: "Jelöld ki mindazokat a Skibidiket, akik A kijelentése után már nem lehetnek Hope!",
-          prompt: "Gondolkodj A szemével: mit tudhat biztosan B tudásáról?",
-          success: "Így van! A teljes Haragos és Kapzsi sor kiesik. B ezt ugyanúgy kikövetkezteti."
+          success: "Helyes: a Haragos és Kapzsi sor kiesik."
         },
         {
-          speaker: "B válaszol:",
+          speaker: "Szemszámláló:",
+          icon: "👁️",
           statement: "„Most már tudom!”",
-          watcher: "B",
           expected: ["lusta-1", "falank-1"],
-          instruction: "Jelöld ki azokat a megmaradt Skibidiket, akik mellett B még mindig nem tudhatná biztosan a választ!",
-          prompt: "B már azt is tudja, hogy a Haragos és Kapzsi típus lehetetlen.",
-          success: "Pontosan! Egy szem esetén B még két lehetőséget látna, ezért Hope nem lehet egyszemű."
+          success: "Helyes: az egyszeműek kiesnek."
         },
         {
-          speaker: "A ismét megszólal:",
+          speaker: "Típusfigyelő:",
+          icon: "🧩",
           statement: "„Most már én is tudom!”",
-          watcher: "A",
           expected: ["falank-2", "falank-4"],
-          instruction: "Jelöld ki azokat a megmaradt Skibidiket, akik mellett A még mindig nem tudhatná biztosan a választ!",
-          prompt: "A a megmaradt lehetőségeket a saját típusa szerint csoportosítja.",
-          success: "Megvan! A Falánk típus még két lehetőséget hagyna, ezért csak a hatszemű Lusta Skibidi lehet Hope."
+          success: "Helyes: a Falánkok kiesnek."
         }
       ];
 
@@ -753,6 +693,7 @@
       const selectionCount = document.getElementById("selectionCount");
       const statement = document.getElementById("statement");
       const speaker = document.getElementById("speaker");
+      const speakerAvatar = document.getElementById("speakerAvatar");
       const stepNumber = document.getElementById("stepNumber");
       const actionbar = document.getElementById("actionbar");
       const victory = document.getElementById("victory");
@@ -949,9 +890,9 @@
           markWrong();
           const firstTrap = new Set(["haragos-3", "kapzsi-5"]);
           if (roundIndex === 0 && sameSet(selected, firstTrap)) {
-            setFeedback("Ez a két Skibidi valóban különleges, de A a típust ismeri, nem a szemszámot. Ha Hope Haragos vagy Kapzsi lenne, A biztos lehetne B tudatlanságában?", "error");
+            setFeedback("Csak a 3 és 5 szeműeket jelölted. Típusfigyelő egy teljes típust lát — vizsgáld meg a sorokat!", "error");
           } else {
-            setFeedback("Ez a kijelölés még nem pontos. Csak azokat gyűjtsd be, akik a mostani kijelentés után biztosan nem lehetnek Hope!", "error");
+            setFeedback("Ez a kijelölés még nem pontos. Kik nem lehetnek biztosan Hope?", "error");
           }
           return;
         }
@@ -989,11 +930,9 @@
       function updateRound() {
         const round = rounds[roundIndex];
         speaker.textContent = round.speaker;
+        speakerAvatar.textContent = round.icon;
         statement.textContent = round.statement;
-        instruction.innerHTML = `<strong>Feladat:</strong> ${round.instruction} Kattinthatsz egy sor nevére, egy szemszámra vagy külön-külön a lényekre.`;
-        document.getElementById("watcherA").classList.toggle("active", round.watcher === "A");
-        document.getElementById("watcherB").classList.toggle("active", round.watcher === "B");
-        setFeedback(round.prompt);
+        setFeedback("");
       }
 
       function updateProgress() {
@@ -1010,16 +949,15 @@
         actionbar.hidden = true;
         instruction.hidden = true;
         victory.hidden = false;
-        speaker.textContent = "Pandora felismeri Hope-ot:";
-        statement.textContent = "„Te vagy az!”";
-        document.getElementById("watcherA").classList.remove("active");
-        document.getElementById("watcherB").classList.remove("active");
+        speaker.textContent = "Pandora:";
+        speakerAvatar.textContent = "✨";
+        statement.textContent = "„Megtaláltam Hope-ot!”";
         const hope = document.querySelector('[data-id="lusta-6"]');
         if (hope) {
           hope.classList.add("hope");
           hope.setAttribute("aria-label", "Hope, a 6 szemű Lusta Skibidi");
         }
-        setFeedback(rounds[2].success, "success");
+        setFeedback("");
         victory.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
       }
 
@@ -1065,7 +1003,7 @@
         if (busy) return;
         selected.clear();
         renderSelection();
-        setFeedback(rounds[roundIndex].prompt);
+        setFeedback("");
       });
       document.getElementById("restartTop").addEventListener("click", resetGame);
       document.getElementById("restartWin").addEventListener("click", resetGame);
