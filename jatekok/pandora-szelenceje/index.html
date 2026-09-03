@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#100d1f">
-  <meta name="description" content="Háromlépéses logikai játék: találd meg Hope-ot a kiszabadult Skibidik között!">
-  <title>Pandora szelencéje – Hol van Hope?</title>
+  <meta name="description" content="Háromlépéses logikai játék: találd meg a legnagyobb bajkeverőt a kiszabadult Skibidik között!">
+  <title>Pandora szelencéje – Ki a legnagyobb bajkeverő?</title>
   <style>
     :root {
       color-scheme: dark;
@@ -588,7 +588,7 @@
       border-color: var(--danger);
       box-shadow: inset 0 0 0 2px rgba(255, 113, 137, .32);
     }
-    .cell.hope { border-color: var(--gold); background: rgba(255, 209, 102, .16); animation: hope-glow 1.4s ease-in-out infinite alternate; }
+    .cell.troublemaker { border-color: var(--gold); background: rgba(255, 209, 102, .16); animation: troublemaker-glow 1.4s ease-in-out infinite alternate; }
 
     .creature { width: min(68px, 100%); height: 68px; }
 
@@ -669,7 +669,7 @@
       75% { transform: translateX(5px); }
     }
 
-    @keyframes hope-glow {
+    @keyframes troublemaker-glow {
       from { box-shadow: 0 0 0 rgba(255, 209, 102, 0); }
       to { box-shadow: 0 0 28px rgba(255, 209, 102, .55); }
     }
@@ -712,7 +712,7 @@
     <header class="hero">
       <p class="eyebrow">7. osztály · logikai játék</p>
       <h1>Pandora szelencéje</h1>
-      <p>Találd meg Hope-ot három igaz kijelentésből!</p>
+      <p>Találd meg a legnagyobb bajkeverőt három igaz kijelentésből!</p>
     </header>
 
     <section class="intro" id="intro" aria-labelledby="intro-title">
@@ -724,17 +724,17 @@
         </div>
       </div>
       <div class="intro-copy">
-        <h2 id="intro-title">Keresd meg Hope-ot!</h2>
-        <p>A Skibidik közül csak egyikük Hope.</p>
+        <h2 id="intro-title">Keresd meg a legnagyobb bajkeverőt!</h2>
+        <p>A Skibidik közül egyikük a legnagyobb bajkeverő.</p>
         <ul class="known" aria-label="A feladvány ismert adatai">
-          <li><span aria-hidden="true">🔍</span><span><strong>Jellemvizsgáló</strong> ismeri Hope jellemhibáját.</span></li>
-          <li><span aria-hidden="true">🦷</span><span><strong>Fogszámláló</strong> tudja, hány fekete foga van Hope-nak.</span></li>
+          <li><span aria-hidden="true">🔍</span><span><strong>Jellemvizsgáló</strong> ismeri a legnagyobb bajkeverő jellemhibáját.</span></li>
+          <li><span aria-hidden="true">🦷</span><span><strong>Fogszámláló</strong> tudja, hány fekete foga van a legnagyobb bajkeverőnek.</span></li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
       </div>
     </section>
 
-    <section class="game" id="game" aria-label="Hope keresése" hidden>
+    <section class="game" id="game" aria-label="A legnagyobb bajkeverő keresése" hidden>
       <div class="game-top">
         <div class="steps" aria-label="Haladás">
           <span>Állítás</span>
@@ -748,14 +748,14 @@
 
       <div class="game-goal" aria-label="A játék célja">
         <span class="goal-label">Cél</span>
-        <strong>Találd meg Hope-ot!</strong>
-        <p>Három kijelentést kapsz három lépésben. Dobd a kukába azokat a Skibidiket, akik az aktuális kijelentés alapján már nem lehetnek Hope — csak ezután kapod meg a következő kijelentést.</p>
+        <strong>Találd meg a legnagyobb bajkeverőt!</strong>
+        <p>Három kijelentést kapsz három lépésben. Dobd a kukába azokat a Skibidiket, akiket az aktuális kijelentés kizár — csak ezután kapod meg a következő kijelentést.</p>
       </div>
 
       <div class="knowledge-strip" aria-label="Ki mit tud a feladványban?">
         <span class="knowledge-title">Ki mit tud?</span>
-        <span class="knowledge-item">🔍 <strong>Jellemvizsgáló:</strong> Hope jellemhibáját tudja.</span>
-        <span class="knowledge-item">🦷 <strong>Fogszámláló:</strong> Hope fekete fogainak számát tudja.</span>
+        <span class="knowledge-item">🔍 <strong>Jellemvizsgáló:</strong> ismeri a legnagyobb bajkeverő jellemhibáját.</span>
+        <span class="knowledge-item">🦷 <strong>Fogszámláló:</strong> a legnagyobb bajkeverő fekete fogainak számát tudja.</span>
       </div>
 
       <div class="board-wrap">
@@ -769,7 +769,7 @@
         <div class="speech">
           <span class="statement-number" id="statementNumber">1. kijelentés</span>
           <small id="speaker">Jellemvizsgáló mondja Fogszámlálónak:</small>
-          <blockquote id="statement">„Tudom, hogy te nem tudod melyikük Hope!”</blockquote>
+          <blockquote id="statement">„Tudom, hogy te nem tudod, melyikük a legnagyobb bajkeverő!”</blockquote>
         </div>
         <div class="collector" id="collectorBox" role="img" aria-label="A kizárt Skibidik kukája">
           <div class="trash-body"></div>
@@ -777,7 +777,7 @@
         </div>
       </div>
 
-      <p class="instruction" id="instruction"><strong>Jelöld ki az összes Skibidit, aki már nem lehet Hope!</strong><br><span>Sort, fogszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
+      <p class="instruction" id="instruction"><strong>Jelöld ki azokat a Skibidiket, akiket az aktuális kijelentés kizár!</strong><br><span>Sort, fogszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
 
       <div class="actionbar" id="actionbar">
         <span class="selection-count" id="selectionCount">Nincs kizárásra kijelölt Skibidi.</span>
@@ -789,7 +789,7 @@
 
       <section class="victory" id="victory" aria-labelledby="victory-title" hidden>
         <div class="victory-mark" aria-hidden="true">✨</div>
-        <h2 id="victory-title">Megtaláltad Hope-ot!</h2>
+        <h2 id="victory-title">Megtaláltad a legnagyobb bajkeverőt!</h2>
         <p id="victoryText"></p>
         <details>
           <summary>A logika három sorban</summary>
@@ -830,7 +830,7 @@
         {
           speaker: "Jellemvizsgáló mondja Fogszámlálónak:",
           icon: "🔍",
-          statement: "„Tudom, hogy te nem tudod melyikük Hope!”",
+          statement: "„Tudom, hogy te nem tudod, melyikük a legnagyobb bajkeverő!”",
           success: "Helyes: az első szűrés kész."
         },
         {
@@ -843,7 +843,7 @@
           speaker: "Jellemvizsgáló:",
           icon: "🔍",
           statement: "„Most már én is tudom!”",
-          success: "Helyes: már csak Hope maradt."
+          success: "Helyes: már csak a legnagyobb bajkeverő maradt."
         }
       ];
 
@@ -854,7 +854,7 @@
       let selected = new Set();
       let roundIndex = 0;
       let busy = false;
-      let hopeId = "";
+      let troublemakerId = "";
       let initialSingletons = new Set();
       let puzzleAnalysis = null;
       let previousSignature = "";
@@ -956,7 +956,7 @@
         return {
           states: [S0, S1, S2, S3],
           removals: [difference(S0, S1), difference(S1, S2), difference(S2, S3)],
-          hopeId: [...S3][0],
+          troublemakerId: [...S3][0],
           initialSingletons: new Set([...S0].filter(id => initialColumnCounts[Number(id.split("-")[1]) - 1] === 1))
         };
       }
@@ -988,25 +988,25 @@
         allIds = [...puzzleAnalysis.states[0]];
         active = new Set(allIds);
         selected = new Set();
-        hopeId = puzzleAnalysis.hopeId;
+        troublemakerId = puzzleAnalysis.troublemakerId;
         initialSingletons = puzzleAnalysis.initialSingletons;
         rounds = roundCopy.map((copy, index) => ({
           ...copy,
           expected: [...puzzleAnalysis.removals[index]]
         }));
 
-        const [hopeRowId, hopeTeeth] = hopeId.split("-");
-        const hopeRow = rows.find(row => row.id === hopeRowId);
+        const [troublemakerRowId, troublemakerTeeth] = troublemakerId.split("-");
+        const troublemakerRow = rows.find(row => row.id === troublemakerRowId);
         const removedFlaws = [...new Set([...puzzleAnalysis.removals[0]].map(id => {
           const rowId = id.split("-")[0];
           return rows.find(row => row.id === rowId).name;
         }))];
         const removedTeeth = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
 
-        victoryText.textContent = `Hope a ${hopeRow.name} Skibidi, ${hopeTeeth} fekete foggal.`;
+        victoryText.textContent = `A legnagyobb bajkeverő a ${troublemakerRow.name} Skibidi, ${troublemakerTeeth} fekete foggal.`;
         logicStep1.textContent = `Jellemvizsgáló kizárja: ${huList(removedFlaws)}.`;
         logicStep2.textContent = `Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
-        logicStep3.textContent = `Egyetlen lehetőség marad: ${hopeRow.name}, ${hopeTeeth} fekete foggal.`;
+        logicStep3.textContent = `Egyetlen lehetőség marad: ${troublemakerRow.name}, ${troublemakerTeeth} fekete foggal.`;
       }
 
       function buildMatrix() {
@@ -1172,7 +1172,7 @@
       async function collectSelection() {
         if (busy) return;
         if (!selected.size) {
-          setFeedback("Előbb jelöld ki azokat, akik a kijelentés alapján már nem lehetnek Hope!", "error");
+          setFeedback("Előbb jelöld ki azokat a Skibidiket, akiket a kijelentés kizár!", "error");
           return;
         }
 
@@ -1180,9 +1180,9 @@
         if (!sameSet(selected, expected)) {
           markWrong();
           if (roundIndex === 0 && sameSet(selected, initialSingletons)) {
-            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló Hope jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
+            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló a legnagyobb bajkeverő jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
           } else {
-            setFeedback("Ez a kijelölés még nem pontos. Kik nem lehetnek biztosan Hope?", "error");
+            setFeedback("Ez a kijelölés még nem pontos. Kiket zár ki biztosan a kijelentés?", "error");
           }
           return;
         }
@@ -1249,13 +1249,13 @@
         speaker.textContent = "Pandora:";
         speakerAvatar.textContent = "✨";
         statementNumber.textContent = "Megoldás";
-        statement.textContent = "„Megtaláltam Hope-ot!”";
-        const hope = document.querySelector(`[data-id="${hopeId}"]`);
-        if (hope) {
-          const [rowId, teeth] = hopeId.split("-");
+        statement.textContent = "„Megtaláltam a legnagyobb bajkeverőt!”";
+        const troublemaker = document.querySelector(`[data-id="${troublemakerId}"]`);
+        if (troublemaker) {
+          const [rowId, teeth] = troublemakerId.split("-");
           const row = rows.find(item => item.id === rowId);
-          hope.classList.add("hope");
-          hope.setAttribute("aria-label", `Hope, a ${row.name} Skibidi, ${teeth} fekete foggal`);
+          troublemaker.classList.add("troublemaker");
+          troublemaker.setAttribute("aria-label", `A legnagyobb bajkeverő: ${row.name} Skibidi, ${teeth} fekete foggal`);
         }
         setFeedback("");
         victory.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
