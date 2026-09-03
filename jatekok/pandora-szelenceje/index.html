@@ -341,7 +341,7 @@
     }
 
     .corner,
-    .eye-head,
+    .tooth-head,
     .row-head,
     .cell {
       min-width: 0;
@@ -364,7 +364,7 @@
 
     .corner span:first-child { color: var(--cyan); }
 
-    .eye-head,
+    .tooth-head,
     .row-head {
       color: var(--ink);
       background: #2a2642;
@@ -373,14 +373,14 @@
       transition: background .15s, border-color .15s, transform .15s;
     }
 
-    .eye-head {
+    .tooth-head {
       display: grid;
       min-height: 54px;
       place-items: center;
       font-size: 1rem;
     }
 
-    .eye-head span { display: block; color: var(--muted); font-size: .64rem; font-weight: 700; }
+    .tooth-head span { display: block; color: var(--muted); font-size: .64rem; font-weight: 700; }
 
     .row-head {
       display: flex;
@@ -392,11 +392,11 @@
       text-align: center;
     }
 
-    .eye-head:hover,
+    .tooth-head:hover,
     .row-head:hover { border-color: rgba(255, 209, 102, .7); background: #373151; }
-    .eye-head:active,
+    .tooth-head:active,
     .row-head:active { transform: scale(.97); }
-    .eye-head[aria-pressed="true"],
+    .tooth-head[aria-pressed="true"],
     .row-head[aria-pressed="true"] { border-color: var(--gold); background: #554322; }
 
     .row-head.haragos { border-left: 5px solid #ef5350; }
@@ -543,7 +543,7 @@
       .board-scroll { padding: 5px; }
       .matrix { grid-template-columns: 70px repeat(6, minmax(38px, 1fr)); gap: 4px; min-width: 322px; }
       .corner, .row-head, .cell { min-height: 60px; }
-      .eye-head { min-height: 46px; }
+      .tooth-head { min-height: 46px; }
       .creature { height: 57px; }
       .actionbar .primary { flex: 1 0 100%; order: -1; }
     }
@@ -576,7 +576,7 @@
         <p>A Skibidik közül csak egyikük Hope.</p>
         <ul class="known" aria-label="A feladvány ismert adatai">
           <li><span aria-hidden="true">🧩</span><span><strong>Típusfigyelő</strong> ismeri Hope típusát.</span></li>
-          <li><span aria-hidden="true">👁️</span><span><strong>Szemszámláló</strong> tudja, hány szeme van Hope-nak.</span></li>
+          <li><span aria-hidden="true">🦷</span><span><strong>Fogszámláló</strong> tudja, hány fekete foga van Hope-nak.</span></li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
       </div>
@@ -597,7 +597,7 @@
       <div class="dialogue">
         <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🧩</div>
         <div class="speech">
-          <small id="speaker">Típusfigyelő mondja Szemszámlálónak:</small>
+          <small id="speaker">Típusfigyelő mondja Fogszámlálónak:</small>
           <blockquote id="statement">„Tudom, hogy te nem tudod!”</blockquote>
         </div>
         <div class="collector pandora-box" id="collectorBox" aria-label="Pandora szelencéje">
@@ -608,11 +608,11 @@
 
       <div class="board-wrap">
         <div class="board-scroll">
-          <div class="matrix" id="matrix" role="grid" aria-label="Skibidi-típusok és szemszámok mátrixa"></div>
+          <div class="matrix" id="matrix" role="grid" aria-label="Skibidi-típusok és fekete fogak számának mátrixa"></div>
         </div>
       </div>
 
-      <p class="instruction" id="instruction"><strong>Jelöld ki az összes Skibidit, aki már nem lehet Hope!</strong><br><span>Sort, szemszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
+      <p class="instruction" id="instruction"><strong>Jelöld ki az összes Skibidit, aki már nem lehet Hope!</strong><br><span>Sort, fogszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
 
       <div class="actionbar" id="actionbar">
         <span class="selection-count" id="selectionCount">Nincs kijelölés.</span>
@@ -663,14 +663,14 @@
 
       const roundCopy = [
         {
-          speaker: "Típusfigyelő mondja Szemszámlálónak:",
+          speaker: "Típusfigyelő mondja Fogszámlálónak:",
           icon: "🧩",
           statement: "„Tudom, hogy te nem tudod!”",
           success: "Helyes: az első szűrés kész."
         },
         {
-          speaker: "Szemszámláló:",
-          icon: "👁️",
+          speaker: "Fogszámláló:",
+          icon: "🦷",
           statement: "„Most már tudom!”",
           success: "Helyes: a második szűrés kész."
         },
@@ -715,33 +715,40 @@
       const logicStep3 = document.getElementById("logicStep3");
       const effects = document.getElementById("effects");
 
-      function eyePositions(count) {
-        const layouts = {
-          1: [[40, 31]],
-          2: [[31, 31], [49, 31]],
-          3: [[27, 31], [40, 27], [53, 31]],
-          4: [[31, 27], [49, 27], [31, 39], [49, 39]],
-          5: [[28, 27], [40, 24], [52, 27], [33, 39], [47, 39]],
-          6: [[28, 27], [40, 25], [52, 27], [28, 39], [40, 41], [52, 39]]
-        };
-        return layouts[count];
-      }
-
-      function creatureSvg(color, eyes, label) {
-        const eyeMarkup = eyePositions(eyes).map(([x, y]) => `
-          <circle cx="${x}" cy="${y}" r="5" fill="#fff9e9" stroke="#241b2f" stroke-width="1.5"/>
-          <circle cx="${x}" cy="${y + .5}" r="2" fill="#171220"/>`).join("");
+      function creatureSvg(color, blackTeeth, label) {
+        const blackOrder = [2, 3, 1, 4, 0, 5];
+        const black = new Set(blackOrder.slice(0, blackTeeth));
+        const teethMarkup = Array.from({ length: 6 }, (_, index) => {
+          const x = 27.5 + index * 4.25;
+          const fill = black.has(index) ? "#16131a" : "#fff3cf";
+          return `<rect x="${x}" y="42" width="4.3" height="9" rx=".7" fill="${fill}" stroke="#422821" stroke-width=".65"/>`;
+        }).join("");
 
         return `
           <svg class="creature" viewBox="0 0 80 82" role="img" aria-label="${label}">
-            <path d="M25 24 Q18 15 14 23 M55 24 Q62 15 66 23" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round"/>
-            <path d="M23 51 Q20 20 40 16 Q60 20 57 51 Z" fill="${color}" stroke="#281d31" stroke-width="3"/>
-            ${eyeMarkup}
-            <path d="M31 47 Q40 54 49 47" fill="none" stroke="#281d31" stroke-width="3" stroke-linecap="round"/>
-            <ellipse cx="40" cy="57" rx="29" ry="10" fill="#eef3f7" stroke="#59636d" stroke-width="3"/>
-            <ellipse cx="40" cy="56" rx="19" ry="5" fill="#89959e"/>
-            <path d="M17 58 Q18 75 27 77 H55 Q62 70 63 58" fill="#dbe3e8" stroke="#59636d" stroke-width="3"/>
-            <path d="M53 68 H70 V76 H55" fill="#e9eef1" stroke="#59636d" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M13 55 Q14 70 24 77 H56 Q66 70 67 55 Z" fill="#dbe3e8" stroke="#59636d" stroke-width="3"/>
+            <path d="M55 68 H71 V76 H57" fill="#edf2f4" stroke="#59636d" stroke-width="3" stroke-linejoin="round"/>
+            <ellipse cx="40" cy="56" rx="30" ry="11" fill="#edf2f4" stroke="${color}" stroke-width="4"/>
+            <ellipse cx="40" cy="56" rx="22" ry="7" fill="#35333b"/>
+
+            <path d="M34 61 C35 52 30 48 27 40 C23 30 24 18 30 11 Q40 3 50 11 C56 18 57 30 53 40 C50 48 45 52 46 61 Z" fill="#bd7d5c" stroke="#3b2828" stroke-width="2.5"/>
+            <ellipse cx="25.5" cy="29" rx="3.8" ry="6" fill="#bd7d5c" stroke="#3b2828" stroke-width="1.5"/>
+            <ellipse cx="54.5" cy="29" rx="3.8" ry="6" fill="#bd7d5c" stroke="#3b2828" stroke-width="1.5"/>
+            <path d="M29 18 Q29 7 40 7 Q51 7 52 18 Q46 13 29 18 Z" fill="#17141b"/>
+            <path d="M29 23 Q34 19 38 22 M42 22 Q47 19 52 23" fill="none" stroke="#2b1d20" stroke-width="3" stroke-linecap="round"/>
+
+            <ellipse cx="34" cy="28.5" rx="5.4" ry="6" fill="#fff9e9" stroke="#38252a" stroke-width="1.4"/>
+            <ellipse cx="46" cy="28.5" rx="5.4" ry="6" fill="#fff9e9" stroke="#38252a" stroke-width="1.4"/>
+            <circle cx="34.5" cy="29" r="2.25" fill="#15121a"/>
+            <circle cx="45.5" cy="29" r="2.25" fill="#15121a"/>
+            <path d="M40 28 L37.5 36 Q40 38 43 36" fill="none" stroke="#724934" stroke-width="1.6" stroke-linecap="round"/>
+
+            <path d="M25 37 Q40 43 55 37 Q53 56 40 58 Q27 56 25 37 Z" fill="#762c27" stroke="#3a2021" stroke-width="2"/>
+            ${teethMarkup}
+            <path d="M29 53 Q40 58 51 53" fill="none" stroke="#32191b" stroke-width="1.5" stroke-linecap="round"/>
+
+            <path d="M11 57 Q40 72 69 57" fill="none" stroke="#f8fbfc" stroke-width="4" stroke-linecap="round"/>
+            <path d="M14 61 Q40 72 66 61" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
           </svg>`;
       }
 
@@ -831,18 +838,18 @@
           expected: [...puzzleAnalysis.removals[index]]
         }));
 
-        const [hopeRowId, hopeEyes] = hopeId.split("-");
+        const [hopeRowId, hopeTeeth] = hopeId.split("-");
         const hopeRow = rows.find(row => row.id === hopeRowId);
         const removedTypes = [...new Set([...puzzleAnalysis.removals[0]].map(id => {
           const rowId = id.split("-")[0];
           return rows.find(row => row.id === rowId).name;
         }))];
-        const removedEyes = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
+        const removedTeeth = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
 
-        victoryText.textContent = `Hope a ${hopeEyes} szemű ${hopeRow.name} Skibidi.`;
+        victoryText.textContent = `Hope a ${hopeRow.name} Skibidi, ${hopeTeeth} fekete foggal.`;
         logicStep1.textContent = `Típusfigyelő kizárja: ${huList(removedTypes)}.`;
-        logicStep2.textContent = `Szemszámláló kizárja ezeket a szemszámokat: ${huList(removedEyes)}.`;
-        logicStep3.textContent = `Egyetlen lehetőség marad: ${hopeEyes} szemű ${hopeRow.name}.`;
+        logicStep2.textContent = `Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
+        logicStep3.textContent = `Egyetlen lehetőség marad: ${hopeRow.name}, ${hopeTeeth} fekete foggal.`;
       }
 
       function buildMatrix() {
@@ -851,19 +858,19 @@
         const corner = document.createElement("div");
         corner.className = "corner";
         corner.setAttribute("role", "columnheader");
-        corner.innerHTML = "<span>Típus</span><span>Szemek</span>";
+        corner.innerHTML = "<span>Típus</span><span>Fekete fog</span>";
         matrix.appendChild(corner);
 
-        for (let eyes = 1; eyes <= 6; eyes += 1) {
+        for (let teeth = 1; teeth <= 6; teeth += 1) {
           const button = document.createElement("button");
           button.type = "button";
-          button.className = "eye-head";
-          button.dataset.eye = String(eyes);
+          button.className = "tooth-head";
+          button.dataset.teeth = String(teeth);
           button.setAttribute("role", "columnheader");
           button.setAttribute("aria-pressed", "false");
-          button.setAttribute("aria-label", `${eyes} szemű, még lehetséges Skibidik kijelölése`);
-          button.innerHTML = `${eyes}<span>szem</span>`;
-          button.addEventListener("click", () => toggleGroup("eye", String(eyes)));
+          button.setAttribute("aria-label", `${teeth} fekete fogú, még lehetséges Skibidik kijelölése`);
+          button.innerHTML = `${teeth}<span>fog</span>`;
+          button.addEventListener("click", () => toggleGroup("teeth", String(teeth)));
           matrix.appendChild(button);
         }
 
@@ -879,8 +886,8 @@
           rowButton.addEventListener("click", () => toggleGroup("row", row.id));
           matrix.appendChild(rowButton);
 
-          for (let eyes = 1; eyes <= 6; eyes += 1) {
-            if (!puzzleMatrix[rowIndex][eyes - 1]) {
+          for (let teeth = 1; teeth <= 6; teeth += 1) {
+            if (!puzzleMatrix[rowIndex][teeth - 1]) {
               const empty = document.createElement("div");
               empty.className = "cell empty";
               empty.setAttribute("role", "gridcell");
@@ -889,17 +896,17 @@
               continue;
             }
 
-            const id = `${row.id}-${eyes}`;
+            const id = `${row.id}-${teeth}`;
             const cell = document.createElement("button");
             cell.type = "button";
             cell.className = "cell";
             cell.dataset.id = id;
             cell.dataset.row = row.id;
-            cell.dataset.eye = String(eyes);
+            cell.dataset.teeth = String(teeth);
             cell.setAttribute("role", "gridcell");
             cell.setAttribute("aria-pressed", "false");
-            cell.setAttribute("aria-label", `${eyes} szemű ${row.name} Skibidi`);
-            cell.innerHTML = creatureSvg(row.color, eyes, `${eyes} szemű ${row.name} Skibidi`);
+            cell.setAttribute("aria-label", `${teeth} fekete fogú ${row.name} Skibidi`);
+            cell.innerHTML = creatureSvg(row.color, teeth, `${teeth} fekete fogú ${row.name} Skibidi`);
             cell.addEventListener("click", () => toggleCell(id));
             matrix.appendChild(cell);
           }
@@ -916,8 +923,8 @@
       function toggleGroup(kind, value) {
         if (busy) return;
         const ids = allIds.filter(id => {
-          const [row, eye] = id.split("-");
-          return active.has(id) && (kind === "row" ? row === value : eye === value);
+          const [row, teeth] = id.split("-");
+          return active.has(id) && (kind === "row" ? row === value : teeth === value);
         });
         if (!ids.length) return;
         const allSelected = ids.every(id => selected.has(id));
@@ -937,8 +944,8 @@
           header.setAttribute("aria-pressed", String(ids.length > 0 && ids.every(id => selected.has(id))));
         });
 
-        document.querySelectorAll(".eye-head[data-eye]").forEach(header => {
-          const ids = allIds.filter(id => active.has(id) && id.endsWith(`-${header.dataset.eye}`));
+        document.querySelectorAll(".tooth-head[data-teeth]").forEach(header => {
+          const ids = allIds.filter(id => active.has(id) && id.endsWith(`-${header.dataset.teeth}`));
           header.setAttribute("aria-pressed", String(ids.length > 0 && ids.every(id => selected.has(id))));
         });
 
@@ -1069,10 +1076,10 @@
         statement.textContent = "„Megtaláltam Hope-ot!”";
         const hope = document.querySelector(`[data-id="${hopeId}"]`);
         if (hope) {
-          const [rowId, eyes] = hopeId.split("-");
+          const [rowId, teeth] = hopeId.split("-");
           const row = rows.find(item => item.id === rowId);
           hope.classList.add("hope");
-          hope.setAttribute("aria-label", `Hope, a ${eyes} szemű ${row.name} Skibidi`);
+          hope.setAttribute("aria-label", `Hope, a ${row.name} Skibidi, ${teeth} fekete foggal`);
         }
         setFeedback("");
         victory.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
