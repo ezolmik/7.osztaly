@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d1f">
+  <meta name="description" content="Háromlépéses logikai játék: találd meg Hope-ot a kiszabadult Skibidik között!">
+  <title>Pandora szelencéje – Hol van Hope?</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #100d1f;
+      --panel: #1a1730;
+      --panel-2: #24203d;
+      --ink: #f8f5ff;
+      --muted: #b9b3ca;
+      --line: rgba(255, 255, 255, .12);
+      --gold: #ffd166;
+      --gold-dark: #bc7f16;
+      --cyan: #70e1e8;
+      --green: #6ee7a0;
+      --danger: #ff7189;
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(112, 225, 232, .13), transparent 30rem),
+        radial-gradient(circle at 95% 15%, rgba(174, 91, 255, .16), transparent 34rem),
+        linear-gradient(160deg, #0d0b1a, var(--bg) 58%, #171027);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: .24;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, .65) 1px, transparent 1.5px);
+      background-size: 46px 46px;
+      content: "";
+      mask-image: linear-gradient(to bottom, #000, transparent 72%);
+    }
+
+    button { font: inherit; }
+
+    button:focus-visible,
+    .back:focus-visible,
+    summary:focus-visible {
+      outline: 4px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    main {
+      width: min(1050px, calc(100% - 28px));
+      margin: auto;
+      padding: clamp(28px, 6vw, 68px) 0 46px;
+    }
+
+    .back {
+      display: inline-flex;
+      margin-bottom: 28px;
+      color: var(--cyan);
+      font-size: .92rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .hero {
+      max-width: 780px;
+      margin-bottom: clamp(26px, 5vw, 48px);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--cyan);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font: 800 clamp(2.45rem, 8vw, 5.2rem)/.95 Georgia, serif;
+      letter-spacing: -.055em;
+    }
+
+    .hero p:last-child {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.4vw, 1.18rem);
+      line-height: 1.55;
+    }
+
+    .intro,
+    .game {
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: rgba(26, 23, 48, .92);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(10px);
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(230px, .72fr) minmax(0, 1.28fr);
+      align-items: center;
+      gap: clamp(24px, 5vw, 58px);
+      padding: clamp(26px, 5vw, 55px);
+    }
+
+    .intro-copy h2 {
+      margin: 0 0 12px;
+      font: 800 clamp(1.65rem, 4vw, 2.45rem)/1.05 Georgia, serif;
+    }
+
+    .intro-copy > p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .known {
+      display: grid;
+      gap: 10px;
+      margin: 0 0 24px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .known li {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .035);
+      line-height: 1.4;
+    }
+
+    .known strong { color: var(--gold); }
+
+    .primary,
+    .secondary,
+    .ghost {
+      min-height: 48px;
+      border: 0;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .primary {
+      padding: 12px 19px;
+      color: #211608;
+      background: linear-gradient(135deg, #ffe38b, var(--gold));
+      box-shadow: 0 9px 25px rgba(255, 209, 102, .2);
+    }
+
+    .primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .primary:disabled { cursor: wait; filter: grayscale(.45); opacity: .7; transform: none; }
+
+    .secondary {
+      padding: 11px 17px;
+      color: var(--ink);
+      background: #34304f;
+    }
+
+    .secondary:hover { background: #423d61; }
+
+    .ghost {
+      min-height: 40px;
+      padding: 8px 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .ghost:hover { color: var(--ink); background: rgba(255, 255, 255, .07); }
+
+    .box-scene {
+      display: grid;
+      min-height: 270px;
+      place-items: center;
+      perspective: 800px;
+    }
+
+    .pandora-box {
+      position: relative;
+      width: 190px;
+      height: 138px;
+      filter: drop-shadow(0 28px 23px rgba(0, 0, 0, .42));
+    }
+
+    .box-body,
+    .box-lid {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      border: 5px solid #5b3516;
+      background:
+        linear-gradient(90deg, transparent 0 14%, rgba(255, 209, 102, .2) 14% 18%, transparent 18% 82%, rgba(255, 209, 102, .2) 82% 86%, transparent 86%),
+        linear-gradient(#8d5728, #593214);
+    }
+
+    .box-body {
+      bottom: 0;
+      height: 105px;
+      border-radius: 8px 8px 18px 18px;
+      box-shadow: inset 0 0 0 4px rgba(255, 209, 102, .28);
+    }
+
+    .box-body::before {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      width: 38px;
+      height: 45px;
+      border: 4px solid #7b4a16;
+      border-radius: 50% 50% 7px 7px;
+      background: var(--gold);
+      box-shadow: 0 4px 0 #8f5e1b;
+      content: "";
+      transform: translateX(-50%);
+    }
+
+    .box-lid {
+      top: 0;
+      height: 48px;
+      border-radius: 22px 22px 7px 7px;
+      box-shadow: inset 0 0 0 4px rgba(255, 209, 102, .24);
+      transform-origin: left bottom;
+      transition: transform .65s cubic-bezier(.2, .85, .3, 1.15);
+    }
+
+    .box-glow {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      width: 115px;
+      height: 115px;
+      border-radius: 50%;
+      opacity: 0;
+      background: radial-gradient(circle, rgba(255, 247, 174, .9), rgba(112, 225, 232, .28) 45%, transparent 70%);
+      transform: translate(-50%, -35%) scale(.25);
+      transition: opacity .5s, transform .65s;
+    }
+
+    .intro.opening .box-lid { transform: rotateY(-8deg) rotateZ(-48deg) translate(-18px, -14px); }
+    .intro.opening .box-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.65); }
+
+    .game { padding: clamp(18px, 3.4vw, 34px); }
+
+    .game-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .84rem;
+      font-weight: 800;
+    }
+
+    .step-dot {
+      width: 34px;
+      height: 8px;
+      border-radius: 999px;
+      background: #3d3856;
+      transition: background .25s, transform .25s;
+    }
+
+    .step-dot.current { background: var(--gold); transform: scaleY(1.35); }
+    .step-dot.done { background: var(--green); }
+
+    .dialogue {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) 84px 90px;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: clamp(16px, 3vw, 24px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(112, 225, 232, .07), rgba(255, 209, 102, .055));
+    }
+
+    .watcher {
+      text-align: center;
+      opacity: .45;
+      transition: opacity .2s, transform .2s;
+    }
+
+    .watcher.active { opacity: 1; transform: translateY(-3px); }
+
+    .avatar {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 6px;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: #302a4c;
+      font-size: 1.85rem;
+    }
+
+    .watcher.active .avatar { border-color: var(--gold); box-shadow: 0 0 24px rgba(255, 209, 102, .22); }
+    .watcher strong { display: block; font-size: .75rem; }
+
+    .speech small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--cyan);
+      font-weight: 850;
+    }
+
+    .speech blockquote {
+      margin: 0;
+      font: 800 clamp(1.2rem, 3.2vw, 1.65rem)/1.25 Georgia, serif;
+    }
+
+    .collector {
+      position: relative;
+      width: 74px;
+      height: 60px;
+      margin-left: auto;
+    }
+
+    .collector .box-body { height: 46px; border-width: 3px; border-radius: 4px 4px 9px 9px; }
+    .collector .box-body::before { top: 9px; width: 18px; height: 22px; border-width: 2px; }
+    .collector .box-lid { height: 22px; border-width: 3px; border-radius: 10px 10px 3px 3px; }
+
+    .facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .fact {
+      padding: 8px 11px;
+      border-radius: 999px;
+      color: #dcd7e9;
+      background: #302c49;
+      font-size: .84rem;
+    }
+
+    .fact strong { color: var(--gold); }
+
+    .board-wrap {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(9, 8, 19, .46);
+    }
+
+    .board-scroll {
+      overflow-x: auto;
+      padding: clamp(8px, 2vw, 14px);
+      scrollbar-color: #4e4867 transparent;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: minmax(82px, 1.3fr) repeat(6, minmax(42px, 1fr));
+      gap: 6px;
+      min-width: 430px;
+    }
+
+    .corner,
+    .eye-head,
+    .row-head,
+    .cell {
+      min-width: 0;
+      min-height: 72px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .corner {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: #25213b;
+      font-size: .68rem;
+      font-weight: 850;
+      line-height: 1.15;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .corner span:first-child { color: var(--cyan); }
+
+    .eye-head,
+    .row-head {
+      color: var(--ink);
+      background: #2a2642;
+      cursor: pointer;
+      font-weight: 900;
+      transition: background .15s, border-color .15s, transform .15s;
+    }
+
+    .eye-head {
+      display: grid;
+      min-height: 54px;
+      place-items: center;
+      font-size: 1rem;
+    }
+
+    .eye-head span { display: block; color: var(--muted); font-size: .64rem; font-weight: 700; }
+
+    .row-head {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: center;
+      padding: 7px;
+      font-size: clamp(.69rem, 1.7vw, .87rem);
+      text-align: center;
+    }
+
+    .eye-head:hover,
+    .row-head:hover { border-color: rgba(255, 209, 102, .7); background: #373151; }
+    .eye-head:active,
+    .row-head:active { transform: scale(.97); }
+    .eye-head[aria-pressed="true"],
+    .row-head[aria-pressed="true"] { border-color: var(--gold); background: #554322; }
+
+    .row-head.haragos { border-left: 5px solid #ef5350; }
+    .row-head.kapzsi { border-left: 5px solid #4cc486; }
+    .row-head.lusta { border-left: 5px solid #5aa7f5; }
+    .row-head.falank { border-left: 5px solid #f6c84b; }
+
+    .cell {
+      position: relative;
+      display: grid;
+      overflow: hidden;
+      place-items: center;
+      padding: 2px;
+      color: inherit;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    button.cell {
+      cursor: pointer;
+      transition: border-color .15s, background .15s, transform .15s, opacity .3s;
+    }
+
+    button.cell:hover { border-color: rgba(112, 225, 232, .65); background: rgba(112, 225, 232, .08); }
+    button.cell:active { transform: scale(.95); }
+    button.cell.selected { border: 3px solid var(--gold); background: rgba(255, 209, 102, .16); }
+    button.cell.selected::after {
+      position: absolute;
+      top: 4px;
+      right: 5px;
+      display: grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      border-radius: 50%;
+      color: #211608;
+      background: var(--gold);
+      content: "✓";
+      font-size: .72rem;
+      font-weight: 1000;
+    }
+
+    .cell.empty { opacity: .32; background: transparent; }
+    .cell.empty::after { color: #514b67; content: "·"; font-size: 1.3rem; }
+    .cell.gone { pointer-events: none; opacity: .08; filter: grayscale(1); }
+    .cell.wrong { animation: shake .35s linear 1; border-color: var(--danger); }
+    .cell.hope { border-color: var(--gold); background: rgba(255, 209, 102, .16); animation: hope-glow 1.4s ease-in-out infinite alternate; }
+
+    .creature { width: min(68px, 100%); height: 68px; }
+
+    .instruction {
+      margin: 18px 0 10px;
+      color: #e9e4f4;
+      line-height: 1.5;
+    }
+
+    .instruction strong { color: var(--gold); }
+
+    .actionbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding-top: 8px;
+    }
+
+    .selection-count {
+      margin-right: auto;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 750;
+    }
+
+    .feedback {
+      min-height: 52px;
+      margin-top: 14px;
+      padding: 13px 15px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .feedback.error { border-color: rgba(255, 113, 137, .45); color: #ffd5dc; background: rgba(255, 113, 137, .09); }
+    .feedback.success { border-color: rgba(110, 231, 160, .45); color: #cffbe1; background: rgba(110, 231, 160, .09); }
+
+    .victory {
+      margin-top: 22px;
+      padding: clamp(22px, 4vw, 36px);
+      border: 1px solid rgba(255, 209, 102, .5);
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255, 209, 102, .13), rgba(112, 225, 232, .08));
+      text-align: center;
+    }
+
+    .victory-mark { font-size: 3rem; }
+    .victory h2 { margin: 5px 0 8px; font: 800 clamp(1.75rem, 4vw, 2.5rem)/1.05 Georgia, serif; }
+    .victory > p { max-width: 650px; margin: 0 auto 20px; color: var(--muted); line-height: 1.55; }
+
+    details {
+      max-width: 720px;
+      margin: 0 auto 22px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, .15);
+      text-align: left;
+    }
+
+    summary { padding: 13px 15px; cursor: pointer; color: var(--gold); font-weight: 850; }
+    details ol { margin: 0; padding: 0 34px 18px 48px; color: #d4cede; line-height: 1.55; }
+    details li + li { margin-top: 8px; }
+
+    .flying {
+      position: fixed;
+      z-index: 100;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .45));
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    @keyframes hope-glow {
+      from { box-shadow: 0 0 0 rgba(255, 209, 102, 0); }
+      to { box-shadow: 0 0 28px rgba(255, 209, 102, .55); }
+    }
+
+    @media (max-width: 700px) {
+      main { width: min(100% - 18px, 520px); padding-top: 24px; }
+      .intro { grid-template-columns: 1fr; text-align: center; }
+      .box-scene { min-height: 210px; order: -1; }
+      .known { text-align: left; }
+      .dialogue { grid-template-columns: 52px minmax(0, 1fr) 52px; gap: 9px; }
+      .avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 1.45rem; }
+      .collector { grid-column: 1 / -1; width: 54px; height: 46px; margin-top: -5px; }
+      .collector .box-body { height: 35px; }
+      .collector .box-lid { height: 17px; }
+      .speech blockquote { font-size: 1.12rem; }
+      .game { padding: 13px; }
+      .board-scroll { padding: 5px; }
+      .matrix { grid-template-columns: 70px repeat(6, minmax(38px, 1fr)); gap: 4px; min-width: 322px; }
+      .corner, .row-head, .cell { min-height: 60px; }
+      .eye-head { min-height: 46px; }
+      .creature { height: 57px; }
+      .actionbar .primary { flex: 1 0 100%; order: -1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Vissza a játékokhoz</a>
+
+    <header class="hero">
+      <p class="eyebrow">7. osztály · logikai játék</p>
+      <h1>Pandora szelencéje</h1>
+      <p>Skibidi-riadó! Tíz különös lény szabadult ki. Három kijelentésből kell kiderítened, melyikük Hope.</p>
+    </header>
+
+    <section class="intro" id="intro" aria-labelledby="intro-title">
+      <div class="box-scene" aria-hidden="true">
+        <div class="pandora-box">
+          <div class="box-glow"></div>
+          <div class="box-body"></div>
+          <div class="box-lid"></div>
+        </div>
+      </div>
+      <div class="intro-copy">
+        <h2 id="intro-title">Valami kiszabadult…</h2>
+        <p>Haragos, Kapzsi, Lusta és Falánk Skibidik lepték el a táblát. Egyikük azonban nem démon: ő az álruhában rejtőző Hope.</p>
+        <ul class="known" aria-label="A feladvány ismert adatai">
+          <li><span aria-hidden="true">🅰️</span><span><strong>A</strong> ismeri Hope típusát.</span></li>
+          <li><span aria-hidden="true">🅱️</span><span><strong>B</strong> tudja, hány szeme van Hope-nak.</span></li>
+        </ul>
+        <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
+      </div>
+    </section>
+
+    <section class="game" id="game" aria-label="Hope keresése" hidden>
+      <div class="game-top">
+        <div class="steps" aria-label="Haladás">
+          <span>Állítás</span>
+          <span class="step-dot current" aria-hidden="true"></span>
+          <span class="step-dot" aria-hidden="true"></span>
+          <span class="step-dot" aria-hidden="true"></span>
+          <strong id="stepNumber">1/3</strong>
+        </div>
+        <button class="ghost" id="restartTop" type="button">Újrakezdés</button>
+      </div>
+
+      <div class="dialogue">
+        <div class="watcher active" id="watcherA">
+          <span class="avatar" aria-hidden="true">🅰️</span>
+          <strong>A: típust tud</strong>
+        </div>
+        <div class="speech">
+          <small id="speaker">A mondja B-nek:</small>
+          <blockquote id="statement">„Tudom, hogy te nem tudod!”</blockquote>
+        </div>
+        <div class="watcher" id="watcherB">
+          <span class="avatar" aria-hidden="true">🅱️</span>
+          <strong>B: szemet tud</strong>
+        </div>
+        <div class="collector pandora-box" id="collectorBox" aria-label="Pandora szelencéje">
+          <div class="box-body"></div>
+          <div class="box-lid"></div>
+        </div>
+      </div>
+
+      <div class="facts" aria-label="Mit tudnak a szereplők?">
+        <span class="fact"><strong>A</strong> a típust ismeri</span>
+        <span class="fact"><strong>B</strong> a szemszámot ismeri</span>
+        <span class="fact">Minden kijelentés igaz</span>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board-scroll">
+          <div class="matrix" id="matrix" role="grid" aria-label="Skibidi-típusok és szemszámok mátrixa"></div>
+        </div>
+      </div>
+
+      <p class="instruction" id="instruction"><strong>Feladat:</strong> Jelöld ki mindazokat a Skibidiket, akik A kijelentése után már nem lehetnek Hope! Kattinthatsz egy sor nevére, egy szemszámra vagy külön-külön a lényekre.</p>
+
+      <div class="actionbar" id="actionbar">
+        <span class="selection-count" id="selectionCount">Nincs kijelölés.</span>
+        <button class="ghost" id="clear" type="button">Kijelölés törlése</button>
+        <button class="primary" id="collect" type="button">Begyűjtés a szelencébe</button>
+      </div>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite">Gondolkodj A szemével: mit tudhat biztosan B tudásáról?</div>
+
+      <section class="victory" id="victory" aria-labelledby="victory-title" hidden>
+        <div class="victory-mark" aria-hidden="true">✨</div>
+        <h2 id="victory-title">Megtaláltad Hope-ot!</h2>
+        <p>A hatszemű Lusta Skibidi álruhája lehullik. A világot ugyan ellepték a Skibidik, de legalább maradt egy kis remény. :))</p>
+        <details>
+          <summary>Miért csak ő maradhatott?</summary>
+          <ol>
+            <li>A három- és ötszemű lényt B azonnal felismerte volna. Ezért A biztos kijelentése kizárta a teljes Haragos és Kapzsi sort.</li>
+            <li>Ezután az egyszeműekből még kettő maradt. B csak akkor tudhatta a választ, ha Hope nem egyszemű.</li>
+            <li>A Falánk sorban még két lehetőség volt, a Lusta sorban viszont már csak a hatszemű. Ezért A is csak őt ismerhette fel.</li>
+          </ol>
+        </details>
+        <button class="secondary" id="restartWin" type="button">Játék újra</button>
+      </section>
+    </section>
+  </main>
+
+  <div id="effects" aria-hidden="true"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const rows = [
+        { id: "haragos", name: "Haragos", color: "#ef5350", cells: [2, 3, 6] },
+        { id: "kapzsi", name: "Kapzsi", color: "#42c784", cells: [4, 5] },
+        { id: "lusta", name: "Lusta", color: "#5aa7f5", cells: [1, 6] },
+        { id: "falank", name: "Falánk", color: "#f4c542", cells: [1, 2, 4] }
+      ];
+
+      const rounds = [
+        {
+          speaker: "A mondja B-nek:",
+          statement: "„Tudom, hogy te nem tudod!”",
+          watcher: "A",
+          expected: ["haragos-2", "haragos-3", "haragos-6", "kapzsi-4", "kapzsi-5"],
+          instruction: "Jelöld ki mindazokat a Skibidiket, akik A kijelentése után már nem lehetnek Hope!",
+          prompt: "Gondolkodj A szemével: mit tudhat biztosan B tudásáról?",
+          success: "Így van! A teljes Haragos és Kapzsi sor kiesik. B ezt ugyanúgy kikövetkezteti."
+        },
+        {
+          speaker: "B válaszol:",
+          statement: "„Most már tudom!”",
+          watcher: "B",
+          expected: ["lusta-1", "falank-1"],
+          instruction: "Jelöld ki azokat a megmaradt Skibidiket, akik mellett B még mindig nem tudhatná biztosan a választ!",
+          prompt: "B már azt is tudja, hogy a Haragos és Kapzsi típus lehetetlen.",
+          success: "Pontosan! Egy szem esetén B még két lehetőséget látna, ezért Hope nem lehet egyszemű."
+        },
+        {
+          speaker: "A ismét megszólal:",
+          statement: "„Most már én is tudom!”",
+          watcher: "A",
+          expected: ["falank-2", "falank-4"],
+          instruction: "Jelöld ki azokat a megmaradt Skibidiket, akik mellett A még mindig nem tudhatná biztosan a választ!",
+          prompt: "A a megmaradt lehetőségeket a saját típusa szerint csoportosítja.",
+          success: "Megvan! A Falánk típus még két lehetőséget hagyna, ezért csak a hatszemű Lusta Skibidi lehet Hope."
+        }
+      ];
+
+      const allIds = rows.flatMap(row => row.cells.map(eyes => `${row.id}-${eyes}`));
+      let active = new Set(allIds);
+      let selected = new Set();
+      let roundIndex = 0;
+      let busy = false;
+
+      const matrix = document.getElementById("matrix");
+      const intro = document.getElementById("intro");
+      const game = document.getElementById("game");
+      const start = document.getElementById("start");
+      const collect = document.getElementById("collect");
+      const clear = document.getElementById("clear");
+      const feedback = document.getElementById("feedback");
+      const instruction = document.getElementById("instruction");
+      const selectionCount = document.getElementById("selectionCount");
+      const statement = document.getElementById("statement");
+      const speaker = document.getElementById("speaker");
+      const stepNumber = document.getElementById("stepNumber");
+      const actionbar = document.getElementById("actionbar");
+      const victory = document.getElementById("victory");
+      const effects = document.getElementById("effects");
+
+      function eyePositions(count) {
+        const layouts = {
+          1: [[40, 31]],
+          2: [[31, 31], [49, 31]],
+          3: [[27, 31], [40, 27], [53, 31]],
+          4: [[31, 27], [49, 27], [31, 39], [49, 39]],
+          5: [[28, 27], [40, 24], [52, 27], [33, 39], [47, 39]],
+          6: [[28, 27], [40, 25], [52, 27], [28, 39], [40, 41], [52, 39]]
+        };
+        return layouts[count];
+      }
+
+      function creatureSvg(color, eyes, label) {
+        const eyeMarkup = eyePositions(eyes).map(([x, y]) => `
+          <circle cx="${x}" cy="${y}" r="5" fill="#fff9e9" stroke="#241b2f" stroke-width="1.5"/>
+          <circle cx="${x}" cy="${y + .5}" r="2" fill="#171220"/>`).join("");
+
+        return `
+          <svg class="creature" viewBox="0 0 80 82" role="img" aria-label="${label}">
+            <path d="M25 24 Q18 15 14 23 M55 24 Q62 15 66 23" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round"/>
+            <path d="M23 51 Q20 20 40 16 Q60 20 57 51 Z" fill="${color}" stroke="#281d31" stroke-width="3"/>
+            ${eyeMarkup}
+            <path d="M31 47 Q40 54 49 47" fill="none" stroke="#281d31" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="40" cy="57" rx="29" ry="10" fill="#eef3f7" stroke="#59636d" stroke-width="3"/>
+            <ellipse cx="40" cy="56" rx="19" ry="5" fill="#89959e"/>
+            <path d="M17 58 Q18 75 27 77 H55 Q62 70 63 58" fill="#dbe3e8" stroke="#59636d" stroke-width="3"/>
+            <path d="M53 68 H70 V76 H55" fill="#e9eef1" stroke="#59636d" stroke-width="3" stroke-linejoin="round"/>
+          </svg>`;
+      }
+
+      function buildMatrix() {
+        matrix.innerHTML = "";
+
+        const corner = document.createElement("div");
+        corner.className = "corner";
+        corner.setAttribute("role", "columnheader");
+        corner.innerHTML = "<span>Típus</span><span>Szemek</span>";
+        matrix.appendChild(corner);
+
+        for (let eyes = 1; eyes <= 6; eyes += 1) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "eye-head";
+          button.dataset.eye = String(eyes);
+          button.setAttribute("role", "columnheader");
+          button.setAttribute("aria-pressed", "false");
+          button.setAttribute("aria-label", `${eyes} szemű, még lehetséges Skibidik kijelölése`);
+          button.innerHTML = `${eyes}<span>szem</span>`;
+          button.addEventListener("click", () => toggleGroup("eye", String(eyes)));
+          matrix.appendChild(button);
+        }
+
+        rows.forEach(row => {
+          const rowButton = document.createElement("button");
+          rowButton.type = "button";
+          rowButton.className = `row-head ${row.id}`;
+          rowButton.dataset.row = row.id;
+          rowButton.setAttribute("role", "rowheader");
+          rowButton.setAttribute("aria-pressed", "false");
+          rowButton.setAttribute("aria-label", `Még lehetséges ${row.name} Skibidik kijelölése`);
+          rowButton.textContent = row.name;
+          rowButton.addEventListener("click", () => toggleGroup("row", row.id));
+          matrix.appendChild(rowButton);
+
+          for (let eyes = 1; eyes <= 6; eyes += 1) {
+            if (!row.cells.includes(eyes)) {
+              const empty = document.createElement("div");
+              empty.className = "cell empty";
+              empty.setAttribute("role", "gridcell");
+              empty.setAttribute("aria-label", "Üres mező");
+              matrix.appendChild(empty);
+              continue;
+            }
+
+            const id = `${row.id}-${eyes}`;
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "cell";
+            cell.dataset.id = id;
+            cell.dataset.row = row.id;
+            cell.dataset.eye = String(eyes);
+            cell.setAttribute("role", "gridcell");
+            cell.setAttribute("aria-pressed", "false");
+            cell.setAttribute("aria-label", `${eyes} szemű ${row.name} Skibidi`);
+            cell.innerHTML = creatureSvg(row.color, eyes, `${eyes} szemű ${row.name} Skibidi`);
+            cell.addEventListener("click", () => toggleCell(id));
+            matrix.appendChild(cell);
+          }
+        });
+      }
+
+      function toggleCell(id) {
+        if (busy || !active.has(id)) return;
+        if (selected.has(id)) selected.delete(id);
+        else selected.add(id);
+        renderSelection();
+      }
+
+      function toggleGroup(kind, value) {
+        if (busy) return;
+        const ids = allIds.filter(id => {
+          const [row, eye] = id.split("-");
+          return active.has(id) && (kind === "row" ? row === value : eye === value);
+        });
+        if (!ids.length) return;
+        const allSelected = ids.every(id => selected.has(id));
+        ids.forEach(id => allSelected ? selected.delete(id) : selected.add(id));
+        renderSelection();
+      }
+
+      function renderSelection() {
+        document.querySelectorAll("button.cell[data-id]").forEach(cell => {
+          const isSelected = selected.has(cell.dataset.id);
+          cell.classList.toggle("selected", isSelected);
+          cell.setAttribute("aria-pressed", String(isSelected));
+        });
+
+        document.querySelectorAll(".row-head[data-row]").forEach(header => {
+          const ids = allIds.filter(id => active.has(id) && id.startsWith(`${header.dataset.row}-`));
+          header.setAttribute("aria-pressed", String(ids.length > 0 && ids.every(id => selected.has(id))));
+        });
+
+        document.querySelectorAll(".eye-head[data-eye]").forEach(header => {
+          const ids = allIds.filter(id => active.has(id) && id.endsWith(`-${header.dataset.eye}`));
+          header.setAttribute("aria-pressed", String(ids.length > 0 && ids.every(id => selected.has(id))));
+        });
+
+        selectionCount.textContent = selected.size ? `${selected.size} Skibidi kijelölve.` : "Nincs kijelölés.";
+      }
+
+      function sameSet(a, b) {
+        return a.size === b.size && [...a].every(value => b.has(value));
+      }
+
+      function setFeedback(text, type = "") {
+        feedback.textContent = text;
+        feedback.className = `feedback${type ? ` ${type}` : ""}`;
+      }
+
+      function markWrong() {
+        selected.forEach(id => {
+          const cell = document.querySelector(`[data-id="${id}"]`);
+          if (!cell) return;
+          cell.classList.remove("wrong");
+          void cell.offsetWidth;
+          cell.classList.add("wrong");
+        });
+      }
+
+      function animateCapture(ids) {
+        const target = document.getElementById("collectorBox").getBoundingClientRect();
+        const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 30 : 620;
+
+        return Promise.all(ids.map((id, index) => {
+          const cell = document.querySelector(`[data-id="${id}"]`);
+          const creature = cell?.querySelector(".creature");
+          if (!cell || !creature) return Promise.resolve();
+          const rect = creature.getBoundingClientRect();
+          const flyer = document.createElement("div");
+          flyer.className = "flying";
+          flyer.style.left = `${rect.left}px`;
+          flyer.style.top = `${rect.top}px`;
+          flyer.style.width = `${rect.width}px`;
+          flyer.style.height = `${rect.height}px`;
+          flyer.innerHTML = creature.outerHTML;
+          effects.appendChild(flyer);
+
+          const dx = target.left + target.width / 2 - (rect.left + rect.width / 2);
+          const dy = target.top + target.height / 2 - (rect.top + rect.height / 2);
+          const animation = flyer.animate([
+            { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1 },
+            { transform: `translate(${dx * .45}px, ${dy * .35 - 45}px) scale(.8) rotate(${index % 2 ? -18 : 18}deg)`, opacity: 1, offset: .48 },
+            { transform: `translate(${dx}px, ${dy}px) scale(.08) rotate(${index % 2 ? -160 : 160}deg)`, opacity: .1 }
+          ], { duration, delay: index * 45, easing: "cubic-bezier(.35,.02,.25,1)", fill: "forwards" });
+
+          return animation.finished.catch(() => {}).then(() => flyer.remove());
+        }));
+      }
+
+      async function collectSelection() {
+        if (busy) return;
+        if (!selected.size) {
+          setFeedback("Előbb jelöld ki azokat, akik a kijelentés alapján már nem lehetnek Hope!", "error");
+          return;
+        }
+
+        const expected = new Set(rounds[roundIndex].expected);
+        if (!sameSet(selected, expected)) {
+          markWrong();
+          const firstTrap = new Set(["haragos-3", "kapzsi-5"]);
+          if (roundIndex === 0 && sameSet(selected, firstTrap)) {
+            setFeedback("Ez a két Skibidi valóban különleges, de A a típust ismeri, nem a szemszámot. Ha Hope Haragos vagy Kapzsi lenne, A biztos lehetne B tudatlanságában?", "error");
+          } else {
+            setFeedback("Ez a kijelölés még nem pontos. Csak azokat gyűjtsd be, akik a mostani kijelentés után biztosan nem lehetnek Hope!", "error");
+          }
+          return;
+        }
+
+        busy = true;
+        collect.disabled = true;
+        setFeedback(rounds[roundIndex].success, "success");
+        const captured = [...expected];
+        await animateCapture(captured);
+
+        captured.forEach(id => {
+          active.delete(id);
+          const cell = document.querySelector(`[data-id="${id}"]`);
+          if (cell) {
+            cell.classList.add("gone");
+            cell.classList.remove("selected");
+            cell.disabled = true;
+            cell.setAttribute("aria-pressed", "false");
+            cell.setAttribute("aria-label", `${cell.getAttribute("aria-label")}, kizárva`);
+          }
+        });
+        selected.clear();
+        roundIndex += 1;
+        renderSelection();
+        updateProgress();
+
+        if (roundIndex >= rounds.length) finishGame();
+        else {
+          busy = false;
+          collect.disabled = false;
+          updateRound();
+        }
+      }
+
+      function updateRound() {
+        const round = rounds[roundIndex];
+        speaker.textContent = round.speaker;
+        statement.textContent = round.statement;
+        instruction.innerHTML = `<strong>Feladat:</strong> ${round.instruction} Kattinthatsz egy sor nevére, egy szemszámra vagy külön-külön a lényekre.`;
+        document.getElementById("watcherA").classList.toggle("active", round.watcher === "A");
+        document.getElementById("watcherB").classList.toggle("active", round.watcher === "B");
+        setFeedback(round.prompt);
+      }
+
+      function updateProgress() {
+        const dots = document.querySelectorAll(".step-dot");
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("done", index < roundIndex);
+          dot.classList.toggle("current", index === roundIndex && roundIndex < rounds.length);
+        });
+        stepNumber.textContent = roundIndex < rounds.length ? `${roundIndex + 1}/3` : "3/3";
+      }
+
+      function finishGame() {
+        busy = false;
+        actionbar.hidden = true;
+        instruction.hidden = true;
+        victory.hidden = false;
+        speaker.textContent = "Pandora felismeri Hope-ot:";
+        statement.textContent = "„Te vagy az!”";
+        document.getElementById("watcherA").classList.remove("active");
+        document.getElementById("watcherB").classList.remove("active");
+        const hope = document.querySelector('[data-id="lusta-6"]');
+        if (hope) {
+          hope.classList.add("hope");
+          hope.setAttribute("aria-label", "Hope, a 6 szemű Lusta Skibidi");
+        }
+        setFeedback(rounds[2].success, "success");
+        victory.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+      }
+
+      function resetGame() {
+        active = new Set(allIds);
+        selected = new Set();
+        roundIndex = 0;
+        busy = false;
+        collect.disabled = false;
+        actionbar.hidden = false;
+        instruction.hidden = false;
+        victory.hidden = true;
+        document.querySelectorAll("button.cell[data-id]").forEach(cell => {
+          cell.disabled = false;
+          cell.classList.remove("gone", "selected", "wrong", "hope");
+          cell.setAttribute("aria-pressed", "false");
+          const row = rows.find(item => item.id === cell.dataset.row);
+          cell.setAttribute("aria-label", `${cell.dataset.eye} szemű ${row.name} Skibidi`);
+        });
+        renderSelection();
+        updateProgress();
+        updateRound();
+        game.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      buildMatrix();
+      renderSelection();
+
+      start.addEventListener("click", () => {
+        start.disabled = true;
+        intro.classList.add("opening");
+        const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 20 : 680;
+        window.setTimeout(() => {
+          intro.hidden = true;
+          game.hidden = false;
+          updateRound();
+          game.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, delay);
+      });
+
+      collect.addEventListener("click", collectSelection);
+      clear.addEventListener("click", () => {
+        if (busy) return;
+        selected.clear();
+        renderSelection();
+        setFeedback(rounds[roundIndex].prompt);
+      });
+      document.getElementById("restartTop").addEventListener("click", resetGame);
+      document.getElementById("restartWin").addEventListener("click", resetGame);
+    })();
+  </script>
+</body>
+</html>
