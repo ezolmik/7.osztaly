@@ -351,18 +351,49 @@
     }
 
     .corner {
-      display: grid;
-      place-items: center;
+      position: relative;
+      overflow: hidden;
       color: var(--muted);
       background: #25213b;
-      font-size: .68rem;
+      font-size: .59rem;
       font-weight: 850;
-      line-height: 1.15;
-      text-align: center;
+      letter-spacing: .035em;
+      line-height: 1.05;
       text-transform: uppercase;
     }
 
-    .corner span:first-child { color: var(--cyan); }
+    .corner::before {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top right,
+        transparent calc(50% - .7px),
+        var(--line) 50%,
+        transparent calc(50% + .7px)
+      );
+      content: "";
+      opacity: .9;
+      pointer-events: none;
+    }
+
+    .corner span {
+      position: absolute;
+      z-index: 1;
+    }
+
+    .corner .column-label {
+      top: 8px;
+      right: 8px;
+      color: var(--cyan);
+      text-align: right;
+    }
+
+    .corner .row-label {
+      bottom: 9px;
+      left: 8px;
+      color: var(--gold);
+      text-align: left;
+    }
 
     .tooth-head,
     .row-head {
@@ -848,7 +879,8 @@
         const corner = document.createElement("div");
         corner.className = "corner";
         corner.setAttribute("role", "columnheader");
-        corner.innerHTML = "<span>Típus</span><span>Fekete fog</span>";
+        corner.setAttribute("aria-label", "Sorok: Skibidi-típus; oszlopok: fekete fogak száma");
+        corner.innerHTML = '<span class="column-label">Fekete<br>fog</span><span class="row-label">Típus</span>';
         matrix.appendChild(corner);
 
         for (let teeth = 1; teeth <= 6; teeth += 1) {
