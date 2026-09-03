@@ -492,7 +492,11 @@
     .tooth-head:active,
     .row-head:active { transform: scale(.97); }
     .tooth-head[aria-pressed="true"],
-    .row-head[aria-pressed="true"] { border-color: var(--gold); background: #554322; }
+    .row-head[aria-pressed="true"] {
+      border-color: var(--gold);
+      background: #554322;
+      box-shadow: inset 0 0 0 1px rgba(255, 209, 102, .22);
+    }
 
     .row-head.haragos { border-left: 5px solid #ef5350; }
     .row-head.kapzsi { border-left: 5px solid #4cc486; }
@@ -516,7 +520,10 @@
 
     button.cell:hover { border-color: rgba(112, 225, 232, .65); background: rgba(112, 225, 232, .08); }
     button.cell:active { transform: scale(.95); }
-    button.cell.selected { border: 3px solid var(--gold); background: rgba(255, 209, 102, .16); }
+    button.cell.selected {
+      border: 3px solid var(--gold);
+      background: rgba(255, 209, 102, .16);
+    }
     button.cell.selected::after {
       position: absolute;
       top: 4px;
@@ -528,15 +535,21 @@
       border-radius: 50%;
       color: #211608;
       background: var(--gold);
-      content: "✓";
+      content: "🗑";
       font-size: .72rem;
+      line-height: 1;
       font-weight: 1000;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, .34);
     }
 
     .cell.empty { opacity: .32; background: transparent; }
     .cell.empty::after { color: #514b67; content: "·"; font-size: 1.3rem; }
     .cell.gone { pointer-events: none; opacity: .08; filter: grayscale(1); }
-    .cell.wrong { animation: shake .35s linear 1; border-color: var(--danger); }
+    .cell.wrong {
+      animation: shake .35s linear 1;
+      border-color: var(--danger);
+      box-shadow: inset 0 0 0 2px rgba(255, 113, 137, .32);
+    }
     .cell.hope { border-color: var(--gold); background: rgba(255, 209, 102, .16); animation: hope-glow 1.4s ease-in-out infinite alternate; }
 
     .creature { width: min(68px, 100%); height: 68px; }
@@ -723,7 +736,7 @@
       <p class="instruction" id="instruction"><strong>Jelöld ki az összes Skibidit, aki már nem lehet Hope!</strong><br><span>Sort, fogszámot vagy egyetlen lényt is kijelölhetsz.</span></p>
 
       <div class="actionbar" id="actionbar">
-        <span class="selection-count" id="selectionCount">Nincs kijelölés.</span>
+        <span class="selection-count" id="selectionCount">Nincs kizárásra kijelölt Skibidi.</span>
         <button class="ghost" id="clear" type="button">Kijelölés törlése</button>
         <button class="primary" id="collect" type="button">Begyűjtés a szelencébe</button>
       </div>
@@ -969,7 +982,7 @@
           button.dataset.teeth = String(teeth);
           button.setAttribute("role", "columnheader");
           button.setAttribute("aria-pressed", "false");
-          button.setAttribute("aria-label", `${teeth} fekete fogú, még lehetséges Skibidik kijelölése`);
+          button.setAttribute("aria-label", `${teeth} fekete fogú, még lehetséges Skibidik kizárásra jelölése`);
           button.innerHTML = `${teeth}<span>fog</span>`;
           button.addEventListener("click", () => toggleGroup("teeth", String(teeth)));
           matrix.appendChild(button);
@@ -982,7 +995,7 @@
           rowButton.dataset.row = row.id;
           rowButton.setAttribute("role", "rowheader");
           rowButton.setAttribute("aria-pressed", "false");
-          rowButton.setAttribute("aria-label", `Még lehetséges ${row.name} Skibidik kijelölése`);
+          rowButton.setAttribute("aria-label", `Még lehetséges ${row.name} Skibidik kizárásra jelölése`);
           rowButton.textContent = row.name;
           rowButton.addEventListener("click", () => toggleGroup("row", row.id));
           matrix.appendChild(rowButton);
@@ -1050,7 +1063,9 @@
           header.setAttribute("aria-pressed", String(ids.length > 0 && ids.every(id => selected.has(id))));
         });
 
-        selectionCount.textContent = selected.size ? `${selected.size} Skibidi kijelölve.` : "Nincs kijelölés.";
+        selectionCount.textContent = selected.size
+          ? `${selected.size} Skibidi kijelölve kizárásra.`
+          : "Nincs kizárásra kijelölt Skibidi.";
       }
 
       function sameSet(a, b) {
