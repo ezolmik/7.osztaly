@@ -712,7 +712,6 @@
     <header class="hero">
       <p class="eyebrow">7. osztály · logikai játék</p>
       <h1>Pandora szelencéje</h1>
-      <p>Találd meg a legnagyobb bajkeverőt három igaz kijelentésből!</p>
     </header>
 
     <section class="intro" id="intro" aria-labelledby="intro-title">
@@ -724,11 +723,10 @@
         </div>
       </div>
       <div class="intro-copy">
-        <h2 id="intro-title">Keresd meg a legnagyobb bajkeverőt!</h2>
-        <p>A Skibidik közül egyikük a legnagyobb bajkeverő.</p>
+        <h2 id="intro-title">Ki a legnagyobb bajkeverő?</h2>
         <ul class="known" aria-label="A feladvány ismert adatai">
-          <li><span aria-hidden="true">🔍</span><span><strong>Jellemvizsgáló</strong> ismeri a legnagyobb bajkeverő jellemhibáját.</span></li>
-          <li><span aria-hidden="true">🦷</span><span><strong>Fogszámláló</strong> tudja, hány fekete foga van a legnagyobb bajkeverőnek.</span></li>
+          <li><span aria-hidden="true">🔍</span><span><strong>A Jellemvizsgáló</strong> ismeri a jellemhibáját, de nem tudja, hány foga fekete.</span></li>
+          <li><span aria-hidden="true">🦷</span><span><strong>A Fogszámláló</strong> tudja, hány foga fekete, de nem ismeri a jellemhibáját.</span></li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
       </div>
@@ -754,8 +752,8 @@
 
       <div class="knowledge-strip" aria-label="Ki mit tud a feladványban?">
         <span class="knowledge-title">Ki mit tud?</span>
-        <span class="knowledge-item">🔍 <strong>Jellemvizsgáló:</strong> ismeri a legnagyobb bajkeverő jellemhibáját.</span>
-        <span class="knowledge-item">🦷 <strong>Fogszámláló:</strong> a legnagyobb bajkeverő fekete fogainak számát tudja.</span>
+        <span class="knowledge-item">🔍 <strong>A Jellemvizsgáló</strong> ismeri a keresett Skibidi jellemhibáját.</span>
+        <span class="knowledge-item">🦷 <strong>A Fogszámláló</strong> tudja, hány fekete foga van a keresett Skibidinek.</span>
       </div>
 
       <div class="board-wrap">
@@ -768,8 +766,8 @@
         <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🔍</div>
         <div class="speech">
           <span class="statement-number" id="statementNumber">1. kijelentés</span>
-          <small id="speaker">Jellemvizsgáló mondja Fogszámlálónak:</small>
-          <blockquote id="statement">„Tudom, hogy te nem tudod, melyikük a legnagyobb bajkeverő!”</blockquote>
+          <small id="speaker">A Jellemvizsgáló mondja a Fogszámlálónak:</small>
+          <blockquote id="statement">„Tudom, hogy te nem tudod, melyikük az!”</blockquote>
         </div>
         <div class="collector" id="collectorBox" role="img" aria-label="A kizárt Skibidik kukája">
           <div class="trash-body"></div>
@@ -789,7 +787,7 @@
 
       <section class="victory" id="victory" aria-labelledby="victory-title" hidden>
         <div class="victory-mark" aria-hidden="true">✨</div>
-        <h2 id="victory-title">Megtaláltad a legnagyobb bajkeverőt!</h2>
+        <h2 id="victory-title">Megtaláltad!</h2>
         <p id="victoryText"></p>
         <details>
           <summary>A logika három sorban</summary>
@@ -828,22 +826,22 @@
 
       const roundCopy = [
         {
-          speaker: "Jellemvizsgáló mondja Fogszámlálónak:",
+          speaker: "A Jellemvizsgáló mondja a Fogszámlálónak:",
           icon: "🔍",
-          statement: "„Tudom, hogy te nem tudod, melyikük a legnagyobb bajkeverő!”",
+          statement: "„Tudom, hogy te nem tudod, melyikük az!”",
           success: "Helyes: az első szűrés kész."
         },
         {
-          speaker: "Fogszámláló:",
+          speaker: "A Fogszámláló:",
           icon: "🦷",
           statement: "„Most már tudom!”",
           success: "Helyes: a második szűrés kész."
         },
         {
-          speaker: "Jellemvizsgáló:",
+          speaker: "A Jellemvizsgáló:",
           icon: "🔍",
           statement: "„Most már én is tudom!”",
-          success: "Helyes: már csak a legnagyobb bajkeverő maradt."
+          success: "Helyes: már csak egy Skibidi maradt."
         }
       ];
 
@@ -1004,8 +1002,8 @@
         const removedTeeth = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
 
         victoryText.textContent = `A legnagyobb bajkeverő a ${troublemakerRow.name} Skibidi, ${troublemakerTeeth} fekete foggal.`;
-        logicStep1.textContent = `Jellemvizsgáló kizárja: ${huList(removedFlaws)}.`;
-        logicStep2.textContent = `Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
+        logicStep1.textContent = `A Jellemvizsgáló kizárja: ${huList(removedFlaws)}.`;
+        logicStep2.textContent = `A Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
         logicStep3.textContent = `Egyetlen lehetőség marad: ${troublemakerRow.name}, ${troublemakerTeeth} fekete foggal.`;
       }
 
@@ -1180,7 +1178,7 @@
         if (!sameSet(selected, expected)) {
           markWrong();
           if (roundIndex === 0 && sameSet(selected, initialSingletons)) {
-            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló a legnagyobb bajkeverő jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
+            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló a keresett Skibidi jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
           } else {
             setFeedback("Ez a kijelölés még nem pontos. Kiket zár ki biztosan a kijelentés?", "error");
           }
@@ -1249,7 +1247,7 @@
         speaker.textContent = "Pandora:";
         speakerAvatar.textContent = "✨";
         statementNumber.textContent = "Megoldás";
-        statement.textContent = "„Megtaláltam a legnagyobb bajkeverőt!”";
+        statement.textContent = "„Megtaláltam!”";
         const troublemaker = document.querySelector(`[data-id="${troublemakerId}"]`);
         if (troublemaker) {
           const [rowId, teeth] = troublemakerId.split("-");
