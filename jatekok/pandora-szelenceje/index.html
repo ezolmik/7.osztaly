@@ -719,10 +719,12 @@
         const blackOrder = [2, 3, 1, 4, 0, 5];
         const black = new Set(blackOrder.slice(0, blackTeeth));
         const teethMarkup = Array.from({ length: 6 }, (_, index) => {
-          const x = 27.5 + index * 4.25;
-          const fill = black.has(index) ? "#16131a" : "#fff3cf";
-          const drop = index % 2 ? 1 : 0;
-          return `<rect x="${x}" y="41.5" width="4.3" height="${9 + drop}" rx=".7" fill="${fill}" stroke="#302326" stroke-width=".65"/>`;
+          const isBlack = black.has(index);
+          const x = 31.1 + index * 3.12;
+          const y = index % 2 ? 28.1 : 27.6;
+          const fill = isBlack ? "#101015" : "#fff0c8";
+          const stroke = isBlack ? "#ead9b8" : "#4a302b";
+          return `<rect x="${x}" y="${y}" width="3.25" height="6.4" rx=".45" fill="${fill}" stroke="${stroke}" stroke-width=".38"/>`;
         }).join("");
 
         return `
@@ -732,27 +734,8 @@
             <ellipse cx="40" cy="56" rx="30" ry="11" fill="#edf2f4" stroke="${color}" stroke-width="4"/>
             <ellipse cx="40" cy="56" rx="22" ry="7" fill="#35333b"/>
 
-            <path d="M34 65 C36 57 32 52 31 45 H49 C48 52 44 58 46 65 Z" fill="#c9c5bd" stroke="#282329" stroke-width="2.4"/>
-            <path d="M29 9 Q39 1 50 8 C56 15 55 28 53 37 C51 47 47 55 40 58 C32 55 28 47 26 37 C24 28 23 16 29 9 Z" fill="#f2efe8" stroke="#282329" stroke-width="2.5"/>
-            <ellipse cx="25.2" cy="29" rx="3.2" ry="5.7" fill="#ded9cf" stroke="#282329" stroke-width="1.4"/>
-            <ellipse cx="54.2" cy="27.5" rx="4" ry="6.5" fill="#ded9cf" stroke="#282329" stroke-width="1.4"/>
-            <path d="M27.5 18 Q28 5 39 5 Q51 4 52.5 17 Q43 12 27.5 18 Z" fill="#111017"/>
-
-            <path d="M28 23 L37.5 18.5 L39 23.5 L29.5 26 Z" fill="#28171c"/>
-            <path d="M41 23 L51.5 19 L53 24 L42 26 Z" fill="#28171c"/>
-            <ellipse cx="34.5" cy="27.5" rx="4.8" ry="5.3" fill="#fffdf4" stroke="#2b2329" stroke-width="1.25"/>
-            <ellipse cx="46.7" cy="27.8" rx="4.1" ry="4.6" fill="#fffdf4" stroke="#2b2329" stroke-width="1.25"/>
-            <circle cx="35.9" cy="26.7" r="1.65" fill="#141219"/>
-            <circle cx="45.4" cy="29" r="1.45" fill="#141219"/>
-            <circle cx="36.4" cy="26.2" r=".45" fill="#fff"/>
-            <circle cx="45" cy="28.6" r=".4" fill="#fff"/>
-            <path d="M40.5 27 L37.2 36.5 Q40.5 38.5 44.4 35.7" fill="#d2ccc1" stroke="#736d66" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-
-            <path d="M26 35 Q40 45 56 34 Q54 54 40 57 Q27 54 26 35 Z" fill="#5d2229" stroke="#2c171c" stroke-width="2"/>
+            <image href="assets/skibidi-head.png" x="25.5" y="-2" width="29" height="67.5" preserveAspectRatio="xMidYMid meet"/>
             ${teethMarkup}
-            <path d="M29 52.5 Q40 58 52 51.5" fill="none" stroke="#241218" stroke-width="1.7" stroke-linecap="round"/>
-            <path d="M26 35 Q23 39 22.5 42 M56 34 Q59 37 59.5 40" fill="none" stroke="#77716a" stroke-width="1.4" stroke-linecap="round"/>
-            <path d="M33 59 Q40 64 47 58" fill="none" stroke="#77716a" stroke-width="1.2" stroke-linecap="round"/>
 
             <path d="M11 57 Q40 72 69 57" fill="none" stroke="#f8fbfc" stroke-width="4" stroke-linecap="round"/>
             <path d="M14 61 Q40 72 66 61" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
