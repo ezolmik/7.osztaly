@@ -683,7 +683,7 @@
         <h2 id="intro-title">Keresd meg Hope-ot!</h2>
         <p>A Skibidik közül csak egyikük Hope.</p>
         <ul class="known" aria-label="A feladvány ismert adatai">
-          <li><span aria-hidden="true">🧩</span><span><strong>Típusfigyelő</strong> ismeri Hope típusát.</span></li>
+          <li><span aria-hidden="true">🔍</span><span><strong>Jellemvizsgáló</strong> ismeri Hope jellemhibáját.</span></li>
           <li><span aria-hidden="true">🦷</span><span><strong>Fogszámláló</strong> tudja, hány fekete foga van Hope-nak.</span></li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
@@ -710,21 +710,21 @@
 
       <div class="knowledge-strip" aria-label="Ki mit tud a feladványban?">
         <span class="knowledge-title">Ki mit tud?</span>
-        <span class="knowledge-item">🧩 <strong>Típusfigyelő:</strong> Hope típusát tudja.</span>
+        <span class="knowledge-item">🔍 <strong>Jellemvizsgáló:</strong> Hope jellemhibáját tudja.</span>
         <span class="knowledge-item">🦷 <strong>Fogszámláló:</strong> Hope fekete fogainak számát tudja.</span>
       </div>
 
       <div class="board-wrap">
         <div class="board-scroll">
-          <div class="matrix" id="matrix" role="grid" aria-label="Skibidi-típusok és fekete fogak számának mátrixa"></div>
+          <div class="matrix" id="matrix" role="grid" aria-label="Skibidi-jellemhibák és fekete fogak számának mátrixa"></div>
         </div>
       </div>
 
       <div class="dialogue" id="dialogue">
-        <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🧩</div>
+        <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🔍</div>
         <div class="speech">
           <span class="statement-number" id="statementNumber">1. kijelentés</span>
-          <small id="speaker">Típusfigyelő mondja Fogszámlálónak:</small>
+          <small id="speaker">Jellemvizsgáló mondja Fogszámlálónak:</small>
           <blockquote id="statement">„Tudom, hogy te nem tudod melyikük Hope!”</blockquote>
         </div>
         <div class="collector pandora-box" id="collectorBox" aria-label="Pandora szelencéje">
@@ -784,8 +784,8 @@
 
       const roundCopy = [
         {
-          speaker: "Típusfigyelő mondja Fogszámlálónak:",
-          icon: "🧩",
+          speaker: "Jellemvizsgáló mondja Fogszámlálónak:",
+          icon: "🔍",
           statement: "„Tudom, hogy te nem tudod melyikük Hope!”",
           success: "Helyes: az első szűrés kész."
         },
@@ -796,8 +796,8 @@
           success: "Helyes: a második szűrés kész."
         },
         {
-          speaker: "Típusfigyelő:",
-          icon: "🧩",
+          speaker: "Jellemvizsgáló:",
+          icon: "🔍",
           statement: "„Most már én is tudom!”",
           success: "Helyes: már csak Hope maradt."
         }
@@ -953,14 +953,14 @@
 
         const [hopeRowId, hopeTeeth] = hopeId.split("-");
         const hopeRow = rows.find(row => row.id === hopeRowId);
-        const removedTypes = [...new Set([...puzzleAnalysis.removals[0]].map(id => {
+        const removedFlaws = [...new Set([...puzzleAnalysis.removals[0]].map(id => {
           const rowId = id.split("-")[0];
           return rows.find(row => row.id === rowId).name;
         }))];
         const removedTeeth = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
 
         victoryText.textContent = `Hope a ${hopeRow.name} Skibidi, ${hopeTeeth} fekete foggal.`;
-        logicStep1.textContent = `Típusfigyelő kizárja: ${huList(removedTypes)}.`;
+        logicStep1.textContent = `Jellemvizsgáló kizárja: ${huList(removedFlaws)}.`;
         logicStep2.textContent = `Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
         logicStep3.textContent = `Egyetlen lehetőség marad: ${hopeRow.name}, ${hopeTeeth} fekete foggal.`;
       }
@@ -971,8 +971,8 @@
         const corner = document.createElement("div");
         corner.className = "corner";
         corner.setAttribute("role", "columnheader");
-        corner.setAttribute("aria-label", "Sorok: Skibidi-típus; oszlopok: fekete fogak száma");
-        corner.innerHTML = '<span class="column-label">Fekete<br>fog</span><span class="row-label">Típus</span>';
+        corner.setAttribute("aria-label", "Sorok: jellemhiba; oszlopok: fekete fogak száma");
+        corner.innerHTML = '<span class="column-label">Fekete<br>fog</span><span class="row-label">Jellem-<br>hiba</span>';
         matrix.appendChild(corner);
 
         for (let teeth = 1; teeth <= 6; teeth += 1) {
@@ -1128,7 +1128,7 @@
         if (!sameSet(selected, expected)) {
           markWrong();
           if (roundIndex === 0 && sameSet(selected, initialSingletons)) {
-            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. Típusfigyelő egy teljes típust lát — vizsgáld meg a sorokat!", "error");
+            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló Hope jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
           } else {
             setFeedback("Ez a kijelölés még nem pontos. Kik nem lehetnek biztosan Hope?", "error");
           }
