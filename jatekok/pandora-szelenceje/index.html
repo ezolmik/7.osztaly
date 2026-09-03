@@ -573,7 +573,7 @@
       </div>
       <div class="intro-copy">
         <h2 id="intro-title">Keresd meg Hope-ot!</h2>
-        <p>A tíz Skibidi közül csak egyikük Hope.</p>
+        <p>A Skibidik közül csak egyikük Hope.</p>
         <ul class="known" aria-label="A feladvány ismert adatai">
           <li><span aria-hidden="true">🧩</span><span><strong>Típusfigyelő</strong> ismeri Hope típusát.</span></li>
           <li><span aria-hidden="true">👁️</span><span><strong>Szemszámláló</strong> tudja, hány szeme van Hope-nak.</span></li>
@@ -591,7 +591,7 @@
           <span class="step-dot" aria-hidden="true"></span>
           <strong id="stepNumber">1/3</strong>
         </div>
-        <button class="ghost" id="restartTop" type="button">Újrakezdés</button>
+        <button class="ghost" id="restartTop" type="button">Új pálya</button>
       </div>
 
       <div class="dialogue">
@@ -625,16 +625,16 @@
       <section class="victory" id="victory" aria-labelledby="victory-title" hidden>
         <div class="victory-mark" aria-hidden="true">✨</div>
         <h2 id="victory-title">Megtaláltad Hope-ot!</h2>
-        <p>Hope a hatszemű Lusta Skibidi.</p>
+        <p id="victoryText"></p>
         <details>
           <summary>A logika három sorban</summary>
           <ol>
-            <li>Típusfigyelő kijelentése kizárja a Haragos és Kapzsi sort.</li>
-            <li>Szemszámláló kijelentése kizárja az egyszeműeket.</li>
-            <li>A Falánk sorban kettő maradna, a Lusta sorban csak egy.</li>
+            <li id="logicStep1"></li>
+            <li id="logicStep2"></li>
+            <li id="logicStep3"></li>
           </ol>
         </details>
-        <button class="secondary" id="restartWin" type="button">Játék újra</button>
+        <button class="secondary" id="restartWin" type="button">Új pálya</button>
       </section>
     </section>
   </main>
@@ -646,41 +646,53 @@
       "use strict";
 
       const rows = [
-        { id: "haragos", name: "Haragos", color: "#ef5350", cells: [2, 3, 6] },
-        { id: "kapzsi", name: "Kapzsi", color: "#42c784", cells: [4, 5] },
-        { id: "lusta", name: "Lusta", color: "#5aa7f5", cells: [1, 6] },
-        { id: "falank", name: "Falánk", color: "#f4c542", cells: [1, 2, 4] }
+        { id: "haragos", name: "Haragos", color: "#ef5350" },
+        { id: "kapzsi", name: "Kapzsi", color: "#42c784" },
+        { id: "lusta", name: "Lusta", color: "#5aa7f5" },
+        { id: "falank", name: "Falánk", color: "#f4c542" }
       ];
 
-      const rounds = [
+      const basePatterns = [
+        ["011001", "000110", "100001", "110100"],
+        ["100110", "011000", "000110", "111001"],
+        ["111000", "001111", "001101", "011000"],
+        ["100101", "100010", "111011", "110001"],
+        ["101000", "001111", "001110", "111110"],
+        ["001110", "000101", "101111", "011111"]
+      ].map(pattern => pattern.map(line => [...line].map(Number)));
+
+      const roundCopy = [
         {
           speaker: "Típusfigyelő mondja Szemszámlálónak:",
           icon: "🧩",
           statement: "„Tudom, hogy te nem tudod!”",
-          expected: ["haragos-2", "haragos-3", "haragos-6", "kapzsi-4", "kapzsi-5"],
-          success: "Helyes: a Haragos és Kapzsi sor kiesik."
+          success: "Helyes: az első szűrés kész."
         },
         {
           speaker: "Szemszámláló:",
           icon: "👁️",
           statement: "„Most már tudom!”",
-          expected: ["lusta-1", "falank-1"],
-          success: "Helyes: az egyszeműek kiesnek."
+          success: "Helyes: a második szűrés kész."
         },
         {
           speaker: "Típusfigyelő:",
           icon: "🧩",
           statement: "„Most már én is tudom!”",
-          expected: ["falank-2", "falank-4"],
-          success: "Helyes: a Falánkok kiesnek."
+          success: "Helyes: már csak Hope maradt."
         }
       ];
 
-      const allIds = rows.flatMap(row => row.cells.map(eyes => `${row.id}-${eyes}`));
-      let active = new Set(allIds);
+      let puzzleMatrix = [];
+      let rounds = [];
+      let allIds = [];
+      let active = new Set();
       let selected = new Set();
       let roundIndex = 0;
       let busy = false;
+      let hopeId = "";
+      let initialSingletons = new Set();
+      let puzzleAnalysis = null;
+      let previousSignature = "";
 
       const matrix = document.getElementById("matrix");
       const intro = document.getElementById("intro");
@@ -697,6 +709,10 @@
       const stepNumber = document.getElementById("stepNumber");
       const actionbar = document.getElementById("actionbar");
       const victory = document.getElementById("victory");
+      const victoryText = document.getElementById("victoryText");
+      const logicStep1 = document.getElementById("logicStep1");
+      const logicStep2 = document.getElementById("logicStep2");
+      const logicStep3 = document.getElementById("logicStep3");
       const effects = document.getElementById("effects");
 
       function eyePositions(count) {
@@ -729,6 +745,106 @@
           </svg>`;
       }
 
+      function shuffled(values) {
+        const result = [...values];
+        for (let i = result.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result;
+      }
+
+      function difference(left, right) {
+        return new Set([...left].filter(value => !right.has(value)));
+      }
+
+      function analyzeMatrix(candidate) {
+        const S0 = new Set();
+        candidate.forEach((row, rowIndex) => row.forEach((value, columnIndex) => {
+          if (value) S0.add(`${rows[rowIndex].id}-${columnIndex + 1}`);
+        }));
+
+        const initialColumnCounts = Array(6).fill(0);
+        S0.forEach(id => { initialColumnCounts[Number(id.split("-")[1]) - 1] += 1; });
+
+        const safeRows = new Set();
+        candidate.forEach((row, rowIndex) => {
+          const safe = row.every((value, columnIndex) => !value || initialColumnCounts[columnIndex] > 1);
+          if (safe) safeRows.add(rows[rowIndex].id);
+        });
+
+        const S1 = new Set([...S0].filter(id => safeRows.has(id.split("-")[0])));
+        const survivingColumnCounts = Array(6).fill(0);
+        S1.forEach(id => { survivingColumnCounts[Number(id.split("-")[1]) - 1] += 1; });
+
+        const S2 = new Set([...S1].filter(id => survivingColumnCounts[Number(id.split("-")[1]) - 1] === 1));
+        const survivingRowCounts = new Map(rows.map(row => [row.id, 0]));
+        S2.forEach(id => {
+          const rowId = id.split("-")[0];
+          survivingRowCounts.set(rowId, survivingRowCounts.get(rowId) + 1);
+        });
+
+        const S3 = new Set([...S2].filter(id => survivingRowCounts.get(id.split("-")[0]) === 1));
+        if (S3.size !== 1 || !(S0.size > S1.size && S1.size > S2.size && S2.size > S3.size)) {
+          throw new Error("Érvénytelen alapmátrix");
+        }
+
+        return {
+          states: [S0, S1, S2, S3],
+          removals: [difference(S0, S1), difference(S1, S2), difference(S2, S3)],
+          hopeId: [...S3][0],
+          initialSingletons: new Set([...S0].filter(id => initialColumnCounts[Number(id.split("-")[1]) - 1] === 1))
+        };
+      }
+
+      function generatePuzzle() {
+        let candidate;
+        let signature;
+        let attempts = 0;
+        do {
+          const base = basePatterns[Math.floor(Math.random() * basePatterns.length)];
+          const rowOrder = shuffled([0, 1, 2, 3]);
+          const columnOrder = shuffled([0, 1, 2, 3, 4, 5]);
+          candidate = rowOrder.map(rowIndex => columnOrder.map(columnIndex => base[rowIndex][columnIndex]));
+          signature = candidate.map(row => row.join("")).join("/");
+          attempts += 1;
+        } while (signature === previousSignature && attempts < 20);
+        previousSignature = signature;
+        return candidate;
+      }
+
+      function huList(values) {
+        if (values.length < 2) return values[0] || "";
+        return `${values.slice(0, -1).join(", ")} és ${values[values.length - 1]}`;
+      }
+
+      function preparePuzzle() {
+        puzzleMatrix = generatePuzzle();
+        puzzleAnalysis = analyzeMatrix(puzzleMatrix);
+        allIds = [...puzzleAnalysis.states[0]];
+        active = new Set(allIds);
+        selected = new Set();
+        hopeId = puzzleAnalysis.hopeId;
+        initialSingletons = puzzleAnalysis.initialSingletons;
+        rounds = roundCopy.map((copy, index) => ({
+          ...copy,
+          expected: [...puzzleAnalysis.removals[index]]
+        }));
+
+        const [hopeRowId, hopeEyes] = hopeId.split("-");
+        const hopeRow = rows.find(row => row.id === hopeRowId);
+        const removedTypes = [...new Set([...puzzleAnalysis.removals[0]].map(id => {
+          const rowId = id.split("-")[0];
+          return rows.find(row => row.id === rowId).name;
+        }))];
+        const removedEyes = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
+
+        victoryText.textContent = `Hope a ${hopeEyes} szemű ${hopeRow.name} Skibidi.`;
+        logicStep1.textContent = `Típusfigyelő kizárja: ${huList(removedTypes)}.`;
+        logicStep2.textContent = `Szemszámláló kizárja ezeket a szemszámokat: ${huList(removedEyes)}.`;
+        logicStep3.textContent = `Egyetlen lehetőség marad: ${hopeEyes} szemű ${hopeRow.name}.`;
+      }
+
       function buildMatrix() {
         matrix.innerHTML = "";
 
@@ -751,7 +867,7 @@
           matrix.appendChild(button);
         }
 
-        rows.forEach(row => {
+        rows.forEach((row, rowIndex) => {
           const rowButton = document.createElement("button");
           rowButton.type = "button";
           rowButton.className = `row-head ${row.id}`;
@@ -764,7 +880,7 @@
           matrix.appendChild(rowButton);
 
           for (let eyes = 1; eyes <= 6; eyes += 1) {
-            if (!row.cells.includes(eyes)) {
+            if (!puzzleMatrix[rowIndex][eyes - 1]) {
               const empty = document.createElement("div");
               empty.className = "cell empty";
               empty.setAttribute("role", "gridcell");
@@ -888,9 +1004,8 @@
         const expected = new Set(rounds[roundIndex].expected);
         if (!sameSet(selected, expected)) {
           markWrong();
-          const firstTrap = new Set(["haragos-3", "kapzsi-5"]);
-          if (roundIndex === 0 && sameSet(selected, firstTrap)) {
-            setFeedback("Csak a 3 és 5 szeműeket jelölted. Típusfigyelő egy teljes típust lát — vizsgáld meg a sorokat!", "error");
+          if (roundIndex === 0 && sameSet(selected, initialSingletons)) {
+            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. Típusfigyelő egy teljes típust lát — vizsgáld meg a sorokat!", "error");
           } else {
             setFeedback("Ez a kijelölés még nem pontos. Kik nem lehetnek biztosan Hope?", "error");
           }
@@ -952,37 +1067,35 @@
         speaker.textContent = "Pandora:";
         speakerAvatar.textContent = "✨";
         statement.textContent = "„Megtaláltam Hope-ot!”";
-        const hope = document.querySelector('[data-id="lusta-6"]');
+        const hope = document.querySelector(`[data-id="${hopeId}"]`);
         if (hope) {
+          const [rowId, eyes] = hopeId.split("-");
+          const row = rows.find(item => item.id === rowId);
           hope.classList.add("hope");
-          hope.setAttribute("aria-label", "Hope, a 6 szemű Lusta Skibidi");
+          hope.setAttribute("aria-label", `Hope, a ${eyes} szemű ${row.name} Skibidi`);
         }
         setFeedback("");
         victory.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
       }
 
       function resetGame() {
-        active = new Set(allIds);
-        selected = new Set();
+        preparePuzzle();
         roundIndex = 0;
         busy = false;
         collect.disabled = false;
         actionbar.hidden = false;
         instruction.hidden = false;
         victory.hidden = true;
-        document.querySelectorAll("button.cell[data-id]").forEach(cell => {
-          cell.disabled = false;
-          cell.classList.remove("gone", "selected", "wrong", "hope");
-          cell.setAttribute("aria-pressed", "false");
-          const row = rows.find(item => item.id === cell.dataset.row);
-          cell.setAttribute("aria-label", `${cell.dataset.eye} szemű ${row.name} Skibidi`);
-        });
+        const details = victory.querySelector("details");
+        if (details) details.open = false;
+        buildMatrix();
         renderSelection();
         updateProgress();
         updateRound();
         game.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
+      preparePuzzle();
       buildMatrix();
       renderSelection();
 
