@@ -202,75 +202,54 @@
     .ghost:hover { color: var(--ink); background: rgba(255, 255, 255, .07); }
 
     .box-scene {
-      display: grid;
-      min-height: 270px;
-      place-items: center;
-      perspective: 800px;
-    }
-
-    .pandora-box {
       position: relative;
-      width: 190px;
-      height: 138px;
-      filter: drop-shadow(0 28px 23px rgba(0, 0, 0, .42));
+      display: grid;
+      min-height: 360px;
+      place-items: center;
+      isolation: isolate;
     }
 
-    .box-body,
-    .box-lid {
+    .pandora-portrait {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: min(100%, 290px);
+      max-height: 380px;
+      object-fit: contain;
+      filter: drop-shadow(0 24px 19px rgba(0, 0, 0, .42));
+      transform-origin: center 68%;
+      transition: filter .65s, transform .65s cubic-bezier(.2, .85, .3, 1.15);
+    }
+
+    .pandora-halo {
       position: absolute;
-      left: 0;
-      width: 100%;
-      border: 5px solid #5b3516;
-      background:
-        linear-gradient(90deg, transparent 0 14%, rgba(255, 209, 102, .2) 14% 18%, transparent 18% 82%, rgba(255, 209, 102, .2) 82% 86%, transparent 86%),
-        linear-gradient(#8d5728, #593214);
-    }
-
-    .box-body {
-      bottom: 0;
-      height: 105px;
-      border-radius: 8px 8px 18px 18px;
-      box-shadow: inset 0 0 0 4px rgba(255, 209, 102, .28);
-    }
-
-    .box-body::before {
-      position: absolute;
-      top: 28px;
       left: 50%;
-      width: 38px;
-      height: 45px;
-      border: 4px solid #7b4a16;
-      border-radius: 50% 50% 7px 7px;
-      background: var(--gold);
-      box-shadow: 0 4px 0 #8f5e1b;
-      content: "";
-      transform: translateX(-50%);
-    }
-
-    .box-lid {
-      top: 0;
-      height: 48px;
-      border-radius: 22px 22px 7px 7px;
-      box-shadow: inset 0 0 0 4px rgba(255, 209, 102, .24);
-      transform-origin: left bottom;
-      transition: transform .65s cubic-bezier(.2, .85, .3, 1.15);
-    }
-
-    .box-glow {
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      width: 115px;
-      height: 115px;
+      top: 62%;
+      z-index: 2;
+      width: 170px;
+      height: 170px;
       border-radius: 50%;
       opacity: 0;
-      background: radial-gradient(circle, rgba(255, 247, 174, .9), rgba(112, 225, 232, .28) 45%, transparent 70%);
-      transform: translate(-50%, -35%) scale(.25);
-      transition: opacity .5s, transform .65s;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(255, 255, 221, 1) 0 8%, rgba(255, 231, 126, .92) 18%, rgba(255, 180, 61, .58) 38%, rgba(255, 132, 24, .18) 58%, transparent 72%);
+      filter: blur(4px);
+      mix-blend-mode: screen;
+      transform: translate(-50%, -50%) scale(.3);
     }
 
-    .intro.opening .box-lid { transform: rotateY(-8deg) rotateZ(-48deg) translate(-18px, -14px); }
-    .intro.opening .box-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.65); }
+    .intro.opening .pandora-portrait {
+      filter: drop-shadow(0 28px 25px rgba(0, 0, 0, .38)) brightness(1.08);
+      transform: translateY(-5px) scale(1.035);
+    }
+
+    .intro.opening .pandora-halo { animation: pandora-flash 1s ease-out both; }
+
+    @keyframes pandora-flash {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+      34% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+      68% { opacity: .92; transform: translate(-50%, -50%) scale(1.22); }
+      100% { opacity: .65; transform: translate(-50%, -50%) scale(1.35); }
+    }
 
     .game { padding: clamp(18px, 3.4vw, 34px); }
 
@@ -711,7 +690,9 @@
     @media (max-width: 700px) {
       main { width: min(100% - 18px, 520px); padding-top: 24px; }
       .intro { grid-template-columns: 1fr; text-align: center; }
-      .box-scene { min-height: 210px; order: -1; }
+      .box-scene { min-height: 300px; order: -1; }
+      .pandora-portrait { width: min(82%, 240px); max-height: 300px; }
+      .pandora-halo { width: 138px; height: 138px; }
       .known { text-align: left; }
       .known li { grid-template-columns: 84px minmax(0, 1fr); min-height: 98px; }
       .character-portrait { width: 84px; height: 84px; }
@@ -746,12 +727,9 @@
     </header>
 
     <section class="intro" id="intro" aria-labelledby="intro-title">
-      <div class="box-scene" aria-hidden="true">
-        <div class="pandora-box">
-          <div class="box-glow"></div>
-          <div class="box-body"></div>
-          <div class="box-lid"></div>
-        </div>
+      <div class="box-scene pandora-scene">
+        <div class="pandora-halo" aria-hidden="true"></div>
+        <img class="pandora-portrait" src="assets/pandora.png" alt="Pandora a lezárt szelencével">
       </div>
       <div class="intro-copy">
         <h2 id="intro-title">Ki a legnagyobb bajkeverő?</h2>
@@ -1326,7 +1304,7 @@
       start.addEventListener("click", () => {
         start.disabled = true;
         intro.classList.add("opening");
-        const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 20 : 680;
+        const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 20 : 1050;
         window.setTimeout(() => {
           intro.hidden = true;
           game.hidden = false;
