@@ -116,24 +116,53 @@
 
     .known {
       display: grid;
-      gap: 10px;
+      gap: 12px;
       margin: 0 0 24px;
       padding: 0;
       list-style: none;
     }
 
     .known li {
-      display: flex;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr);
+      gap: 12px;
       align-items: center;
-      padding: 11px 13px;
+      min-height: 108px;
+      overflow: hidden;
+      padding: 7px 13px 7px 5px;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, .035);
+      border-radius: 16px;
+      background: linear-gradient(110deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .025));
       line-height: 1.4;
     }
 
-    .known strong { color: var(--gold); }
+    .character-portrait {
+      width: 94px;
+      height: 94px;
+      align-self: end;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .34));
+    }
+
+    .character-copy { min-width: 0; }
+
+    .character-copy h3 {
+      margin: 0 0 5px;
+      color: var(--gold);
+      font: 850 1rem/1.15 Georgia, serif;
+    }
+
+    .character-copy h3 span {
+      display: block;
+      margin-top: 3px;
+      color: var(--cyan);
+      font: 800 .7rem/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .character-copy p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.38; }
 
     .primary,
     .secondary,
@@ -684,6 +713,8 @@
       .intro { grid-template-columns: 1fr; text-align: center; }
       .box-scene { min-height: 210px; order: -1; }
       .known { text-align: left; }
+      .known li { grid-template-columns: 84px minmax(0, 1fr); min-height: 98px; }
+      .character-portrait { width: 84px; height: 84px; }
       .dialogue { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
       .speaker-avatar { width: 46px; height: 46px; border-radius: 14px; font-size: 1.45rem; }
       .collector { grid-column: 1 / -1; width: 54px; height: 46px; margin-top: -5px; }
@@ -725,8 +756,20 @@
       <div class="intro-copy">
         <h2 id="intro-title">Ki a legnagyobb bajkeverő?</h2>
         <ul class="known" aria-label="A feladvány ismert adatai">
-          <li><span aria-hidden="true">🔍</span><span>A <strong>Jellemvizsgáló</strong> ismeri a jellemhibáját, de nem tudja, hány foga fekete.</span></li>
-          <li><span aria-hidden="true">🦷</span><span>A <strong>Fogszámláló</strong> tudja, hány foga fekete, de nem ismeri a jellemhibáját.</span></li>
+          <li>
+            <img class="character-portrait" src="assets/scary-t.png" alt="">
+            <div class="character-copy">
+              <h3>Scary T.<span>A Jellemvizsgáló</span></h3>
+              <p>Ismeri a jellemhibáját, de nem tudja, hány foga fekete.</p>
+            </div>
+          </li>
+          <li>
+            <img class="character-portrait" src="assets/scary-d.png" alt="">
+            <div class="character-copy">
+              <h3>Scary D.<span>A Fogszámláló</span></h3>
+              <p>Tudja, hány foga fekete, de nem ismeri a jellemhibáját.</p>
+            </div>
+          </li>
         </ul>
         <button class="primary" id="start" type="button">Nyisd ki a szelencét!</button>
       </div>
@@ -747,16 +790,13 @@
       <div class="game-goal" aria-label="A játék célja">
         <span class="goal-label">Cél</span>
         <strong>Találd meg a legnagyobb bajkeverőt!</strong>
-        <p>
-          -> Három kijelentést kapsz három lépésben. <br/>
-          -> Dobd a kukába azokat a Skibidiket, akiket az aktuális kijelentés kizár!  <br/>
-          -> Csak ezután kapod meg a következő kijelentést.</p>
+        <p>Három kijelentést kapsz három lépésben. Dobd a kukába azokat a Skibidiket, akiket az aktuális kijelentés kizár — csak ezután kapod meg a következő kijelentést.</p>
       </div>
 
       <div class="knowledge-strip" aria-label="Ki mit tud a feladványban?">
         <span class="knowledge-title">Ki mit tud?</span>
-        <span class="knowledge-item">🔍 <strong>A Jellemvizsgáló</strong> ismeri a keresett Skibidi jellemhibáját.</span>
-        <span class="knowledge-item">🦷 <strong>A Fogszámláló</strong> tudja, hány fekete foga van a keresett Skibidinek.</span>
+        <span class="knowledge-item">🔍 <strong>Scary T. – Jellemvizsgáló:</strong> ismeri a keresett Skibidi jellemhibáját.</span>
+        <span class="knowledge-item">🦷 <strong>Scary D. – Fogszámláló:</strong> tudja, hány fekete foga van a keresett Skibidinek.</span>
       </div>
 
       <div class="board-wrap">
@@ -769,7 +809,7 @@
         <div class="speaker-avatar" id="speakerAvatar" aria-hidden="true">🔍</div>
         <div class="speech">
           <span class="statement-number" id="statementNumber">1. kijelentés</span>
-          <small id="speaker">A Jellemvizsgáló mondja a Fogszámlálónak:</small>
+          <small id="speaker">Scary T. mondja Scary D.-nek:</small>
           <blockquote id="statement">„Tudom, hogy te nem tudod, melyikük az!”</blockquote>
         </div>
         <div class="collector" id="collectorBox" role="img" aria-label="A kizárt Skibidik kukája">
@@ -829,19 +869,19 @@
 
       const roundCopy = [
         {
-          speaker: "A Jellemvizsgáló mondja a Fogszámlálónak:",
+          speaker: "Scary T. mondja Scary D.-nek:",
           icon: "🔍",
           statement: "„Tudom, hogy te nem tudod, melyikük az!”",
           success: "Helyes: az első szűrés kész."
         },
         {
-          speaker: "A Fogszámláló:",
+          speaker: "Scary D.:",
           icon: "🦷",
           statement: "„Most már tudom!”",
           success: "Helyes: a második szűrés kész."
         },
         {
-          speaker: "A Jellemvizsgáló:",
+          speaker: "Scary T.:",
           icon: "🔍",
           statement: "„Most már én is tudom!”",
           success: "Helyes: már csak egy Skibidi maradt."
@@ -1005,8 +1045,8 @@
         const removedTeeth = [...new Set([...puzzleAnalysis.removals[1]].map(id => Number(id.split("-")[1])))].sort((a, b) => a - b);
 
         victoryText.textContent = `A legnagyobb bajkeverő a ${troublemakerRow.name} Skibidi, ${troublemakerTeeth} fekete foggal.`;
-        logicStep1.textContent = `A Jellemvizsgáló kizárja: ${huList(removedFlaws)}.`;
-        logicStep2.textContent = `A Fogszámláló kizárja: ${huList(removedTeeth)} fekete fog.`;
+        logicStep1.textContent = `Scary T. kizárja: ${huList(removedFlaws)}.`;
+        logicStep2.textContent = `Scary D. kizárja: ${huList(removedTeeth)} fekete fog.`;
         logicStep3.textContent = `Egyetlen lehetőség marad: ${troublemakerRow.name}, ${troublemakerTeeth} fekete foggal.`;
       }
 
@@ -1181,7 +1221,7 @@
         if (!sameSet(selected, expected)) {
           markWrong();
           if (roundIndex === 0 && sameSet(selected, initialSingletons)) {
-            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. A Jellemvizsgáló a keresett Skibidi jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
+            setFeedback("Csak az elsőre felismerhető Skibidiket jelölted. Scary T. a keresett Skibidi jellemhibáját ismeri — ezért teljes sorokban gondolkodj!", "error");
           } else {
             setFeedback("Ez a kijelölés még nem pontos. Kiket zár ki biztosan a kijelentés?", "error");
           }
