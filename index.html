@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="hu">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,7 +19,9 @@
       --focus: #f4c95d;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -128,7 +131,9 @@
       line-height: 1.55;
     }
 
-    footer strong { color: #697378; }
+    footer strong {
+      color: #697378;
+    }
 
     @media (max-width: 620px) {
       main {
@@ -146,20 +151,26 @@
         padding: 20px;
       }
 
-      .icon { margin-bottom: 18px; }
+      .icon {
+        margin-bottom: 18px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .card { transition: none; }
+      .card {
+        transition: none;
+      }
     }
   </style>
 </head>
+
 <body>
   <main>
     <header>
       <p class="eyebrow">7. osztály</p>
       <h1>Matematikai játékok</h1>
-      <p class="lead">Logikai és stratégiai fejtörők, amelyeket telefonon és számítógépen is kipróbálhatsz. Válassz egy játékot!</p>
+      <p class="lead">Logikai és stratégiai fejtörők, amelyeket telefonon és számítógépen is kipróbálhatsz. Válassz egy
+        játékot!</p>
     </header>
 
     <section class="games" aria-label="Játékok">
@@ -167,6 +178,13 @@
         <span class="icon" aria-hidden="true">📦</span>
         <h2>Pandora szelencéje</h2>
         <p>Három kijelentés, két megfigyelő és rengeteg Skibidi. Melyik lehet a legnagyobb bajkeverő?</p>
+        <span class="go">Játék indítása →</span>
+      </a>
+      <a class="card" href="jatekok/szorgi-morgi/index.html">
+        <span class="icon" aria-hidden="true">🎭</span>
+        <h2>Szorgi vagy morgi?</h2>
+        <p>A szorgik mindig igazat mondanak, a morgik mindig hazudnak. Kövesd a matematikai nyomokat, és leplezd le
+          őket!</p>
         <span class="go">Játék indítása →</span>
       </a>
     </section>
@@ -177,4 +195,5 @@
     </footer>
   </main>
 </body>
+
 </html>
