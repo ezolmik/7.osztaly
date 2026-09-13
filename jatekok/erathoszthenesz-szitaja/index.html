@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <title>Eratoszthenész szitája</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink:#20292c;
+      --muted:#687579;
+      --paper:#fffefa;
+      --bg:#f7f5ef;
+      --line:#dfddd5;
+      --accent:#176d62;
+      --accent-soft:#e5f3ef;
+      --gold:#e5ad35;
+      --gold-soft:#fff3ca;
+      --red:#ae493d;
+      --red-soft:#fff0eb;
+      --blue:#397ca2;
+      --blue-soft:#e9f3f8;
+      --shadow:0 14px 38px rgba(36,43,43,.08);
+    }
+
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body {
+      margin:0;
+      min-height:100vh;
+      color:var(--ink);
+      background:radial-gradient(circle at 8% 0%,rgba(229,173,53,.16),transparent 25rem),var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    }
+    button,input { font:inherit; }
+    button { touch-action:manipulation; }
+    main { width:min(940px,calc(100% - 28px)); margin:auto; padding:28px 0 58px; }
+    .back { display:inline-flex; margin-bottom:26px; color:var(--accent); font-weight:800; text-decoration:none; }
+    .hero { max-width:760px; margin-bottom:25px; }
+    .eyebrow { margin:0 0 8px; color:var(--accent); font-size:.76rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0 0 10px; font:850 clamp(2.45rem,8vw,4.9rem)/.96 Georgia,serif; letter-spacing:-.05em; }
+    .lead { margin:0; color:var(--muted); font-size:clamp(1rem,2.4vw,1.14rem); line-height:1.55; }
+    .card { border:1px solid var(--line); border-radius:22px; background:rgba(255,254,250,.98); box-shadow:var(--shadow); }
+    button {
+      min-height:44px;
+      border:1px solid var(--line);
+      border-radius:13px;
+      padding:10px 15px;
+      color:var(--ink);
+      background:white;
+      font-weight:820;
+      cursor:pointer;
+      transition:transform .16s ease,border-color .16s ease,background .16s ease;
+    }
+    button:hover:not(:disabled) { transform:translateY(-2px); border-color:#a8c9c0; }
+    button:focus-visible,input:focus-visible { outline:4px solid rgba(229,173,53,.5); outline-offset:3px; }
+    button:disabled { cursor:default; opacity:.58; }
+    button.primary { border-color:var(--accent); color:white; background:var(--accent); }
+    button.gold { border-color:#d29b29; color:#493000; background:#ffd970; }
+    button.ghost { border-color:transparent; background:transparent; }
+    .small { margin:0; color:var(--muted); line-height:1.52; }
+
+    .setup { padding:clamp(22px,5vw,38px); }
+    .setup h2,.finish h2,.quiz-card h2 { margin:0 0 8px; font:830 clamp(1.45rem,4vw,2rem)/1.15 Georgia,serif; }
+    .limit-box { display:grid; grid-template-columns:minmax(0,1fr) 110px; gap:12px; align-items:end; margin:24px 0 15px; }
+    .field { display:grid; gap:7px; }
+    .field span { color:var(--muted); font-size:.82rem; font-weight:800; }
+    input[type="range"] { width:100%; accent-color:var(--accent); }
+    input[type="number"] { width:100%; min-height:48px; border:1px solid var(--line); border-radius:12px; padding:9px 11px; color:var(--ink); background:white; font-weight:800; }
+    .presets,.finish-actions,.quiz-actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .presets { margin-bottom:20px; }
+    .setup-error,.feedback { min-height:22px; margin:11px 0 0; color:var(--red); font-weight:780; line-height:1.45; }
+    .feedback.good { color:var(--accent); }
+
+    .game { display:grid; gap:14px; }
+    .game-top { padding:13px 16px; }
+    .game-top p { margin:0; color:var(--muted); font-size:.88rem; }
+    .game-top strong { color:var(--accent); }
+    .instruction { padding:17px 20px; border-color:#b7d7cf; background:var(--accent-soft); }
+    .instruction-label { display:block; margin-bottom:4px; color:var(--accent); font-size:.73rem; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
+    .instruction p { margin:0; font-weight:820; line-height:1.45; }
+
+    .board-card { padding:clamp(15px,3vw,24px); overflow:hidden; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:16px; color:var(--muted); font-size:.78rem; }
+    .legend span { display:inline-flex; gap:6px; align-items:center; }
+    .dot { width:12px; height:12px; border-radius:4px; background:white; border:1px solid var(--line); }
+    .dot.sieve { border-color:#c59020; background:var(--gold-soft); }
+    .dot.prime { border-color:#7ab8a4; background:var(--accent-soft); }
+    .dot.out { background:#e8e6df; }
+    .number-grid { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:7px; }
+    .number {
+      position:relative;
+      display:grid;
+      min-width:0;
+      aspect-ratio:1;
+      min-height:0;
+      place-items:center;
+      border-radius:10px;
+      padding:0;
+      font-size:clamp(.76rem,2vw,.96rem);
+      font-weight:850;
+    }
+    .number.one { color:#9a9a94; background:#efeee9; }
+    .number.candidate { background:white; }
+    .number.sieve { border-color:#c18c1d; color:#5a3b00; background:var(--gold-soft); box-shadow:inset 0 0 0 2px rgba(229,173,53,.2); opacity:1; }
+    .number.prime { border-color:#73b29e; color:#115c47; background:var(--accent-soft); opacity:1; }
+    .number.composite { border-color:#ebe9e2; color:#b0aea8; background:#f0efe9; text-decoration:line-through; opacity:.58; }
+    .number.new-out { animation:fall-out .48s ease both; animation-delay:var(--delay); }
+    .number.wrong-pick { animation:shake .34s ease; border-color:var(--red); }
+    @keyframes fall-out {
+      0% { transform:scale(1); color:var(--ink); opacity:1; }
+      45% { transform:scale(.82) rotate(-4deg); color:var(--red); }
+      100% { transform:scale(1); opacity:.58; }
+    }
+    @keyframes shake {
+      0%,100% { transform:translateX(0); }
+      30% { transform:translateX(-5px); }
+      60% { transform:translateX(5px); }
+    }
+
+    .prime-tray { padding:18px 20px; }
+    .prime-tray h2 { margin:0 0 4px; font:820 1.25rem Georgia,serif; }
+    .prime-list { display:flex; flex-wrap:wrap; gap:7px; min-height:35px; margin-top:13px; }
+    .prime-chip { display:grid; min-width:35px; height:35px; place-items:center; border:1px solid #8dbdac; border-radius:10px; color:#125d48; background:var(--accent-soft); font-weight:850; }
+    .prime-empty { color:var(--muted); font-size:.88rem; }
+
+    .stop-card,.finish { padding:clamp(22px,5vw,38px); text-align:center; }
+    .stop-card h2 { margin:0 0 8px; font:830 clamp(1.35rem,4vw,1.75rem)/1.2 Georgia,serif; }
+    .stop-actions,.finish-actions { justify-content:center; margin-top:17px; }
+
+    .quiz-builder { margin-top:24px; padding-top:22px; border-top:1px solid var(--line); text-align:left; }
+    .quiz-builder h3 { margin:0 0 5px; font:820 1.22rem Georgia,serif; }
+    .builder-grid { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:18px; margin-top:17px; }
+    .builder-group { min-width:0; border:0; padding:0; }
+    .builder-group legend { margin-bottom:9px; padding:0; font-weight:850; }
+    .check-list,.radio-list { display:grid; gap:8px; }
+    .pick {
+      display:flex;
+      gap:9px;
+      align-items:flex-start;
+      min-height:44px;
+      padding:10px 11px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:white;
+      cursor:pointer;
+    }
+    .pick input { margin:3px 0 0; accent-color:var(--accent); }
+    .pick span { line-height:1.35; font-weight:760; }
+    .pick small { display:block; color:var(--muted); font-weight:500; }
+    .builder-error { min-height:22px; margin:10px 0 0; color:var(--red); font-weight:780; }
+    .quiz-actions { margin-top:17px; }
+
+    .quiz-card { padding:clamp(21px,5vw,36px); }
+    .quiz-status { display:flex; justify-content:space-between; gap:10px; margin-bottom:18px; color:var(--muted); font-size:.84rem; font-weight:800; }
+    .topic-badge { display:inline-flex; margin-bottom:9px; border-radius:999px; padding:5px 9px; color:var(--blue); background:var(--blue-soft); font-size:.74rem; font-weight:900; }
+    .quiz-prompt { margin:18px 0 12px; font-weight:850; line-height:1.5; }
+    .choices { display:grid; gap:9px; }
+    .choice { width:100%; text-align:left; }
+    .choice.selected { border-color:var(--blue); color:#1d6486; background:var(--blue-soft); }
+    .quiz-actions { justify-content:space-between; }
+
+    .finish-mark { display:grid; width:64px; height:64px; margin:0 auto 14px; place-items:center; border-radius:50%; color:white; background:var(--accent); font-size:1.8rem; font-weight:900; }
+    .result-score { width:min(500px,100%); margin:18px auto; padding:17px; border-radius:15px; color:#155d49; background:var(--accent-soft); font-size:1.15rem; line-height:1.5; }
+    .review { display:grid; gap:10px; width:min(680px,100%); margin:20px auto; text-align:left; }
+    .review-item { padding:14px 15px; border-radius:14px; line-height:1.48; }
+    .review-item.correct { color:#155d49; background:var(--accent-soft); }
+    .review-item.wrong { color:#7f372e; background:var(--red-soft); }
+    .review-item strong { display:block; margin-bottom:4px; }
+    footer { margin-top:25px; color:#879093; font-size:.82rem; line-height:1.5; }
+
+    @media (max-width:720px) {
+      .builder-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:620px) {
+      main { width:min(100% - 18px,480px); padding-top:18px; }
+      .back { margin-bottom:20px; }
+      .limit-box { grid-template-columns:1fr 90px; }
+      .number-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+      .number { border-radius:9px; font-size:.9rem; }
+      .quiz-actions { display:grid; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Vissza a játékokhoz</a>
+
+    <header class="hero">
+      <p class="eyebrow">7. osztály · prímszámok</p>
+      <h1>Eratoszthenész szitája</h1>
+      <p class="lead">Változtasd a prímszámokat szitává, ejtsd ki a többszöröseiket, és figyeld meg, mely számok maradnak fenn!</p>
+    </header>
+
+    <section id="setup" class="setup card">
+      <h2>Meddig szitáljunk?</h2>
+      <p id="setupSentence" class="small">Az 1-től 100-ig terjedő számok közül keressük meg a prímeket.</p>
+      <div class="limit-box">
+        <label class="field">
+          <span>Felső határ: 30–200</span>
+          <input id="limitRange" type="range" min="30" max="200" value="100">
+        </label>
+        <label class="field">
+          <span>Utolsó szám</span>
+          <input id="limitNumber" type="number" min="30" max="200" value="100" inputmode="numeric">
+        </label>
+      </div>
+      <div class="presets" aria-label="Gyors választás">
+        <button type="button" data-limit="50">50-ig</button>
+        <button type="button" data-limit="100">100-ig</button>
+        <button type="button" data-limit="150">150-ig</button>
+        <button type="button" data-limit="200">200-ig</button>
+      </div>
+      <button id="startButton" class="primary" type="button">Szitálás indítása</button>
+      <p id="setupError" class="setup-error" aria-live="polite"></p>
+    </section>
+
+    <section id="game" class="game" hidden>
+      <div class="game-top card">
+        <p>Határ: <strong id="limitLabel">100</strong> · Sziták: <strong id="sieveCount">0</strong> · Kiesett: <strong id="outCount">0</strong></p>
+      </div>
+      <section class="instruction card" aria-live="polite">
+        <span class="instruction-label">Most ezt keresd</span>
+        <p id="instructionText">Kattints a legkisebb megmaradt számra!</p>
+        <p id="gameFeedback" class="feedback"></p>
+      </section>
+      <section class="board-card card" aria-label="A szita számtáblája">
+        <div class="legend">
+          <span><i class="dot sieve"></i> szitává vált prím</span>
+          <span><i class="dot out"></i> összetett szám</span>
+          <span><i class="dot prime"></i> megtalált prím</span>
+        </div>
+        <div id="numberGrid" class="number-grid"></div>
+      </section>
+      <section class="prime-tray card">
+        <h2>Prímgyűjtemény</h2>
+        <p class="small">A biztosan felismert prímek ide kerülnek.</p>
+        <div id="primeList" class="prime-list"></div>
+      </section>
+      <section id="stopCard" class="stop-card card" hidden>
+        <h2 id="stopTitle"></h2>
+        <p id="stopText" class="small"></p>
+        <div class="stop-actions">
+          <button id="keepSieving" type="button">Igen, kell még szitálnunk</button>
+          <button id="finishSieving" class="primary" type="button">Nem, készen vagyunk</button>
+        </div>
+        <p id="stopFeedback" class="feedback" aria-live="polite"></p>
+      </section>
+      <section id="completeCard" class="finish card" hidden>
+        <span class="finish-mark" aria-hidden="true">✓</span>
+        <h2>A szita elkészült!</h2>
+        <p id="completeText" class="small"></p>
+
+        <div id="quizBuilder" class="quiz-builder">
+          <h3>Kérsz egy rövid kvízt?</h3>
+          <p class="small">Állítsd össze, miből és milyen szinten kérdezzünk!</p>
+          <div class="builder-grid">
+            <fieldset class="builder-group">
+              <legend>Témakörök</legend>
+              <div class="check-list">
+                <label class="pick"><input class="topic-input" type="checkbox" value="prime" checked><span>Prím vagy összetett?<small>Felismerés oszthatósági nyomokból</small></span></label>
+                <label class="pick"><input class="topic-input" type="checkbox" value="sieve" checked><span>A szita működése<small>Többszörösök, következő szita, megállás</small></span></label>
+                <label class="pick"><input class="topic-input" type="checkbox" value="factor" checked><span>Prímtényezős felbontás<small>Az összetett számok felépítése</small></span></label>
+              </div>
+            </fieldset>
+            <fieldset class="builder-group">
+              <legend>Gondolkodási szint</legend>
+              <div class="radio-list">
+                <label class="pick"><input type="radio" name="level" value="1"><span>1. Felismerés</span></label>
+                <label class="pick"><input type="radio" name="level" value="2" checked><span>2. Alkalmazás</span></label>
+                <label class="pick"><input type="radio" name="level" value="3"><span>3. Indoklás</span></label>
+              </div>
+            </fieldset>
+            <fieldset class="builder-group">
+              <legend>Kérdések száma</legend>
+              <div class="radio-list">
+                <label class="pick"><input type="radio" name="count" value="3" checked><span>3 kérdés</span></label>
+                <label class="pick"><input type="radio" name="count" value="5"><span>5 kérdés</span></label>
+                <label class="pick"><input type="radio" name="count" value="8"><span>8 kérdés</span></label>
+              </div>
+            </fieldset>
+          </div>
+          <p id="builderError" class="builder-error" aria-live="polite"></p>
+          <div class="quiz-actions">
+            <button id="startQuiz" class="gold" type="button">Kvíz indítása</button>
+            <button id="restartSame" type="button">Ugyanez a szita újra</button>
+            <a class="back" href="../../index.html">Kilépés</a>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="quiz" class="quiz-card card" hidden>
+      <div class="quiz-status">
+        <span id="quizProgress">1/3. kérdés</span>
+        <span id="quizLevel">2. szint</span>
+      </div>
+      <span id="quizTopic" class="topic-badge"></span>
+      <h2 id="quizTitle">Mini-kvíz</h2>
+      <p id="quizPrompt" class="quiz-prompt"></p>
+      <div id="quizChoices" class="choices"></div>
+      <p id="quizFeedback" class="feedback" aria-live="polite"></p>
+      <div class="quiz-actions">
+        <button id="quizBack" type="button">← Előző</button>
+        <button id="quizNext" class="primary" type="button">Következő →</button>
+        <button id="quizSubmit" class="primary" type="button" hidden>Kiértékelés</button>
+      </div>
+    </section>
+
+    <section id="quizResult" class="finish card" hidden>
+      <span class="finish-mark" aria-hidden="true">✓</span>
+      <h2>Kvízeredmény</h2>
+      <div id="resultScore" class="result-score"></div>
+      <div id="review" class="review"></div>
+      <div class="finish-actions">
+        <button id="anotherQuiz" class="gold" type="button">Másik kvíz</button>
+        <button id="newSieve" class="primary" type="button">Új szita</button>
+        <a class="back" href="../../index.html">Kilépés</a>
+      </div>
+    </section>
+
+    <footer>Az eljárást Eratoszthenész ókori görög matematikusról nevezték el.</footer>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+      const topicNames = {
+        prime: "Prím vagy összetett?",
+        sieve: "A szita működése",
+        factor: "Prímtényezős felbontás"
+      };
+      const levelNames = { 1: "Felismerés", 2: "Alkalmazás", 3: "Indoklás" };
+      const state = {
+        limit: 100,
+        marks: [],
+        sievePrimes: [],
+        completed: false,
+        readyToStop: false,
+        busy: false,
+        quizQuestions: [],
+        quizAnswers: [],
+        quizIndex: 0,
+        quizLevel: 2
+      };
+
+      function shuffled(items) {
+        const result = items.slice();
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const swap = Math.floor(Math.random() * (index + 1));
+          const temporary = result[index];
+          result[index] = result[swap];
+          result[swap] = temporary;
+        }
+        return result;
+      }
+
+      function randomItem(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function range(start, end) {
+        const result = [];
+        for (let value = start; value <= end; value += 1) result.push(value);
+        return result;
+      }
+
+      function isPrime(number) {
+        if (number < 2) return false;
+        for (let divisor = 2; divisor * divisor <= number; divisor += 1) {
+          if (number % divisor === 0) return false;
+        }
+        return true;
+      }
+
+      function primesUpTo(limit) {
+        return range(2, limit).filter(isPrime);
+      }
+
+      function smallestPrimeFactor(number) {
+        for (let divisor = 2; divisor * divisor <= number; divisor += 1) {
+          if (number % divisor === 0) return divisor;
+        }
+        return number;
+      }
+
+      function primeFactors(number) {
+        const factors = [];
+        let rest = number;
+        for (let divisor = 2; divisor * divisor <= rest; divisor += 1) {
+          while (rest % divisor === 0) {
+            factors.push(divisor);
+            rest /= divisor;
+          }
+        }
+        if (rest > 1) factors.push(rest);
+        return factors;
+      }
+
+      function superscript(power) {
+        const digits = { "0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶", "7":"⁷", "8":"⁸", "9":"⁹" };
+        return String(power).split("").map((digit) => digits[digit]).join("");
+      }
+
+      function factorText(number) {
+        const counts = {};
+        primeFactors(number).forEach((factor) => { counts[factor] = (counts[factor] || 0) + 1; });
+        return Object.keys(counts).map((factor) => {
+          const power = counts[factor];
+          return factor + (power > 1 ? superscript(power) : "");
+        }).join(" · ");
+      }
+
+      function makeQuestion(id, topic, level, prompt, correct, wrongs, explanation) {
+        const unique = [];
+        [correct].concat(wrongs).forEach((text) => {
+          if (!unique.includes(String(text))) unique.push(String(text));
+        });
+        if (unique.length < 3) return null;
+        return {
+          id: id,
+          topic: topic,
+          level: level,
+          prompt: prompt,
+          correct: String(correct),
+          options: shuffled(unique.slice(0, 3)),
+          explanation: explanation
+        };
+      }
+
+      function twoWrongNumbers(correct, candidates) {
+        return candidates.filter((number) => number > 0 && number !== correct).filter((number, index, list) => list.indexOf(number) === index).slice(0, 2);
+      }
+
+      function primeQuestionPool(level, limit) {
+        const primes = primesUpTo(Math.max(limit, 50));
+        const visiblePrimes = primes.filter((number) => number <= limit && number >= 5);
+        const composites = range(4, limit).filter((number) => !isPrime(number));
+        const pool = [];
+
+        if (level === 1) {
+          visiblePrimes.forEach((prime, index) => {
+            const wrongs = [composites[index % composites.length], composites[(index * 3 + 5) % composites.length]];
+            const question = makeQuestion("prime-find-" + prime + "-" + wrongs.join("-"), "prime", level, "Melyik szám prímszám?", prime, wrongs, prime + " pontosan két pozitív osztóval rendelkezik.");
+            if (question) pool.push(question);
+          });
+          composites.slice(0, 30).forEach((composite, index) => {
+            const wrongs = [visiblePrimes[index % visiblePrimes.length], visiblePrimes[(index * 2 + 3) % visiblePrimes.length]];
+            const factor = smallestPrimeFactor(composite);
+            const question = makeQuestion("composite-find-" + composite + "-" + wrongs.join("-"), "prime", level, "Melyik szám összetett?", composite, wrongs, composite + " = " + factor + " · " + (composite / factor) + ".");
+            if (question) pool.push(question);
+          });
+          pool.push(makeQuestion("one-not-prime", "prime", level, "Miért nem prímszám az 1?", "Csak egy pozitív osztója van.", ["Páratlan.", "Nem lehet vele osztani."], "A prímszámnak pontosan két pozitív osztója van."));
+        }
+
+        if (level === 2) {
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const wrongs = primes.filter((prime) => composite % prime !== 0).slice(0, 2);
+            const question = makeQuestion("divisor-" + composite, "prime", level, "Melyik prímszám bizonyítja rögtön, hogy " + composite + " összetett?", factor, wrongs, factor + " osztja " + composite + "-et, mert " + composite + " = " + factor + " · " + (composite / factor) + ".");
+            if (question) pool.push(question);
+          });
+          visiblePrimes.forEach((prime, index) => {
+            const wrongs = [composites[index % composites.length], composites[(index + 7) % composites.length]];
+            const question = makeQuestion("two-divisors-" + prime, "prime", level, "Melyik számnak van pontosan két pozitív osztója?", prime, wrongs, "A " + prime + " osztói: 1 és " + prime + ".");
+            if (question) pool.push(question);
+          });
+        }
+
+        if (level === 3) {
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const wrongs = [
+              composite + " páratlan, ezért prím.",
+              composite + " nem 0-ra végződik, ezért prím."
+            ];
+            const correct = composite + " = " + factor + " · " + (composite / factor) + ", ezért összetett.";
+            const question = makeQuestion("counterexample-" + composite, "prime", level, "Melyik érvelés dönti el biztosan " + composite + "-ről, hogy nem prím?", correct, wrongs, "Egy valódi szorzatfelbontás már elegendő az összetettség bizonyításához.");
+            if (question) pool.push(question);
+          });
+          visiblePrimes.forEach((prime) => {
+            const tested = primes.filter((candidate) => candidate * candidate <= prime);
+            const correct = "Igen, mert egyik " + prime + "-nél kisebb szükséges prímosztó sem osztja.";
+            const wrongs = ["Nem, mert minden páratlan szám összetett.", "Nem dönthető el osztók vizsgálatával."];
+            const question = makeQuestion("prime-proof-" + prime, "prime", level, "A " + prime + " számot megvizsgáltuk a " + (tested.length ? tested.join(", ") : "2") + " prímosztókkal. Egyik sem osztotta. Következik-e, hogy prím?", correct, wrongs, "Elég azokat a prímosztókat kipróbálni, amelyek négyzete nem nagyobb a vizsgált számnál.");
+            if (question) pool.push(question);
+          });
+        }
+        return pool.filter(Boolean);
+      }
+
+      function sieveQuestionPool(level, limit) {
+        const primes = primesUpTo(limit);
+        const composites = range(4, limit).filter((number) => !isPrime(number));
+        const sieves = primes.filter((prime) => prime * prime <= limit);
+        const pool = [];
+
+        if (level === 1) {
+          sieves.forEach((prime) => {
+            for (let multiplier = 2; prime * multiplier <= limit && multiplier <= 8; multiplier += 1) {
+              const multiple = prime * multiplier;
+              const wrongs = twoWrongNumbers(multiple, [multiple - 1, multiple + 1, multiple + prime - 1]);
+              const question = makeQuestion("multiple-" + prime + "-" + multiple, "sieve", level, "Melyik szám esik ki a " + prime + "-as szitán?", multiple, wrongs, multiple + " = " + prime + " · " + multiplier + ".");
+              if (question) pool.push(question);
+            }
+          });
+          pool.push(makeQuestion("first-sieve", "sieve", level, "Melyik szám válik először szitává?", "2", ["1", "3"], "A 2 a legkisebb prímszám."));
+        }
+
+        if (level === 2) {
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const wrongs = primes.filter((prime) => prime !== factor && prime < composite).slice(0, 2);
+            const question = makeQuestion("first-remover-" + composite, "sieve", level, "Melyik prímszita ejti ki először a " + composite + " számot?", factor, wrongs, "A legkisebb prímosztó " + factor + ", és " + composite + " = " + factor + " · " + (composite / factor) + ".");
+            if (question) pool.push(question);
+          });
+          sieves.forEach((prime, index) => {
+            const next = sieves[index + 1];
+            if (!next) return;
+            const wrongs = primes.filter((value) => value > next).slice(0, 2);
+            const question = makeQuestion("next-sieve-" + prime, "sieve", level, "A " + prime + "-as szita után melyik lehet a következő szita?", next, wrongs, "Mindig a legkisebb megmaradt szám következik.");
+            if (question) pool.push(question);
+          });
+        }
+
+        if (level === 3) {
+          sieves.forEach((prime) => {
+            const square = prime * prime;
+            const correct = "Mert a korábbi sziták már kiejtették a " + prime + "-nél nagyobb, de " + square + "-nél kisebb többszörösöket.";
+            const wrongs = ["Mert " + prime + " minden kisebb számot oszt.", "Mert " + square + " biztosan prímszám."];
+            const question = makeQuestion("square-start-" + prime, "sieve", level, "Miért elég a " + prime + "-as szitán az új kiesőket " + prime + " · " + prime + " = " + square + "-től keresni?", correct, wrongs, "A kisebb többszörösök között nincs új kieső: azokat egy korábbi prímszita már eltávolította.");
+            if (question) pool.push(question);
+          });
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const correct = "Mert a " + factor + "-as szita már kiejtette.";
+            const wrongs = ["Mert minden páratlan szám kiesik.", "Mert nagyobb a felső határ felénél."];
+            const question = makeQuestion("why-out-" + composite, "sieve", level, "Miért nem maradhat fenn a " + composite + " a szitán?", correct, wrongs, composite + " osztható " + factor + "-mal.");
+            if (question) pool.push(question);
+          });
+          const next = primes.find((prime) => !sieves.includes(prime));
+          if (next) {
+            const correct = "Nem, mert " + next + " · " + next + " = " + (next * next) + " már nagyobb " + limit + "-nél.";
+            const wrongs = ["Igen, minden megmaradt számot szitává kell alakítani.", "Nem, mert " + next + " összetett szám."];
+            pool.push(makeQuestion("stop-" + limit, "sieve", level, "A következő megmaradt szám " + next + ". Kell még új szita " + limit + "-ig?", correct, wrongs, "Egy esetleges összetett számnak már lett volna egy korábbi, kisebb prímosztója."));
+          }
+        }
+        return pool.filter(Boolean);
+      }
+
+      function wrongFactorTexts(number) {
+        const first = factorText(number + 1);
+        const second = factorText(number + 2);
+        return [first, second];
+      }
+
+      function factorQuestionPool(level, limit) {
+        const composites = range(4, limit).filter((number) => !isPrime(number));
+        const pool = [];
+
+        if (level === 1) {
+          composites.forEach((composite) => {
+            const correct = factorText(composite);
+            const wrongs = wrongFactorTexts(composite);
+            const question = makeQuestion("factor-find-" + composite, "factor", level, "Melyik a " + composite + " prímtényezős felbontása?", correct, wrongs, composite + " = " + correct + ".");
+            if (question) pool.push(question);
+          });
+        }
+
+        if (level === 2) {
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const quotient = composite / factor;
+            const wrongs = twoWrongNumbers(quotient, [quotient - 1, quotient + 1, quotient + factor]);
+            const question = makeQuestion("missing-factor-" + composite, "factor", level, "Melyik szám hiányzik? " + composite + " = " + factor + " · ?", quotient, wrongs, factor + " · " + quotient + " = " + composite + ".");
+            if (question) pool.push(question);
+          });
+          composites.forEach((composite) => {
+            const factors = primeFactors(composite);
+            if (factors.length < 2) return;
+            const correct = factorText(composite);
+            const wrongs = [factors.join(" + "), String(composite)];
+            const question = makeQuestion("canonical-" + composite, "factor", level, "Melyik alak használ kizárólag prímtényezőket?", correct, wrongs, "A kanonikus alakban minden tényező prímszám.");
+            if (question) pool.push(question);
+          });
+        }
+
+        if (level === 3) {
+          composites.forEach((composite) => {
+            const factors = primeFactors(composite);
+            if (factors.length < 3) return;
+            if (new Set(factors).size === factors.length) return;
+            const repeated = factors.join(" · ");
+            const canonical = factorText(composite);
+            const wrongs = [repeated.replace(/ · /, " + "), String(composite)];
+            const question = makeQuestion("power-form-" + composite, "factor", level, "Írd tömören, hatványt is használva: " + repeated, canonical, wrongs, composite + " kanonikus alakja: " + canonical + ".");
+            if (question) pool.push(question);
+          });
+          composites.forEach((composite) => {
+            const factor = smallestPrimeFactor(composite);
+            const quotient = composite / factor;
+            if (isPrime(quotient)) return;
+            const correct = factor + " · " + factorText(quotient);
+            const wrongs = [factor + " · " + quotient, factorText(composite + 1)];
+            const question = makeQuestion("finish-factor-" + composite, "factor", level, composite + " = " + factor + " · " + quotient + ". Hogyan folytatjuk prímtényezőkig?", correct, wrongs, "A " + quotient + " összetett, ezért azt is prímtényezőkre bontjuk.");
+            if (question) pool.push(question);
+          });
+        }
+        return pool.filter(Boolean);
+      }
+
+      function questionPool(topic, level, limit) {
+        if (topic === "prime") return primeQuestionPool(level, limit);
+        if (topic === "sieve") return sieveQuestionPool(level, limit);
+        return factorQuestionPool(level, limit);
+      }
+
+      function buildQuiz(topics, level, count) {
+        const pools = {};
+        topics.forEach((topic) => { pools[topic] = shuffled(questionPool(topic, level, state.limit)); });
+        const selected = [];
+        const used = new Set();
+        const order = shuffled(topics);
+        let cursor = 0;
+        let guard = 0;
+
+        while (selected.length < count && guard < 500) {
+          const topic = order[cursor % order.length];
+          cursor += 1;
+          guard += 1;
+          const candidate = pools[topic].find((question) => !used.has(question.id));
+          if (!candidate) continue;
+          used.add(candidate.id);
+          selected.push(candidate);
+        }
+        return selected;
+      }
+
+      function setLimit(value) {
+        const number = Math.round(Number(value));
+        const safe = Number.isFinite(number) ? number : 100;
+        $("limitRange").value = safe;
+        $("limitNumber").value = safe;
+        $("setupSentence").textContent = "Az 1-től " + safe + "-ig terjedő számok közül keressük meg a prímeket.";
+        $("setupError").textContent = "";
+      }
+
+      function readLimit() {
+        const value = Number($("limitNumber").value);
+        if (!Number.isInteger(value) || value < 30 || value > 200) {
+          $("setupError").textContent = "Válassz egy egész számot 30 és 200 között!";
+          return null;
+        }
+        return value;
+      }
+
+      function initializeGame(limit) {
+        state.limit = limit;
+        state.marks = Array(limit + 1).fill("candidate");
+        state.marks[0] = "unused";
+        state.marks[1] = "one";
+        state.sievePrimes = [];
+        state.completed = false;
+        state.readyToStop = false;
+        state.busy = false;
+        $("stopCard").hidden = true;
+        $("completeCard").hidden = true;
+        $("gameFeedback").textContent = "";
+        $("gameFeedback").className = "feedback";
+        $("instructionText").textContent = "Kattints a legkisebb megmaradt számra!";
+        renderAll();
+      }
+
+      function startGame() {
+        const limit = readLimit();
+        if (limit === null) return;
+        initializeGame(limit);
+        $("setup").hidden = true;
+        $("quiz").hidden = true;
+        $("quizResult").hidden = true;
+        $("game").hidden = false;
+        $("game").scrollIntoView({ behavior:"smooth", block:"start" });
+      }
+
+      function nextCandidate() {
+        for (let number = 2; number <= state.limit; number += 1) {
+          if (state.marks[number] === "candidate") return number;
+        }
+        return null;
+      }
+
+      function currentPrimes() {
+        return range(2, state.limit).filter((number) => state.marks[number] === "sieve" || state.marks[number] === "prime");
+      }
+
+      function renderGrid(newlyEliminated) {
+        const newSet = new Set(newlyEliminated || []);
+        const grid = $("numberGrid");
+        grid.innerHTML = "";
+        range(1, state.limit).forEach((number) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "number " + state.marks[number];
+          button.textContent = number;
+          if (newSet.has(number)) {
+            button.classList.add("new-out");
+            button.style.setProperty("--delay", Math.min(newlyEliminated.indexOf(number) * 13, 600) + "ms");
+          }
+          button.disabled = state.marks[number] !== "candidate" || state.busy || state.readyToStop || state.completed;
+          button.addEventListener("click", () => chooseNumber(number, button));
+          grid.appendChild(button);
+        });
+      }
+
+      function renderPrimeList() {
+        const primes = currentPrimes();
+        const list = $("primeList");
+        list.innerHTML = "";
+        if (!primes.length) {
+          const empty = document.createElement("span");
+          empty.className = "prime-empty";
+          empty.textContent = "Még egy prímet sem gyűjtöttél ki.";
+          list.appendChild(empty);
+          return;
+        }
+        primes.forEach((prime) => {
+          const chip = document.createElement("span");
+          chip.className = "prime-chip";
+          chip.textContent = prime;
+          list.appendChild(chip);
+        });
+      }
+
+      function renderAll(newlyEliminated) {
+        renderGrid(newlyEliminated);
+        renderPrimeList();
+        $("limitLabel").textContent = state.limit;
+        $("sieveCount").textContent = state.sievePrimes.length;
+        $("outCount").textContent = state.marks.filter((mark) => mark === "composite").length;
+      }
+
+      function chooseNumber(number, button) {
+        if (state.busy || state.readyToStop || state.completed) return;
+        const expected = nextCandidate();
+        if (number !== expected) {
+          $("gameFeedback").textContent = "A szita mindig a legkisebb megmaradt számmal folytatódik.";
+          $("gameFeedback").className = "feedback";
+          button.classList.remove("wrong-pick");
+          void button.offsetWidth;
+          button.classList.add("wrong-pick");
+          return;
+        }
+
+        state.busy = true;
+        state.marks[number] = "sieve";
+        state.sievePrimes.push(number);
+        const removed = [];
+        for (let multiple = number * 2; multiple <= state.limit; multiple += number) {
+          if (state.marks[multiple] === "candidate") {
+            state.marks[multiple] = "composite";
+            removed.push(multiple);
+          }
+        }
+        $("instructionText").textContent = number + " prímszám: a nála nagyobb többszörösei kiesnek.";
+        $("gameFeedback").textContent = removed.length + " új összetett számot szitáltál ki.";
+        $("gameFeedback").className = "feedback good";
+        renderAll(removed);
+
+        window.setTimeout(() => {
+          state.busy = false;
+          const next = nextCandidate();
+          if (next !== null && next * next > state.limit) {
+            state.readyToStop = true;
+            $("stopTitle").textContent = "A következő megmaradt szám " + next + ".";
+            $("stopText").textContent = next + " · " + next + " = " + (next * next) + ", ami nagyobb " + state.limit + "-nél. Kell még új szitát használnunk?";
+            $("stopFeedback").textContent = "";
+            $("stopCard").hidden = false;
+            $("instructionText").textContent = "Döntsd el, befejezhető-e már a szitálás!";
+            $("stopCard").scrollIntoView({ behavior:"smooth", block:"nearest" });
+          } else {
+            $("instructionText").textContent = "Keresd meg a következő szitát: kattints a legkisebb megmaradt számra!";
+          }
+          renderAll();
+        }, Math.min(removed.length * 13 + 300, 950));
+      }
+
+      function completeSieve() {
+        range(2, state.limit).forEach((number) => {
+          if (state.marks[number] === "candidate") state.marks[number] = "prime";
+        });
+        state.completed = true;
+        state.readyToStop = false;
+        $("stopCard").hidden = true;
+        $("instructionText").textContent = "Minden megmaradt szám prímszám.";
+        $("gameFeedback").textContent = "";
+        renderAll();
+        $("completeText").textContent = state.limit + "-ig " + currentPrimes().length + " prímszám maradt fenn a szitán.";
+        $("completeCard").hidden = false;
+        $("completeCard").scrollIntoView({ behavior:"smooth", block:"nearest" });
+      }
+
+      function selectedTopics() {
+        return Array.from(document.querySelectorAll(".topic-input:checked")).map((input) => input.value);
+      }
+
+      function selectedRadio(name) {
+        return Number(document.querySelector('input[name="' + name + '"]:checked').value);
+      }
+
+      function startQuiz() {
+        const topics = selectedTopics();
+        const level = selectedRadio("level");
+        const count = selectedRadio("count");
+        if (!topics.length) {
+          $("builderError").textContent = "Válassz legalább egy témakört!";
+          return;
+        }
+        const questions = buildQuiz(topics, level, count);
+        if (questions.length < count) {
+          $("builderError").textContent = "Ehhez a beállításhoz nem tudtunk elég különböző kérdést készíteni. Válassz több témakört!";
+          return;
+        }
+        state.quizQuestions = questions;
+        state.quizAnswers = Array(questions.length).fill(null);
+        state.quizIndex = 0;
+        state.quizLevel = level;
+        $("builderError").textContent = "";
+        $("game").hidden = true;
+        $("quizResult").hidden = true;
+        $("quiz").hidden = false;
+        renderQuizQuestion();
+        $("quiz").scrollIntoView({ behavior:"smooth", block:"start" });
+      }
+
+      function renderQuizQuestion() {
+        const question = state.quizQuestions[state.quizIndex];
+        $("quizProgress").textContent = (state.quizIndex + 1) + "/" + state.quizQuestions.length + ". kérdés";
+        $("quizLevel").textContent = question.level + ". szint · " + levelNames[question.level];
+        $("quizTopic").textContent = topicNames[question.topic];
+        $("quizPrompt").textContent = question.prompt;
+        $("quizFeedback").textContent = "";
+        const choices = $("quizChoices");
+        choices.innerHTML = "";
+        question.options.forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "choice";
+          button.textContent = option;
+          if (state.quizAnswers[state.quizIndex] === option) button.classList.add("selected");
+          button.addEventListener("click", () => {
+            choices.querySelectorAll("button").forEach((choice) => choice.classList.remove("selected"));
+            button.classList.add("selected");
+            state.quizAnswers[state.quizIndex] = option;
+            $("quizFeedback").textContent = "";
+          });
+          choices.appendChild(button);
+        });
+        $("quizBack").disabled = state.quizIndex === 0;
+        $("quizNext").hidden = state.quizIndex === state.quizQuestions.length - 1;
+        $("quizSubmit").hidden = state.quizIndex !== state.quizQuestions.length - 1;
+      }
+
+      function moveQuiz(direction) {
+        if (state.quizAnswers[state.quizIndex] === null) {
+          $("quizFeedback").textContent = "Válassz egy lehetőséget!";
+          return;
+        }
+        state.quizIndex += direction;
+        renderQuizQuestion();
+      }
+
+      function submitQuiz() {
+        if (state.quizAnswers[state.quizIndex] === null) {
+          $("quizFeedback").textContent = "Válassz egy lehetőséget!";
+          return;
+        }
+        const score = state.quizQuestions.reduce((sum, question, index) => sum + (state.quizAnswers[index] === question.correct ? 1 : 0), 0);
+        $("quiz").hidden = true;
+        $("quizResult").hidden = false;
+        $("resultScore").innerHTML = "<strong>" + score + "/" + state.quizQuestions.length + " helyes válasz</strong><br>" +
+          (score === state.quizQuestions.length ? "Minden kérdést megoldottál!" : "Nézd meg, mely gondolatokat érdemes még pontosítani.");
+        const review = $("review");
+        review.innerHTML = "";
+        state.quizQuestions.forEach((question, index) => {
+          const correct = state.quizAnswers[index] === question.correct;
+          const item = document.createElement("div");
+          item.className = "review-item " + (correct ? "correct" : "wrong");
+          const heading = document.createElement("strong");
+          heading.textContent = (correct ? "✓ " : "× ") + topicNames[question.topic] + " · " + (index + 1) + ". kérdés";
+          const text = document.createElement("span");
+          text.textContent = correct
+            ? question.explanation
+            : "Helyes válasz: " + question.correct + " " + question.explanation;
+          item.append(heading, text);
+          review.appendChild(item);
+        });
+        $("quizResult").scrollIntoView({ behavior:"smooth", block:"start" });
+      }
+
+      function showBuilder() {
+        $("quiz").hidden = true;
+        $("quizResult").hidden = true;
+        $("game").hidden = false;
+        $("completeCard").hidden = false;
+        $("completeCard").scrollIntoView({ behavior:"smooth", block:"nearest" });
+      }
+
+      function newSieve() {
+        $("game").hidden = true;
+        $("quiz").hidden = true;
+        $("quizResult").hidden = true;
+        $("setup").hidden = false;
+        setLimit(state.limit);
+        $("setup").scrollIntoView({ behavior:"smooth", block:"start" });
+      }
+
+      $("limitRange").addEventListener("input", (event) => setLimit(event.target.value));
+      $("limitNumber").addEventListener("input", (event) => setLimit(event.target.value));
+      document.querySelectorAll("[data-limit]").forEach((button) => button.addEventListener("click", () => setLimit(button.dataset.limit)));
+      $("startButton").addEventListener("click", startGame);
+      $("keepSieving").addEventListener("click", () => {
+        const next = nextCandidate();
+        $("stopFeedback").textContent = next + " · " + next + " már nagyobb " + state.limit + "-nél. Egy megmaradt összetett számnak lenne egy kisebb prímosztója, ezért már kiesett volna.";
+      });
+      $("finishSieving").addEventListener("click", completeSieve);
+      $("restartSame").addEventListener("click", () => initializeGame(state.limit));
+      $("startQuiz").addEventListener("click", startQuiz);
+      $("quizBack").addEventListener("click", () => {
+        if (state.quizIndex > 0) {
+          state.quizIndex -= 1;
+          renderQuizQuestion();
+        }
+      });
+      $("quizNext").addEventListener("click", () => moveQuiz(1));
+      $("quizSubmit").addEventListener("click", submitQuiz);
+      $("anotherQuiz").addEventListener("click", showBuilder);
+      $("newSieve").addEventListener("click", newSieve);
+      setLimit(100);
+    })();
+  </script>
+</body>
+</html>
