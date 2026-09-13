@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ed">
+  <title>Szorgi vagy morgi?</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20292c;
+      --muted: #687579;
+      --paper: #fffefa;
+      --bg: #f6f4ed;
+      --line: #dedbd2;
+      --blue: #287eaa;
+      --blue-soft: #e8f4fa;
+      --green: #23765e;
+      --green-soft: #e3f3eb;
+      --coral: #b85243;
+      --coral-soft: #fff0eb;
+      --gold: #eab84d;
+      --shadow: 0 14px 38px rgba(35, 43, 45, .08);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(65, 151, 194, .15), transparent 25rem),
+        var(--bg);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; touch-action: manipulation; }
+
+    main {
+      width: min(850px, calc(100% - 28px));
+      margin: auto;
+      padding: 28px 0 56px;
+    }
+
+    .back {
+      display: inline-flex;
+      margin-bottom: 26px;
+      color: var(--blue);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .hero { max-width: 720px; margin-bottom: 25px; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font: 850 clamp(2.6rem, 8vw, 5rem)/.95 Georgia, serif;
+      letter-spacing: -.05em;
+    }
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.4vw, 1.14rem);
+      line-height: 1.55;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 254, 250, .98);
+      box-shadow: var(--shadow);
+    }
+
+    button {
+      min-height: 45px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 10px 15px;
+      color: var(--ink);
+      background: white;
+      font-weight: 820;
+      cursor: pointer;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+    button:hover:not(:disabled) { transform: translateY(-2px); border-color: #9fc5d6; }
+    button:focus-visible { outline: 4px solid rgba(234, 184, 77, .55); outline-offset: 3px; }
+    button:disabled { cursor: default; opacity: .58; }
+    button.primary { border-color: var(--blue); color: white; background: var(--blue); }
+
+    .intro { padding: clamp(22px, 5vw, 38px); }
+    .intro h2, .finish h2 {
+      margin: 0 0 10px;
+      font: 830 clamp(1.45rem, 4vw, 2rem)/1.15 Georgia, serif;
+    }
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0;
+    }
+    .rule {
+      padding: 17px;
+      border-radius: 16px;
+      line-height: 1.45;
+    }
+    .rule strong { display: block; margin-bottom: 4px; font-size: 1.08rem; }
+    .rule.szorgi { border: 1px solid #b9ddd0; background: var(--green-soft); }
+    .rule.morgi { border: 1px solid #edc2b7; background: var(--coral-soft); }
+    .small { margin: 0; color: var(--muted); line-height: 1.52; }
+    .intro > .small:last-of-type { margin-bottom: 18px; }
+
+    .quiz { display: grid; gap: 14px; }
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 13px 17px;
+    }
+    .status strong { color: var(--blue); }
+    .task-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      width: 100%;
+    }
+    .task-nav button {
+      min-width: 42px;
+      min-height: 38px;
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+    .task-nav button.current { border-color: var(--blue); color: white; background: var(--blue); }
+    .task-nav button.answered:not(.current) { border-color: #a9d4c4; color: var(--green); background: var(--green-soft); }
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e4e2dc;
+    }
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), #57ad8c);
+      transition: width .35s ease;
+    }
+
+    .question { padding: clamp(20px, 4vw, 32px); }
+    .day {
+      display: inline-flex;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .question h2 {
+      margin: 0 0 8px;
+      font: 830 clamp(1.4rem, 4vw, 1.9rem)/1.16 Georgia, serif;
+    }
+    .scenario { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+
+    .statements {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 22px;
+    }
+    .statement {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+    }
+    .speaker {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--blue);
+      font-weight: 900;
+    }
+    .statement p { margin: 5px 0 0; line-height: 1.42; }
+
+    .question-items { display: grid; gap: 22px; }
+    .quiz-item { min-width: 0; }
+    .quiz-item + .quiz-item { padding-top: 21px; border-top: 1px solid var(--line); }
+    .prompt { margin: 0 0 12px; font-weight: 850; line-height: 1.45; }
+    .choices { display: grid; gap: 9px; }
+    .choice { width: 100%; text-align: left; }
+    .choice.selected { border-color: var(--blue); color: #176184; background: var(--blue-soft); }
+    .choice.correct { border-color: var(--green); color: #145b46; background: var(--green-soft); opacity: 1; }
+    .choice.wrong { border-color: var(--coral); color: #8d372b; background: var(--coral-soft); opacity: 1; }
+
+    .feedback {
+      min-height: 24px;
+      margin: 14px 0 0;
+      color: var(--coral);
+      font-weight: 800;
+    }
+    .explanation {
+      margin: 14px 0 0;
+      padding: 13px 15px;
+      border-radius: 14px;
+      color: #145b46;
+      background: var(--green-soft);
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+    }
+    .actions-right { display: flex; gap: 9px; margin-left: auto; }
+
+    .finish {
+      padding: clamp(26px, 6vw, 46px);
+      text-align: center;
+    }
+    .finish-mark {
+      display: grid;
+      width: 66px;
+      height: 66px;
+      margin: 0 auto 15px;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+    .score {
+      width: min(430px, 100%);
+      margin: 20px auto;
+      padding: 17px;
+      border-radius: 16px;
+      background: var(--blue-soft);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+    .grade {
+      display: block;
+      margin-top: 5px;
+      color: var(--blue);
+      font: 900 2.1rem/1 Georgia, serif;
+    }
+    .grade-scale { display: block; margin-top: 10px; color: var(--muted); font-size: .76rem; }
+    .review { display: grid; gap: 10px; width: min(650px, 100%); margin: 20px auto; text-align: left; }
+    .review-item { padding: 13px 15px; border-radius: 14px; line-height: 1.45; }
+    .review-item.correct { color: #145b46; background: var(--green-soft); }
+    .review-item.wrong { color: #7d342a; background: var(--coral-soft); }
+    .review-item strong { display: block; margin-bottom: 3px; }
+    .finish-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+
+    footer { margin-top: 25px; color: #879093; font-size: .82rem; line-height: 1.5; }
+
+    @media (max-width: 600px) {
+      main { width: min(100% - 18px, 480px); padding-top: 18px; }
+      .back { margin-bottom: 20px; }
+      .rules { grid-template-columns: 1fr; }
+      .status { align-items: start; }
+      .question { padding: 18px; }
+      .statement { grid-template-columns: 34px minmax(0, 1fr); padding: 11px; }
+      .speaker { width: 31px; height: 31px; }
+      .actions button { width: 100%; }
+      .actions { align-items: stretch; flex-direction: column; }
+      .actions-right { display: grid; width: 100%; margin-left: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Vissza a játékokhoz</a>
+
+    <header class="hero">
+      <p class="eyebrow">5. osztály · logikai nyomozás</p>
+      <h1>Szorgi vagy morgi?</h1>
+      <p class="lead">Hallgasd meg a szigetlakók állításait, és döntsd el, mi következik belőlük!</p>
+    </header>
+
+    <section id="intro" class="intro card">
+      <h2>Szorgimorgi szigete</h2>
+      <p class="small">A sziget lakói jól tudják a matematikát, de nem mindenki mond igazat.</p>
+      <div class="rules">
+        <div class="rule szorgi">
+          <strong>Szorgi</strong>
+          Mindig igazat mond.
+        </div>
+        <div class="rule morgi">
+          <strong>Morgi</strong>
+          Mindig hazudik.
+        </div>
+      </div>
+      <p class="small">Öt feladatot kapsz. Szabadon lapozhatsz közöttük, a válaszaidat pedig a beadásig módosíthatod.</p>
+      <button id="startButton" class="primary" type="button">Nyomozás indítása</button>
+    </section>
+
+    <section id="quiz" class="quiz" hidden>
+      <div class="status card">
+        <span>Feladat: <strong id="taskCount">1/5</strong></span>
+        <span>Részválaszok: <strong id="answeredCount">0/11</strong></span>
+        <nav id="taskNav" class="task-nav" aria-label="Feladatok"></nav>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <section id="questionCard" class="question card" aria-labelledby="questionTitle">
+        <span id="dayLabel" class="day"></span>
+        <h2 id="questionTitle"></h2>
+        <p id="scenario" class="scenario"></p>
+        <div id="statements" class="statements"></div>
+        <div id="questionItems" class="question-items"></div>
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+        <div class="actions">
+          <button id="previousButton" type="button">← Előző</button>
+          <div class="actions-right">
+            <button id="nextButton" class="primary" type="button">Következő →</button>
+            <button id="submitButton" class="primary" type="button" hidden>Válaszok beadása</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="finish" class="finish card" hidden>
+        <span id="finishMark" class="finish-mark" aria-hidden="true">5</span>
+        <h2 id="finishTitle">Eredmény</h2>
+        <p class="small">Kiértékeltük a logikai feladatlapodat.</p>
+        <div id="finalScore" class="score"></div>
+        <div id="review" class="review"></div>
+        <div class="finish-actions">
+          <button id="restartButton" class="primary" type="button">Játék újra</button>
+          <a class="back" href="../../index.html">Vissza a játékokhoz</a>
+        </div>
+      </section>
+    </section>
+
+    <footer>A játék a Szorgimorgi szigete című feladatsor alapján készült.</footer>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+
+      const mondayStatements = [
+        ["A", "A két szám összege osztható 3-mal."],
+        ["B", "Az egyik szám 3 többszöröse."],
+        ["C", "A másik szám 3-mal osztva 2 maradékot ad."]
+      ];
+
+      const tuesdayStatements = [
+        ["A", "Mindhárom szám osztható 5-tel."],
+        ["B", "A három szám szorzata osztható 5-tel."],
+        ["C", "A három szám összege osztható 5-tel."]
+      ];
+
+      const wednesdayStatements = [
+        ["A", "A két szám összege osztható 4-gyel."],
+        ["B", "A két szám különbsége osztható 4-gyel."],
+        ["C", "A két szám szorzata osztható 4-gyel."]
+      ];
+
+      const thursdayStatements = [
+        ["A", "Az összeg minden tagja osztható 3-mal."],
+        ["B", "Az összeg pontosan két tagja osztható 3-mal."],
+        ["C", "Az összeg pontosan egy tagja osztható 3-mal."],
+        ["D", "Az összeg egyik tagja sem osztható 3-mal."]
+      ];
+
+      const fridayStatements = [
+        ["A", "A szám akkor is páros, ha az első és az utolsó számjegyét felcseréljük."],
+        ["B", "A szám akkor is osztható 3-mal, ha a számjegyeit tetszőleges sorrendben írjuk fel."],
+        ["C", "A szám akkor is osztható 5-tel, ha az utolsó két számjegyét felcseréljük."],
+        ["D", "A szám nem osztható 9-cel."],
+        ["E", "A számot tetszőleges természetes számmal megszorozva 3-mal osztható számot kapunk."]
+      ];
+
+      const questions = [
+        {
+          day: "Hétfő · 1. feladat",
+          title: "Három szigetlakó két számot látott",
+          scenario: "A számokat te nem látod. Csak a három állítást ismered.",
+          statements: mondayStatements,
+          prompt: "Lehet-e mindhárom szigetlakó szorgi?",
+          options: [
+            ["yes", "Igen, mindhárom állítás lehet egyszerre igaz."],
+            ["correct", "Nem. Ha B és C igazat mond, akkor az összeg 3-mal osztva 2 maradékot ad."],
+            ["never", "Nem, mert két szám összege soha nem osztható 3-mal."]
+          ],
+          correct: "correct",
+          explanation: "B és C szerint a számok maradéka 0 és 2. Az összeg maradéka ezért 2, így A nem mondhat igazat."
+        },
+        {
+          day: "Kedd · 2/a",
+          title: "Három szigetlakó három számot látott",
+          scenario: "Tudjuk, hogy A szorgi.",
+          statements: tuesdayStatements,
+          prompt: "Mit mondhatunk B-ről és C-ről?",
+          options: [
+            ["correct", "B és C is szorgi."],
+            ["mixed", "B morgi, C szorgi."],
+            ["unknown", "Egyikük szerepe sem állapítható meg."]
+          ],
+          correct: "correct",
+          explanation: "Ha mindhárom szám osztható 5-tel, akkor az összegük és a szorzatuk is osztható 5-tel."
+        },
+        {
+          day: "Kedd · 2/b",
+          title: "Most B szerepét ismerjük",
+          scenario: "Tudjuk, hogy B morgi.",
+          statements: tuesdayStatements,
+          prompt: "Mit mondhatunk A-ról és C-ről?",
+          options: [
+            ["correct", "A morgi, C szerepe pedig nem állapítható meg."],
+            ["bothMorgi", "A és C is morgi."],
+            ["bothSzorgi", "A és C is szorgi."]
+          ],
+          correct: "correct",
+          explanation: "Ha a szorzat nem osztható 5-tel, egyik szám sem osztható 5-tel, ezért A morgi. Az összeg ettől még lehet osztható 5-tel, de lehet nem osztható is."
+        },
+        {
+          day: "Szerda · 3/a",
+          title: "Két rejtett szám, három új állítás",
+          scenario: "A számokat továbbra sem látod.",
+          statements: wednesdayStatements,
+          prompt: "Lehet-e A, B és C is szorgi?",
+          options: [
+            ["correct", "Igen. Például a két szám lehet 4 és 8."],
+            ["no", "Nem, a három állítás nem lehet egyszerre igaz."],
+            ["example", "Igen. Például a két szám lehet 5 és 6."]
+          ],
+          correct: "correct",
+          explanation: "4 + 8 = 12, 8 − 4 = 4 és 4 · 8 = 32: mindhárom eredmény osztható 4-gyel."
+        },
+        {
+          day: "Szerda · 3/b",
+          title: "Lehet-e mindenki morgi?",
+          scenario: "Ugyanazt a három állítást vizsgáljuk.",
+          statements: wednesdayStatements,
+          prompt: "Lehet-e A, B és C is morgi?",
+          options: [
+            ["correct", "Igen. Például a két szám lehet 5 és 6."],
+            ["no", "Nem, legalább az egyik állítás mindig igaz."],
+            ["example", "Igen. Például a két szám lehet 4 és 8."]
+          ],
+          correct: "correct",
+          explanation: "5 + 6 = 11, 6 − 5 = 1 és 5 · 6 = 30: egyik eredmény sem osztható 4-gyel."
+        },
+        {
+          day: "Szerda · 3/c",
+          title: "Egy szorgi két morgi között",
+          scenario: "Most pontosan egy igaz állítást keresünk.",
+          statements: wednesdayStatements,
+          prompt: "Ki lehet az egyetlen szorgi?",
+          options: [
+            ["a", "Csak A lehet."],
+            ["b", "Csak B lehet."],
+            ["c", "Csak C lehet."],
+            ["correct", "A, B vagy C is lehet az egyetlen szorgi."]
+          ],
+          correct: "correct",
+          explanation: "A lehet egyedül igaz az 1 és 3, B az 1 és 1, C pedig az 1 és 4 számpárral."
+        },
+        {
+          day: "Csütörtök · 4/A",
+          title: "Három 10-nél nagyobb természetes szám",
+          scenario: "A három szám összege osztható 3-mal.",
+          statements: thursdayStatements,
+          prompt: "Mondhatja-e A állítását egy szorgi?",
+          options: [
+            ["correct", "Igen: 12 + 15 + 18 = 45."],
+            ["no", "Nem, ilyen összeg nem létezhet."],
+            ["wrongExample", "Igen: 13 + 16 + 19 = 48."]
+          ],
+          correct: "correct",
+          explanation: "A 12, 15 és 18 mindegyike osztható 3-mal, és az összegük is osztható 3-mal."
+        },
+        {
+          day: "Csütörtök · 4/B",
+          title: "Pontosan két tag osztható 3-mal?",
+          scenario: "A három 10-nél nagyobb szám összege osztható 3-mal.",
+          statements: thursdayStatements,
+          prompt: "Mondhatja-e B állítását egy szorgi?",
+          options: [
+            ["correct", "Nem. Ha két tag osztható 3-mal, akkor a harmadiknak is annak kell lennie."],
+            ["yes", "Igen: 12 + 15 + 13 = 40."],
+            ["all", "Igen: 12 + 15 + 18 = 45."]
+          ],
+          correct: "correct",
+          explanation: "Két 3-mal osztható tag összege osztható 3-mal. Ahhoz, hogy a teljes összeg is osztható legyen, a harmadik tagnak is oszthatónak kell lennie."
+        },
+        {
+          day: "Csütörtök · 4/C",
+          title: "Pontosan egy tag osztható 3-mal?",
+          scenario: "A három 10-nél nagyobb szám összege osztható 3-mal.",
+          statements: thursdayStatements,
+          prompt: "Mondhatja-e C állítását egy szorgi?",
+          options: [
+            ["correct", "Igen: 12 + 13 + 14 = 39."],
+            ["no", "Nem, ilyen összeg nem létezhet."],
+            ["all", "Igen: 12 + 15 + 18 = 45."]
+          ],
+          correct: "correct",
+          explanation: "Csak a 12 osztható 3-mal, miközben 12 + 13 + 14 = 39 szintén osztható 3-mal."
+        },
+        {
+          day: "Csütörtök · 4/D",
+          title: "Egyik tag sem osztható 3-mal?",
+          scenario: "A három 10-nél nagyobb szám összege osztható 3-mal.",
+          statements: thursdayStatements,
+          prompt: "Mondhatja-e D állítását egy szorgi?",
+          options: [
+            ["correct", "Igen: 13 + 16 + 19 = 48."],
+            ["no", "Nem, legalább egy tagnak oszthatónak kell lennie 3-mal."],
+            ["wrongExample", "Igen: 13 + 14 + 17 = 44."]
+          ],
+          correct: "correct",
+          explanation: "A 13, 16 és 19 egyike sem osztható 3-mal, az összegük, 48, mégis osztható 3-mal."
+        },
+        {
+          day: "Péntek · 5. feladat",
+          title: "A 306 540-es szám",
+          scenario: "Öt szigetlakó vizsgálta meg ugyanazt a számot.",
+          statements: fridayStatements,
+          prompt: "Kik voltak morgik a csapatból?",
+          options: [
+            ["correct", "A, C és D."],
+            ["acd", "Csak A és C."],
+            ["bce", "B, C és E."],
+            ["none", "Senki."]
+          ],
+          correct: "correct",
+          explanation: "Felcserélés után 6543 páratlan, az utolsó két számjegy cseréje után a szám 4-re végződik, és a számjegyek összege 18, ezért a szám osztható 9-cel. A, C és D tehát hamis."
+        }
+      ];
+
+      const taskGroups = [[0], [1, 2], [3, 4, 5], [6, 7, 8, 9], [10]];
+
+      const taskMeta = [
+        { day: "Hétfő · 1. feladat", title: "Három szigetlakó két számot látott", scenario: "A számokat te nem látod. Csak a három állítást ismered." },
+        { day: "Kedd · 2. feladat", title: "Három szigetlakó három számot látott", scenario: "Két különböző esetben kell következtetned a szerepekre." },
+        { day: "Szerda · 3. feladat", title: "Két rejtett szám, három állítás", scenario: "Vizsgáld meg, kik mondhatnak igazat egyszerre!" },
+        { day: "Csütörtök · 4. feladat", title: "Három 10-nél nagyobb természetes szám", scenario: "A három szám összege osztható 3-mal. Döntsd el külön-külön, lehetségesek-e az állítások!" },
+        { day: "Péntek · 5. feladat", title: "A 306 540-es szám", scenario: "Öt szigetlakó vizsgálta meg ugyanazt a számot." }
+      ];
+
+      const state = {
+        taskIndex: 0,
+        answers: {},
+        optionOrders: {}
+      };
+
+      function shuffled(items) {
+        const result = [...items];
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(Math.random() * (index + 1));
+          [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+        }
+        return result;
+      }
+
+      function updateStatus() {
+        const answered = Object.keys(state.answers).length;
+        $("taskCount").textContent = (state.taskIndex + 1) + "/" + taskGroups.length;
+        $("answeredCount").textContent = answered + "/" + questions.length;
+        $("progressFill").style.width = (answered / questions.length * 100) + "%";
+
+        const nav = $("taskNav");
+        nav.innerHTML = "";
+        taskGroups.forEach((group, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = String(index + 1);
+          button.setAttribute("aria-label", (index + 1) + ". feladat");
+          const completed = group.every((questionIndex) => state.answers[questionIndex] !== undefined);
+          if (completed) button.classList.add("answered");
+          if (index === state.taskIndex) {
+            button.classList.add("current");
+            button.setAttribute("aria-current", "step");
+          }
+          button.addEventListener("click", () => {
+            state.taskIndex = index;
+            renderQuestion();
+          });
+          nav.appendChild(button);
+        });
+      }
+
+      function renderStatements(statements) {
+        const box = $("statements");
+        box.innerHTML = "";
+        statements.forEach((statement) => {
+          const row = document.createElement("div");
+          row.className = "statement";
+
+          const speaker = document.createElement("span");
+          speaker.className = "speaker";
+          speaker.textContent = statement[0];
+
+          const text = document.createElement("p");
+          text.textContent = statement[1];
+
+          row.append(speaker, text);
+          box.appendChild(row);
+        });
+      }
+
+      function renderChoices(question, questionIndex, box) {
+        if (!state.optionOrders[questionIndex]) {
+          state.optionOrders[questionIndex] = shuffled(question.options);
+        }
+        state.optionOrders[questionIndex].forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "choice";
+          button.dataset.value = option[0];
+          button.textContent = option[1];
+          if (state.answers[questionIndex] === option[0]) button.classList.add("selected");
+          button.addEventListener("click", () => {
+            box.querySelectorAll(".choice").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            state.answers[questionIndex] = option[0];
+            $("feedback").textContent = "";
+            updateStatus();
+          });
+          box.appendChild(button);
+        });
+      }
+
+      function renderQuestion() {
+        const meta = taskMeta[state.taskIndex];
+        const group = taskGroups[state.taskIndex];
+
+        $("dayLabel").textContent = meta.day;
+        $("questionTitle").textContent = meta.title;
+        $("scenario").textContent = meta.scenario;
+        $("feedback").textContent = "";
+        renderStatements(questions[group[0]].statements);
+
+        const items = $("questionItems");
+        items.innerHTML = "";
+        group.forEach((questionIndex, partIndex) => {
+          const question = questions[questionIndex];
+          const item = document.createElement("section");
+          item.className = "quiz-item";
+
+          const prompt = document.createElement("p");
+          prompt.className = "prompt";
+          const prefix = group.length > 1 ? String.fromCharCode(97 + partIndex) + ") " : "";
+          prompt.textContent = prefix + question.scenario + " " + question.prompt;
+
+          const choices = document.createElement("div");
+          choices.className = "choices";
+          renderChoices(question, questionIndex, choices);
+          item.append(prompt, choices);
+          items.appendChild(item);
+        });
+
+        $("previousButton").disabled = state.taskIndex === 0;
+        $("nextButton").hidden = state.taskIndex === taskGroups.length - 1;
+        $("submitButton").hidden = state.taskIndex !== taskGroups.length - 1;
+        updateStatus();
+        $("questionCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function gradeFor(score) {
+        const percent = score / questions.length * 100;
+        if (percent >= 85) return { number: 5, word: "jeles" };
+        if (percent >= 70) return { number: 4, word: "jó" };
+        if (percent >= 55) return { number: 3, word: "közepes" };
+        if (percent >= 40) return { number: 2, word: "elégséges" };
+        return { number: 1, word: "elégtelen" };
+      }
+
+      function submitAnswers() {
+        const unanswered = questions
+          .map((question, index) => index)
+          .filter((index) => state.answers[index] === undefined);
+
+        if (unanswered.length) {
+          state.taskIndex = taskGroups.findIndex((group) => group.some((index) => unanswered.includes(index)));
+          renderQuestion();
+          $("feedback").textContent = `Még ${unanswered.length} kérdésre nem válaszoltál.`;
+          return;
+        }
+
+        showFinish();
+      }
+
+      function showFinish() {
+        const score = questions.reduce((total, question, index) =>
+          total + (state.answers[index] === question.correct ? 1 : 0), 0);
+        const percent = Math.round(score / questions.length * 100);
+        const grade = gradeFor(score);
+
+        $("questionCard").hidden = true;
+        $("finish").hidden = false;
+        $("finishMark").textContent = grade.number;
+        $("finishTitle").textContent = grade.number >= 4 ? "Szép munka!" : "Eredményed";
+        $("finalScore").innerHTML =
+          `<strong>${score}/${questions.length} pont · ${percent}%</strong>` +
+          `<span class="grade">${grade.number} – ${grade.word}</span>` +
+          `<small class="grade-scale">Ponthatárok: 85% · 70% · 55% · 40%</small>`;
+
+        const review = $("review");
+        review.innerHTML = "";
+        questions.forEach((question, index) => {
+          const correct = state.answers[index] === question.correct;
+          const row = document.createElement("div");
+          row.className = `review-item ${correct ? "correct" : "wrong"}`;
+
+          const heading = document.createElement("strong");
+          heading.textContent = `${correct ? "✓" : "×"} ${question.day}`;
+          row.appendChild(heading);
+
+          if (correct) {
+            row.appendChild(document.createTextNode("Helyes válasz."));
+          } else {
+            const correctLabel = question.options.find((option) => option[0] === question.correct)[1];
+            row.appendChild(document.createTextNode(`Helyes válasz: ${correctLabel} ${question.explanation}`));
+          }
+          review.appendChild(row);
+        });
+        $("finish").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function nextQuestion() {
+        if (state.taskIndex >= taskGroups.length - 1) return;
+        state.taskIndex += 1;
+        renderQuestion();
+      }
+
+      function previousQuestion() {
+        if (state.taskIndex === 0) return;
+        state.taskIndex -= 1;
+        renderQuestion();
+      }
+
+      function startGame() {
+        $("intro").hidden = true;
+        $("quiz").hidden = false;
+        $("questionCard").hidden = false;
+        $("finish").hidden = true;
+        renderQuestion();
+        $("quiz").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function restartGame() {
+        state.taskIndex = 0;
+        state.answers = {};
+        state.optionOrders = {};
+        startGame();
+      }
+
+      $("startButton").addEventListener("click", startGame);
+      $("nextButton").addEventListener("click", nextQuestion);
+      $("previousButton").addEventListener("click", previousQuestion);
+      $("submitButton").addEventListener("click", submitAnswers);
+      $("restartButton").addEventListener("click", restartGame);
+
+      updateStatus();
+    })();
+  </script>
+</body>
+</html>
