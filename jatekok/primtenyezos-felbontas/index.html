@@ -447,6 +447,14 @@
       animation: pop-in .2s ease both;
     }
 
+    .factor-chip.hint-highlight {
+      color: var(--warn);
+      background: var(--warn-soft);
+      outline: 3px solid rgba(180, 83, 9, .24);
+      outline-offset: 2px;
+      transform: translateY(-2px);
+    }
+
     .factor-placeholder {
       color: #97a5ba;
       font-size: .9rem;
@@ -551,6 +559,24 @@
     .feedback[data-kind="hint"] {
       color: var(--warn);
       background: var(--warn-soft);
+    }
+
+    .help-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .help-button {
+      min-height: 39px;
+      padding: 0 13px;
+      border: 1px solid #c9d5e7;
+      border-radius: 11px;
+      color: #52627a;
+      background: #f8faff;
+      font-size: .88rem;
+      font-weight: 800;
+      cursor: pointer;
     }
 
     .keyboard-hint {
@@ -856,6 +882,9 @@
           <p class="question-help" id="questionHelp">Válassz egy prímet, amely maradék nélkül osztja a 480-at.</p>
           <div class="choices" id="choices"></div>
           <div class="feedback" id="feedback" aria-live="polite">Először válassz prímosztót.</div>
+          <div class="help-row">
+            <button class="help-button" id="hintButton" type="button">Segítség</button>
+          </div>
           <p class="keyboard-hint">A válaszokat az 1–4 billentyűvel is kiválaszthatod.</p>
         </div>
 
@@ -933,6 +962,7 @@
         questionHelp: document.querySelector('#questionHelp'),
         choices: document.querySelector('#choices'),
         feedback: document.querySelector('#feedback'),
+        hint: document.querySelector('#hintButton'),
         demoPanel: document.querySelector('#demoPanel'),
         demoEquation: document.querySelector('#demoEquation'),
         demoStart: document.querySelector('#demoStartButton'),
@@ -1233,12 +1263,72 @@
         els.feedback.dataset.kind = kind;
       }
 
+      function digitSum(number) {
+        return String(number).split('').reduce((sum, digit) => sum + Number(digit), 0);
+      }
+
+      function clearFactorHighlights() {
+        [...els.chips.children].forEach(chip => chip.classList.remove('hint-highlight'));
+      }
+
+      function divisibilityHint(prime, number) {
+        if (prime === 2) return `${number} páros szám. Melyik prímszám oszt minden páros számot?`;
+        if (prime === 3) {
+          const sum = digitSum(number);
+          return `A számjegyek összege ${sum}. Vizsgáld meg, hogy ez osztható-e 3-mal.`;
+        }
+        if (prime === 5) return `Nézd meg az utolsó számjegyet: ${String(number).slice(-1)}.`;
+        if (prime === 7) return 'A 2, 3 és 5 után próbáld meg a következő prímszámot is.';
+        if (prime === number) {
+          return `Elég a ${Math.floor(Math.sqrt(number))}-nél nem nagyobb prímekkel próbálkozni. Mi történik, ha egyik sem osztja?`;
+        }
+        return 'Haladj a prímeken növekvő sorrendben, és keresd az első maradék nélküli osztást.';
+      }
+
+      function quotientHint(prime, number) {
+        if (prime === 2) return 'A 2-vel osztás felezés: keresd a szám felét.';
+        if (prime === 5) return 'Az 5-tel osztáshoz oszthatsz 10-zel, majd megkétszerezheted az eredményt.';
+        return `A jó hányadost ${prime}-mal visszaszorozva pontosan ${number}-et kell kapnod.`;
+      }
+
+      function showHint() {
+        clearFactorHighlights();
+
+        if (state.stage === 'prime') {
+          const excluded = state.uniquenessPhase === 'second' && state.steps.length === 0
+            ? state.firstPath[0]
+            : null;
+          const suggested = primeDivisors(state.current).find(prime => prime !== excluded)
+            || smallestPrimeDivisor(state.current);
+          setFeedback(divisibilityHint(suggested, state.current), 'hint');
+          return;
+        }
+
+        if (state.stage === 'quotient') {
+          setFeedback(quotientHint(state.selectedPrime, state.current), 'hint');
+          return;
+        }
+
+        if (state.stage === 'exponent') {
+          const prime = state.exponentPrimes[state.exponentIndex];
+          [...els.chips.children].forEach(chip => {
+            if (Number(chip.textContent) === prime) chip.classList.add('hint-highlight');
+          });
+          setFeedback(`Kiemeltem a ${prime} prímtényezőket. Számold meg a kiemelt elemeket.`, 'hint');
+        }
+      }
+
       function handlePrimeChoice(prime) {
         const divides = state.current % prime === 0;
         const smallest = smallestPrimeDivisor(state.current);
 
         if (!divides) {
-          setFeedback(`${prime} nem osztja maradék nélkül a ${state.current}-at.`, 'bad');
+          const quotient = Math.floor(state.current / prime);
+          const remainder = state.current % prime;
+          setFeedback(
+            `${state.current} = ${prime} · ${quotient} + ${remainder}, tehát ${prime} nem osztja maradék nélkül.`,
+            'bad'
+          );
           return;
         }
         if (
@@ -1264,7 +1354,12 @@
       function handleQuotientChoice(quotient) {
         const correct = state.current / state.selectedPrime;
         if (quotient !== correct) {
-          setFeedback(`Ellenőrizd szorzással: ${state.selectedPrime} · ? = ${state.current}.`, 'bad');
+          const product = state.selectedPrime * quotient;
+          const relation = product < state.current ? 'kisebb' : 'nagyobb';
+          setFeedback(
+            `${state.selectedPrime} · ${quotient} = ${product}, ami ${relation}, mint ${state.current}.`,
+            'bad'
+          );
           return;
         }
 
@@ -1467,6 +1562,7 @@
 
       function renderQuestion() {
         if (state.finished) return;
+        clearFactorHighlights();
 
         if (state.stage === 'exponent') {
           const prime = state.exponentPrimes[state.exponentIndex];
@@ -1593,6 +1689,7 @@
       });
 
       els.customForm.addEventListener('submit', startCustomNumber);
+      els.hint.addEventListener('click', showHint);
       els.demoStart.addEventListener('click', startDemoNumber);
       els.customInput.addEventListener('input', () => setCustomNumberError());
       els.demoNext.addEventListener('click', () => addDemoStep());
