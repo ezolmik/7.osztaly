@@ -39,7 +39,7 @@
         var(--canvas);
     }
 
-    button, select { font: inherit; }
+    button, select, input { font: inherit; }
     button { -webkit-tap-highlight-color: transparent; }
 
     .app {
@@ -92,9 +92,112 @@
 
     button:hover { transform: translateY(-1px); }
     button:active { transform: translateY(0); }
-    button:focus-visible, select:focus-visible {
+    button:focus-visible, select:focus-visible, input:focus-visible {
       outline: 3px solid rgba(37, 99, 235, .3);
       outline-offset: 3px;
+    }
+
+    .number-entry {
+      display: grid;
+      grid-template-columns: auto minmax(150px, 220px) auto auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-height: 68px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(217, 226, 241, .9);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(29,53,87,.05);
+      backdrop-filter: blur(12px);
+    }
+
+    .number-entry label {
+      padding-left: 4px;
+      color: var(--ink);
+      font-size: .92rem;
+      font-weight: 800;
+    }
+
+    .number-input {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 14px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-weight: 750;
+    }
+
+    .number-input::placeholder { color: #99a6b9; }
+    .number-input[aria-invalid="true"] { border-color: var(--prime); }
+
+    .input-error {
+      min-height: 1.35em;
+      color: var(--prime);
+      font-size: .86rem;
+      font-weight: 650;
+    }
+
+    .demo-panel {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: fade-up .25s ease both;
+    }
+
+    .demo-panel.visible { display: flex; }
+
+    .demo-badge {
+      align-self: flex-start;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--blue-dark);
+      background: var(--blue-soft);
+      font-size: .78rem;
+      font-weight: 850;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .demo-panel h2 {
+      margin: 13px 0 8px;
+      font-size: 1.7rem;
+      letter-spacing: -.035em;
+    }
+
+    .demo-explanation {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .demo-equation {
+      display: grid;
+      place-items: center;
+      min-height: 98px;
+      padding: 16px;
+      margin-bottom: 18px;
+      color: var(--blue-dark);
+      background: var(--blue-soft);
+      border: 1px solid #ccdcff;
+      border-radius: 17px;
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: clamp(1.25rem, 3vw, 1.65rem);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .demo-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .demo-actions .try-button {
+      grid-column: 1 / -1;
+      margin-top: 3px;
     }
 
     .toolbar {
@@ -134,6 +237,12 @@
       color: var(--blue-dark);
       background: #fff;
       box-shadow: 0 3px 10px rgba(38, 59, 92, .12);
+    }
+
+    select:disabled {
+      color: #8b98ab;
+      background: #f3f5f8;
+      cursor: not-allowed;
     }
 
     .rule-control {
@@ -462,6 +571,77 @@
     .finish.visible { display: flex; }
     .question-area.hidden { display: none; }
 
+    .comparison {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: fade-up .3s ease both;
+    }
+
+    .comparison.visible { display: flex; }
+
+    .comparison h2 {
+      margin: 13px 0 16px;
+      font-size: 1.75rem;
+      letter-spacing: -.035em;
+    }
+
+    .path-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 10px;
+    }
+
+    .path-card {
+      min-width: 0;
+      padding: 13px 11px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #f8faff;
+      text-align: center;
+    }
+
+    .path-card span {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .path-card strong {
+      display: block;
+      color: var(--ink);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .sorted-comparison {
+      padding: 14px;
+      margin-bottom: 10px;
+      color: var(--good);
+      background: var(--good-soft);
+      border-radius: 13px;
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.5;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .comparison-conclusion {
+      margin: 7px 0 18px;
+      color: #40536f;
+      line-height: 1.5;
+      text-align: center;
+    }
+
     .finish-badge {
       align-self: flex-start;
       padding: 7px 10px;
@@ -537,6 +717,19 @@
       margin-top: auto;
     }
 
+    .finish-actions .try-button {
+      display: none;
+      grid-column: 1 / -1;
+    }
+
+    .finish-actions .try-button.visible { display: block; }
+
+    .finish-actions .uniqueness-button { display: none; }
+    .finish-actions .uniqueness-button.visible {
+      display: block;
+      grid-column: 1 / -1;
+    }
+
     @keyframes pop-in {
       from { opacity: 0; transform: scale(.92); }
       to { opacity: 1; transform: scale(1); }
@@ -548,6 +741,10 @@
     }
 
     @media (max-width: 830px) {
+      .number-entry {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+      }
+      .number-entry label, .input-error { grid-column: 1 / -1; }
       .workspace { grid-template-columns: 1fr; }
       .visual-card, .action-card { min-height: auto; }
       .visual-wrap { min-height: 360px; }
@@ -559,6 +756,13 @@
       .topbar { align-items: flex-start; }
       .subtitle { display: none; }
       .new-button { min-height: 42px; padding: 0 12px; }
+      .number-entry {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .number-entry label, .number-input { grid-column: 1 / -1; }
+      .number-entry label { padding-left: 1px; }
+      .input-error { grid-column: 1 / -1; }
       .toolbar { align-items: stretch; flex-direction: column; }
       .segmented { display: grid; grid-template-columns: 1fr 1fr; }
       .rule-control { justify-content: space-between; }
@@ -566,6 +770,9 @@
       .visual-wrap { padding: 10px; }
       .action-card { padding: 18px; }
       .finish-actions { grid-template-columns: 1fr; }
+      .path-comparison { grid-template-columns: 1fr; }
+      .demo-actions { grid-template-columns: 1fr; }
+      .demo-actions .try-button { grid-column: auto; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -585,8 +792,25 @@
         <h1>Prímtényezős felbontás</h1>
         <p class="subtitle">Válassz prímet, számítsd ki a hányadost, és építsd fel a felbontást.</p>
       </div>
-      <button class="new-button" id="newNumberButton" type="button">Új szám</button>
+      <button class="new-button" id="newNumberButton" type="button">Véletlen szám</button>
     </header>
+
+    <form class="number-entry" id="customNumberForm" novalidate>
+      <label for="customNumberInput">Saját szám</label>
+      <input
+        class="number-input"
+        id="customNumberInput"
+        name="number"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="2–1 000 000"
+        aria-describedby="customNumberError"
+        aria-invalid="false">
+      <button class="primary-button" type="submit">Én bontom fel</button>
+      <button class="secondary-button" id="demoStartButton" type="button">Mutasd a felbontást</button>
+      <span class="input-error" id="customNumberError" role="status" aria-live="polite"></span>
+    </form>
 
     <section class="toolbar" aria-label="Játékbeállítások">
       <div class="segmented" role="group" aria-label="Ábrázolási mód">
@@ -635,17 +859,50 @@
           <p class="keyboard-hint">A válaszokat az 1–4 billentyűvel is kiválaszthatod.</p>
         </div>
 
+        <div class="demo-panel" id="demoPanel">
+          <span class="demo-badge">Gépi bemutatás</span>
+          <h2>A legkisebb prímmel haladunk</h2>
+          <p class="demo-explanation">A gép minden lépésben megkeresi a legkisebb prímosztót, majd kiszámítja a hányadost.</p>
+          <div class="demo-equation" id="demoEquation" aria-live="polite"></div>
+          <div class="demo-actions">
+            <button class="primary-button" id="demoNextButton" type="button">Következő lépés</button>
+            <button class="secondary-button" id="demoAllButton" type="button">Mutasd végig</button>
+            <button class="secondary-button try-button" id="demoTryButton" type="button">Most én próbálom</button>
+          </div>
+        </div>
+
         <div class="finish" id="finishPanel">
           <span class="finish-badge">Kész a felbontás</span>
           <h2>A prímek és a kitevőik</h2>
           <div class="result-line" id="expandedResult"></div>
           <div class="multiplicities" id="multiplicities"></div>
           <div class="result-line canonical" id="canonicalResult"></div>
-          <p class="uniqueness">A sorrend változhat, de a prímtényezők és a multiplicitásaik nem.</p>
+          <p class="uniqueness" id="finishMessage">A sorrend változhat, de a prímtényezők és a multiplicitásaik nem.</p>
           <div class="finish-actions">
+            <button class="primary-button try-button" id="finishTryButton" type="button">Most én próbálom</button>
+            <button class="primary-button uniqueness-button" id="uniquenessButton" type="button">Próbáld másik úton</button>
             <button class="secondary-button" id="otherViewButton" type="button">Másik ábrázolással</button>
             <button class="primary-button" id="nextNumberButton" type="button">Következő szám</button>
           </div>
+        </div>
+
+        <div class="comparison" id="comparisonPanel">
+          <span class="finish-badge">Egyértelműség</span>
+          <h2>Két út, ugyanazok a prímek</h2>
+          <div class="path-comparison">
+            <div class="path-card">
+              <span>Első út</span>
+              <strong id="firstPathResult"></strong>
+            </div>
+            <div class="path-card">
+              <span>Második út</span>
+              <strong id="secondPathResult"></strong>
+            </div>
+          </div>
+          <div class="sorted-comparison" id="sortedComparison"></div>
+          <div class="result-line canonical" id="comparisonCanonical"></div>
+          <p class="comparison-conclusion">A sorrend eltér, de a prímtényezők és a multiplicitásaik ugyanazok.</p>
+          <button class="primary-button" id="comparisonNextButton" type="button">Következő szám</button>
         </div>
       </aside>
     </section>
@@ -660,7 +917,8 @@
         180, 200, 216, 240, 252, 270, 300, 360, 420, 480, 504,
         540, 600, 630, 720, 756, 840, 900
       ];
-      const PRIME_POOL = [2, 3, 5, 7, 11, 13, 17, 19];
+      const DISTRACTOR_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
+      const MAX_CUSTOM_NUMBER = 1000000;
       const SVG_NS = 'http://www.w3.org/2000/svg';
 
       const els = {
@@ -675,13 +933,31 @@
         questionHelp: document.querySelector('#questionHelp'),
         choices: document.querySelector('#choices'),
         feedback: document.querySelector('#feedback'),
+        demoPanel: document.querySelector('#demoPanel'),
+        demoEquation: document.querySelector('#demoEquation'),
+        demoStart: document.querySelector('#demoStartButton'),
+        demoNext: document.querySelector('#demoNextButton'),
+        demoAll: document.querySelector('#demoAllButton'),
+        demoTry: document.querySelector('#demoTryButton'),
         finish: document.querySelector('#finishPanel'),
+        finishMessage: document.querySelector('#finishMessage'),
+        finishTry: document.querySelector('#finishTryButton'),
+        uniqueness: document.querySelector('#uniquenessButton'),
+        comparison: document.querySelector('#comparisonPanel'),
+        firstPathResult: document.querySelector('#firstPathResult'),
+        secondPathResult: document.querySelector('#secondPathResult'),
+        sortedComparison: document.querySelector('#sortedComparison'),
+        comparisonCanonical: document.querySelector('#comparisonCanonical'),
+        comparisonNext: document.querySelector('#comparisonNextButton'),
         expanded: document.querySelector('#expandedResult'),
         multiplicities: document.querySelector('#multiplicities'),
         canonical: document.querySelector('#canonicalResult'),
         treeTab: document.querySelector('#treeTab'),
         ladderTab: document.querySelector('#ladderTab'),
         rule: document.querySelector('#ruleSelect'),
+        customForm: document.querySelector('#customNumberForm'),
+        customInput: document.querySelector('#customNumberInput'),
+        customError: document.querySelector('#customNumberError'),
         newNumber: document.querySelector('#newNumberButton'),
         nextNumber: document.querySelector('#nextNumberButton'),
         otherView: document.querySelector('#otherViewButton')
@@ -696,6 +972,16 @@
         selectedPrime: null,
         view: 'tree',
         rule: 'free',
+        mode: 'practice',
+        demoMessage: '',
+        factorizationComplete: false,
+        exponentPrimes: [],
+        exponentIndex: 0,
+        exponentAnswers: {},
+        uniquenessPhase: 'none',
+        firstPath: [],
+        secondPath: [],
+        comparisonReady: false,
         options: [],
         finished: false,
         previousTarget: null
@@ -710,12 +996,41 @@
         return copy;
       }
 
+      function isPrime(number) {
+        if (number < 2) return false;
+        if (number === 2) return true;
+        if (number % 2 === 0) return false;
+        for (let divisor = 3; divisor * divisor <= number; divisor += 2) {
+          if (number % divisor === 0) return false;
+        }
+        return true;
+      }
+
       function primeDivisors(number) {
-        return PRIME_POOL.filter(prime => number % prime === 0);
+        const factors = [];
+        let remainder = number;
+
+        if (remainder % 2 === 0) {
+          factors.push(2);
+          while (remainder % 2 === 0) remainder /= 2;
+        }
+
+        for (let divisor = 3; divisor * divisor <= remainder; divisor += 2) {
+          if (remainder % divisor !== 0) continue;
+          factors.push(divisor);
+          while (remainder % divisor === 0) remainder /= divisor;
+        }
+
+        if (remainder > 1) factors.push(remainder);
+        return factors;
       }
 
       function smallestPrimeDivisor(number) {
-        return PRIME_POOL.find(prime => number % prime === 0) || number;
+        if (number % 2 === 0) return 2;
+        for (let divisor = 3; divisor * divisor <= number; divisor += 2) {
+          if (number % divisor === 0) return divisor;
+        }
+        return number;
       }
 
       function chooseNewTarget() {
@@ -723,7 +1038,7 @@
         return candidates[Math.floor(Math.random() * candidates.length)];
       }
 
-      function resetGame(target = chooseNewTarget(), view = state.view) {
+      function resetGame(target = chooseNewTarget(), view = state.view, mode = 'practice', lab = null) {
         state.previousTarget = state.target;
         state.target = target;
         state.current = target;
@@ -732,10 +1047,110 @@
         state.stage = 'prime';
         state.selectedPrime = null;
         state.view = view;
+        state.mode = mode;
+        state.demoMessage = `Kiindulás: ${target}`;
+        state.factorizationComplete = false;
+        state.exponentPrimes = [];
+        state.exponentIndex = 0;
+        state.exponentAnswers = {};
+        state.uniquenessPhase = lab ? 'second' : 'none';
+        state.firstPath = lab ? [...lab.firstPath] : [];
+        state.secondPath = [];
+        state.comparisonReady = false;
+        if (lab) state.rule = 'free';
         state.finished = false;
-        setFeedback('Először válassz prímosztót.', 'neutral');
-        prepareOptions();
+        setFeedback(
+          lab
+            ? `Az első út ${state.firstPath[0]}-mal indult. Most válassz másik prímosztót.`
+            : isPrime(target)
+            ? `${target} prímszám: a felbontás egyetlen lépésből áll.`
+            : 'Először válassz prímosztót.',
+          lab || isPrime(target) ? 'hint' : 'neutral'
+        );
+        if (mode === 'practice') prepareOptions();
         render();
+      }
+
+      function setCustomNumberError(message = '') {
+        els.customError.textContent = message;
+        els.customInput.setAttribute('aria-invalid', String(Boolean(message)));
+      }
+
+      function readCustomNumber() {
+        const raw = els.customInput.value.trim();
+        const normalized = raw.replace(/[\s\u00a0\u202f]/g, '');
+
+        if (!normalized) return { error: 'Adj meg egy egész számot.' };
+        if (!/^\d+$/.test(normalized)) return { error: 'Csak pozitív egész számot adj meg.' };
+
+        const value = Number(normalized);
+        if (!Number.isSafeInteger(value)) return { error: 'Ez a szám túl nagy.' };
+        if (value === 1) return { error: 'Az 1-nek nincs prímtényezős felbontása.' };
+        if (value < 2 || value > MAX_CUSTOM_NUMBER) {
+          return { error: 'A szám 2 és 1 000 000 közé essen.' };
+        }
+        return { value };
+      }
+
+      function startCustomNumber(event) {
+        event.preventDefault();
+        startChosenNumber('practice');
+      }
+
+      function startChosenNumber(mode) {
+        const result = readCustomNumber();
+        if (result.error) {
+          setCustomNumberError(result.error);
+          els.customInput.focus();
+          return;
+        }
+
+        setCustomNumberError();
+        resetGame(result.value, state.view, mode);
+        els.customInput.blur();
+      }
+
+      function startDemoNumber() {
+        startChosenNumber('demo');
+      }
+
+      function startRandomNumber() {
+        els.customInput.value = '';
+        setCustomNumberError();
+        resetGame(undefined, state.view, 'practice');
+      }
+
+      function addDemoStep(renderAfter = true) {
+        if (state.mode !== 'demo' || state.current === 1) return;
+
+        const from = state.current;
+        const prime = smallestPrimeDivisor(from);
+        const quotient = from / prime;
+        state.steps.push({ from, prime, quotient });
+        state.factors.push(prime);
+        state.current = quotient;
+        state.demoMessage = `${from} = ${prime} · ${quotient}`;
+
+        if (quotient === 1) {
+          beginExponentCheck(renderAfter);
+          return;
+        }
+
+        if (renderAfter) render();
+      }
+
+      function showAllDemoSteps() {
+        if (state.mode !== 'demo') return;
+        while (state.current > 1) addDemoStep(false);
+        render();
+      }
+
+      function tryCurrentNumber() {
+        resetGame(state.target, state.view, 'practice');
+      }
+
+      function startUniquenessLab() {
+        resetGame(state.target, state.view, 'practice', { firstPath: [...state.factors] });
       }
 
       function preparePrimeOptions() {
@@ -743,8 +1158,18 @@
         const required = state.rule === 'ordered'
           ? [smallestPrimeDivisor(state.current)]
           : valid;
-        const distractors = shuffled(PRIME_POOL.filter(prime => !required.includes(prime)));
-        let options = [...required];
+        let displayedValid = shuffled(required).slice(0, 4);
+
+        if (state.uniquenessPhase === 'second' && state.steps.length === 0) {
+          const previousFirst = state.firstPath[0];
+          const alternatives = shuffled(valid.filter(prime => prime !== previousFirst));
+          displayedValid = [previousFirst, ...alternatives].slice(0, 4);
+        }
+
+        const distractors = shuffled(
+          DISTRACTOR_PRIMES.filter(prime => state.current % prime !== 0 && !displayedValid.includes(prime))
+        );
+        let options = [...displayedValid];
         for (const candidate of distractors) {
           if (options.length >= 4) break;
           options.push(candidate);
@@ -771,9 +1196,36 @@
         state.options = shuffled([quotient, ...shuffled(unique.filter(n => n !== quotient)).slice(0, 3)]);
       }
 
+      function prepareExponentOptions() {
+        const prime = state.exponentPrimes[state.exponentIndex];
+        const correct = factorCounts()[prime];
+        const candidates = [correct, correct - 1, correct + 1, correct + 2, 1, 2, 3, 4]
+          .filter(value => value >= 1);
+        const unique = [...new Set(candidates)];
+        let filler = 1;
+        while (unique.length < 4) {
+          if (!unique.includes(filler)) unique.push(filler);
+          filler += 1;
+        }
+        state.options = shuffled([correct, ...shuffled(unique.filter(value => value !== correct)).slice(0, 3)]);
+      }
+
       function prepareOptions() {
         if (state.stage === 'prime') preparePrimeOptions();
-        else prepareQuotientOptions();
+        else if (state.stage === 'quotient') prepareQuotientOptions();
+        else prepareExponentOptions();
+      }
+
+      function beginExponentCheck(renderAfter = true) {
+        state.factorizationComplete = true;
+        state.stage = 'exponent';
+        state.selectedPrime = null;
+        state.exponentPrimes = Object.keys(factorCounts()).map(Number).sort((a, b) => a - b);
+        state.exponentIndex = 0;
+        state.exponentAnswers = {};
+        prepareExponentOptions();
+        setFeedback('A prímtényezők megvannak. Most határozd meg a kitevőiket.', 'hint');
+        if (renderAfter) render();
       }
 
       function setFeedback(message, kind = 'neutral') {
@@ -787,6 +1239,14 @@
 
         if (!divides) {
           setFeedback(`${prime} nem osztja maradék nélkül a ${state.current}-at.`, 'bad');
+          return;
+        }
+        if (
+          state.uniquenessPhase === 'second' &&
+          state.steps.length === 0 &&
+          prime === state.firstPath[0]
+        ) {
+          setFeedback(`${prime} jó prímosztó, de most indulj egy másikkal, hogy valóban új utat kapjunk.`, 'hint');
           return;
         }
         if (state.rule === 'ordered' && prime !== smallest) {
@@ -816,8 +1276,15 @@
         state.selectedPrime = null;
 
         if (quotient === 1) {
-          state.finished = true;
-          render();
+          if (state.uniquenessPhase === 'second') {
+            state.secondPath = [...state.factors];
+            state.comparisonReady = true;
+            state.finished = true;
+            state.stage = 'done';
+            render();
+            return;
+          }
+          beginExponentCheck();
           return;
         }
 
@@ -830,7 +1297,32 @@
       function handleChoice(value) {
         if (state.finished) return;
         if (state.stage === 'prime') handlePrimeChoice(value);
-        else handleQuotientChoice(value);
+        else if (state.stage === 'quotient') handleQuotientChoice(value);
+        else handleExponentChoice(value);
+      }
+
+      function handleExponentChoice(value) {
+        const prime = state.exponentPrimes[state.exponentIndex];
+        const correct = factorCounts()[prime];
+
+        if (value !== correct) {
+          setFeedback(`Számold meg újra, hányszor szerepel a ${prime} a szorzatban.`, 'bad');
+          return;
+        }
+
+        state.exponentAnswers[prime] = value;
+        state.exponentIndex += 1;
+
+        if (state.exponentIndex >= state.exponentPrimes.length) {
+          state.finished = true;
+          state.stage = 'done';
+          render();
+          return;
+        }
+
+        prepareExponentOptions();
+        setFeedback(`Jó: a ${prime} kitevője ${correct}.`, 'good');
+        renderQuestion();
       }
 
       function productText(values) {
@@ -862,7 +1354,9 @@
         els.current.textContent = state.finished ? '1' : state.current;
         els.treeTab.setAttribute('aria-pressed', String(state.view === 'tree'));
         els.ladderTab.setAttribute('aria-pressed', String(state.view === 'ladder'));
-        els.rule.value = state.rule;
+        const uniquenessRun = state.uniquenessPhase === 'second';
+        els.rule.value = state.mode === 'demo' ? 'ordered' : uniquenessRun ? 'free' : state.rule;
+        els.rule.disabled = state.mode === 'demo' || uniquenessRun;
 
         const factorPart = productText(state.factors);
         els.invariant.textContent = state.factors.length
@@ -974,20 +1468,34 @@
       function renderQuestion() {
         if (state.finished) return;
 
-        const stepNumber = state.steps.length + 1;
-        els.questionCount.textContent = `${stepNumber}. lépés · ${state.stage === 'prime' ? 'prím' : 'hányados'}`;
-
-        if (state.stage === 'prime') {
-          const ordered = state.rule === 'ordered';
-          els.questionTitle.textContent = ordered
-            ? 'Melyik a legkisebb prímosztó?'
-            : 'Melyik prímmel osztasz?';
-          els.questionHelp.textContent = ordered
-            ? `Keresd meg a ${state.current} legkisebb prímosztóját.`
-            : `Válassz egy prímet, amely maradék nélkül osztja a ${state.current}-at.`;
+        if (state.stage === 'exponent') {
+          const prime = state.exponentPrimes[state.exponentIndex];
+          els.questionCount.textContent = `Kitevők · ${state.exponentIndex + 1}/${state.exponentPrimes.length}`;
+          els.questionTitle.textContent = `A ${prime} hányszor szerepel?`;
+          els.questionHelp.textContent = 'A kitevő azt mutatja, hányszor szerepel a prím a szorzatban.';
         } else {
-          els.questionTitle.textContent = `Mennyi ${state.current} : ${state.selectedPrime}?`;
-          els.questionHelp.textContent = `A hányados lesz a következő felbontandó szám.`;
+          const stepNumber = state.steps.length + 1;
+          els.questionCount.textContent = state.uniquenessPhase === 'second'
+            ? `Második út · ${stepNumber}. lépés`
+            : `${stepNumber}. lépés · ${state.stage === 'prime' ? 'prím' : 'hányados'}`;
+
+          if (state.stage === 'prime') {
+            const ordered = state.rule === 'ordered';
+            const chooseDifferentFirst = state.uniquenessPhase === 'second' && state.steps.length === 0;
+            els.questionTitle.textContent = chooseDifferentFirst
+              ? 'Indulj másik prímmel!'
+              : ordered
+              ? 'Melyik a legkisebb prímosztó?'
+              : 'Melyik prímmel osztasz?';
+            els.questionHelp.textContent = chooseDifferentFirst
+              ? `Az első út ${state.firstPath[0]}-mal indult. Most válassz másik prímosztót.`
+              : ordered
+              ? `Keresd meg a ${state.current} legkisebb prímosztóját.`
+              : `Válassz egy prímet, amely maradék nélkül osztja a ${state.current}-at.`;
+          } else {
+            els.questionTitle.textContent = `Mennyi ${state.current} : ${state.selectedPrime}?`;
+            els.questionHelp.textContent = 'A hányados lesz a következő felbontandó szám.';
+          }
         }
 
         els.choices.replaceChildren();
@@ -1000,6 +1508,10 @@
           button.addEventListener('click', () => handleChoice(value));
           els.choices.append(button);
         });
+      }
+
+      function renderDemo() {
+        els.demoEquation.textContent = state.demoMessage;
       }
 
       function renderFinish() {
@@ -1017,6 +1529,25 @@
 
         const otherName = state.view === 'tree' ? 'osztólétrával' : 'felbontási fával';
         els.otherView.textContent = `Újra ${otherName}`;
+        els.finishTry.classList.toggle('visible', state.mode === 'demo');
+        const hasAlternativePath = Object.keys(factorCounts()).length > 1;
+        els.uniqueness.classList.toggle('visible', hasAlternativePath);
+        els.finishMessage.textContent = hasAlternativePath
+          ? state.mode === 'demo'
+            ? 'A gép a legkisebb prímekkel haladt. Most kipróbálhatod más sorrendben is.'
+            : 'A sorrend változhat. Próbáld ki ugyanezt a számot másik kezdő prímmel.'
+          : 'Csak egyféle prím szerepel, ezért ennél a számnál nincs más sorrendű út.';
+      }
+
+      function renderComparison() {
+        const first = state.firstPath.join(' · ');
+        const second = state.secondPath.join(' · ');
+        const firstSorted = [...state.firstPath].sort((a, b) => a - b).join(' · ');
+        const secondSorted = [...state.secondPath].sort((a, b) => a - b).join(' · ');
+        els.firstPathResult.textContent = first;
+        els.secondPathResult.textContent = second;
+        els.sortedComparison.textContent = `Rendezve: ${firstSorted} = ${secondSorted}`;
+        els.comparisonCanonical.textContent = `${state.target} = ${canonicalText()}`;
       }
 
       function render() {
@@ -1024,10 +1555,18 @@
         renderChips();
         renderVisual();
 
-        els.questionArea.classList.toggle('hidden', state.finished);
-        els.finish.classList.toggle('visible', state.finished);
+        const showComparison = state.comparisonReady;
+        const showExponent = !state.finished && state.stage === 'exponent';
+        const showQuestion = !state.finished && (state.mode === 'practice' || showExponent);
+        const showDemo = !state.finished && state.mode === 'demo' && !showExponent;
+        els.questionArea.classList.toggle('hidden', !showQuestion);
+        els.demoPanel.classList.toggle('visible', showDemo);
+        els.finish.classList.toggle('visible', state.finished && !showComparison);
+        els.comparison.classList.toggle('visible', showComparison);
 
-        if (state.finished) renderFinish();
+        if (showComparison) renderComparison();
+        else if (state.finished) renderFinish();
+        else if (showDemo) renderDemo();
         else renderQuestion();
       }
 
@@ -1053,15 +1592,26 @@
         }
       });
 
-      els.newNumber.addEventListener('click', () => resetGame());
-      els.nextNumber.addEventListener('click', () => resetGame());
+      els.customForm.addEventListener('submit', startCustomNumber);
+      els.demoStart.addEventListener('click', startDemoNumber);
+      els.customInput.addEventListener('input', () => setCustomNumberError());
+      els.demoNext.addEventListener('click', () => addDemoStep());
+      els.demoAll.addEventListener('click', showAllDemoSteps);
+      els.demoTry.addEventListener('click', tryCurrentNumber);
+      els.finishTry.addEventListener('click', tryCurrentNumber);
+      els.uniqueness.addEventListener('click', startUniquenessLab);
+      els.comparisonNext.addEventListener('click', startRandomNumber);
+      els.newNumber.addEventListener('click', startRandomNumber);
+      els.nextNumber.addEventListener('click', startRandomNumber);
       els.otherView.addEventListener('click', () => {
         const other = state.view === 'tree' ? 'ladder' : 'tree';
-        resetGame(state.target, other);
+        resetGame(state.target, other, state.mode);
       });
 
       document.addEventListener('keydown', event => {
-        if (state.finished) return;
+        const tagName = event.target && event.target.tagName;
+        const acceptsAnswers = state.mode === 'practice' || state.stage === 'exponent';
+        if (state.finished || !acceptsAnswers || ['INPUT', 'SELECT', 'BUTTON'].includes(tagName)) return;
         const index = Number(event.key) - 1;
         if (index >= 0 && index < state.options.length) {
           event.preventDefault();
