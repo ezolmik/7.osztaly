@@ -1519,6 +1519,18 @@
         prepareReverseProductOptions();
       }
 
+      function beginReverseMultiplication() {
+        state.reverseTerms = state.reversePowerAnswers.map(value => ({ value }));
+        if (state.reverseTerms.length === 2) {
+          startOnlyRemainingReverseProduct();
+          return;
+        }
+        state.reverseStage = 'pair';
+        state.reverseFeedbackText = 'A hatványok készen vannak. Válaszd ki, melyik két szomszédos részszorzattal folytassuk.';
+        state.reverseFeedbackKind = 'good';
+        prepareReversePairOptions();
+      }
+
       function prepareReverseOptions() {
         if (!state.reverseTask) return;
         if (state.reverseStage === 'power') prepareReversePowerOptions();
@@ -1559,23 +1571,18 @@
         if (powerStage) {
           state.reversePowerAnswers[state.reversePowerIndex] = correct;
           state.reverseHistory.push(`${prime}${superscript(exponent)} = ${correct}`);
-          state.reversePowerIndex += 1;
+          const nextPowerIndex = state.reverseTask.powers.findIndex(
+            ([, candidateExponent], index) => index > state.reversePowerIndex && candidateExponent > 1
+          );
           state.reverseHintVisible = false;
 
-          if (state.reversePowerIndex < state.reverseTask.powers.length) {
+          if (nextPowerIndex !== -1) {
+            state.reversePowerIndex = nextPowerIndex;
             state.reverseFeedbackText = 'Helyes. Jöhet a következő prímhatvány.';
             state.reverseFeedbackKind = 'good';
             prepareReversePowerOptions();
           } else {
-            state.reverseTerms = state.reversePowerAnswers.map(value => ({ value }));
-            if (state.reverseTerms.length === 2) {
-              startOnlyRemainingReverseProduct();
-            } else {
-              state.reverseStage = 'pair';
-              state.reverseFeedbackText = 'A hatványok készen vannak. Válaszd ki, melyik két szomszédos részszorzattal folytassuk.';
-              state.reverseFeedbackKind = 'good';
-              prepareReversePairOptions();
-            }
+            beginReverseMultiplication();
           }
           render();
           return;
@@ -1656,15 +1663,19 @@
         state.reverseTask = reverseTask;
         state.reverseOptions = [];
         state.reverseStage = 'power';
-        state.reversePowerIndex = 0;
-        state.reversePowerAnswers = [];
+        state.reversePowerIndex = reverseTask
+          ? reverseTask.powers.findIndex(([, exponent]) => exponent > 1)
+          : 0;
+        state.reversePowerAnswers = reverseTask
+          ? reverseTask.powers.map(([prime, exponent]) => exponent === 1 ? prime : undefined)
+          : [];
         state.reverseTerms = [];
         state.reversePairOptions = [];
         state.reverseSelectedPair = null;
         state.reverseHistory = [];
         state.reverseSolved = false;
         state.reverseHintVisible = false;
-        state.reverseFeedbackText = 'Számítsd ki külön az első prímhatvány értékét.';
+        state.reverseFeedbackText = 'Számítsd ki az első, 1-nél nagyobb kitevőjű prímhatvány értékét.';
         state.reverseFeedbackKind = '';
         if (lab) state.rule = 'free';
         state.finished = false;
@@ -1677,7 +1688,10 @@
           lab || isPrime(target) ? 'hint' : 'neutral'
         );
         if (mode === 'practice') prepareOptions();
-        if (mode === 'reverse') prepareReverseOptions();
+        if (mode === 'reverse') {
+          if (state.reversePowerIndex === -1) beginReverseMultiplication();
+          else prepareReverseOptions();
+        }
         render();
       }
 
@@ -2280,10 +2294,12 @@
         powerGrid.className = 'reverse-power-grid';
         state.reverseTask.powers.forEach(([prime, exponent], index) => {
           const step = document.createElement('span');
-          const isDone = index < state.reversePowerAnswers.length;
+          const answer = state.reversePowerAnswers[index];
+          const isDone = answer !== undefined;
           const isCurrent = state.reverseStage === 'power' && index === state.reversePowerIndex;
           step.className = `reverse-power-step${isDone ? ' done' : isCurrent ? ' current' : ''}`;
-          step.textContent = `${prime}${superscript(exponent)} = ${isDone ? state.reversePowerAnswers[index] : '?'}`;
+          const powerLabel = exponent === 1 ? `${prime}` : `${prime}${superscript(exponent)}`;
+          step.textContent = `${powerLabel} = ${isDone ? answer : '?'}`;
           powerGrid.append(step);
         });
         board.append(powerGrid);
@@ -2320,8 +2336,12 @@
         els.reverseChoices.replaceChildren();
         if (state.reverseStage === 'power') {
           const [prime, exponent] = state.reverseTask.powers[state.reversePowerIndex];
+          const calculableIndices = state.reverseTask.powers
+            .map(([, candidateExponent], index) => candidateExponent > 1 ? index : -1)
+            .filter(index => index !== -1);
+          const questionNumber = calculableIndices.indexOf(state.reversePowerIndex) + 1;
           els.reverseTitle.textContent = `Mennyi ${prime}${superscript(exponent)}?`;
-          els.reverseHelp.textContent = `Prímhatványok · ${state.reversePowerIndex + 1}/${state.reverseTask.powers.length}`;
+          els.reverseHelp.textContent = `Számolandó prímhatványok · ${questionNumber}/${calculableIndices.length}`;
         } else if (state.reverseStage === 'pair') {
           els.reverseTitle.textContent = 'Melyik két részszorzatot számoljuk ki?';
           els.reverseHelp.textContent = 'Bármelyik szomszédos pár jó. Te választod meg a szorzás sorrendjét.';
