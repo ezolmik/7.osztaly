@@ -15,6 +15,7 @@
       --paper: #fff;
       --line: #e4e2db;
       --accent: #16695f;
+      --accent-soft: #e5f2ef;
       --icon: #f5e9df;
       --focus: #f4c95d;
     }
@@ -39,7 +40,7 @@
 
     header {
       max-width: 680px;
-      margin-bottom: 36px;
+      margin-bottom: 42px;
     }
 
     .eyebrow {
@@ -62,6 +63,27 @@
       color: var(--muted);
       font-size: clamp(1rem, 2.5vw, 1.16rem);
       line-height: 1.55;
+    }
+
+    /* Kategória blokkok */
+    .category-section {
+      margin-bottom: 48px;
+    }
+
+    .category-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 20px;
+      font: 800 1.6rem / 1.2 Georgia, serif;
+      color: var(--ink);
+    }
+
+    .category-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
     }
 
     .games {
@@ -95,18 +117,43 @@
       outline-offset: 4px;
     }
 
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
     .icon {
       display: grid;
       place-items: center;
       width: 64px;
       height: 64px;
-      margin-bottom: 30px;
       border-radius: 18px;
       font-size: 2.15rem;
       background: var(--icon);
     }
 
-    h2 {
+    /* Új: Tag-ek tárolója, ha több is van */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .tag {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 5px 10px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    h3 {
       margin: auto 0 8px;
       font: 800 1.45rem / 1.15 Georgia, serif;
     }
@@ -125,7 +172,7 @@
 
     footer {
       max-width: 690px;
-      margin-top: 34px;
+      margin-top: 50px;
       color: #818a8e;
       font-size: .9rem;
       line-height: 1.55;
@@ -152,7 +199,9 @@
       }
 
       .icon {
-        margin-bottom: 18px;
+        width: 52px;
+        height: 52px;
+        font-size: 1.75rem;
       }
     }
 
@@ -169,42 +218,87 @@
     <header>
       <p class="eyebrow">7. osztály</p>
       <h1>Matematikai játékok</h1>
-      <p class="lead">Logikai és stratégiai fejtörők, amelyeket telefonon és számítógépen is kipróbálhatsz. Válassz egy
-        játékot!</p>
+      <p class="lead">Logikai fejtörők, számelméleti feladatok és tanári segédeszközök telefonra és számítógépre.</p>
     </header>
 
-    <section class="games" aria-label="Játékok">
-      <a class="card" href="jatekok/pandora-szelenceje/index.html">
-        <span class="icon" aria-hidden="true">📦</span>
-        <h2>Pandora szelencéje</h2>
-        <p>Három kijelentés, két megfigyelő és rengeteg Skibidi. Melyik lehet a legnagyobb bajkeverő?</p>
-        <span class="go">Játék indítása →</span>
-      </a>
-      <a class="card" href="jatekok/szorgi-morgi/index.html">
-        <span class="icon" aria-hidden="true">🎭</span>
-        <h2>Szorgi vagy morgi?</h2>
-        <p>A szorgik mindig igazat mondanak, a morgik mindig hazudnak. Kövesd a matematikai nyomokat, és leplezd le
-          őket!</p>
-        <span class="go">Játék indítása →</span>
-      </a>
-      <a class="card" href="jatekok/eratoszthenesz-szitaja/index.html">
-        <span class="icon" aria-hidden="true">🔢</span>
-        <h2>Eratoszthenész szitája</h2>
-        <p>Változtasd a prímszámokat szitává, ejtsd ki a többszöröseiket, és gyűjtsd össze, ami fennmarad!</p>
-        <span class="go">Játék indítása →</span>
-      </a>  
-      <a class="card" href="jatekok/ultetes/index.html">
-        <span class="icon" aria-hidden="true">🪑</span>
-        <h2>Ültetés</h2>
-        <p>Egy egyszerű tanári eszköz ültetés definiálására.</p>
-        <span class="go">Eszköz használata →</span>
-      </a>
-      <a class="card" href="jatekok/primtenyezos-felbontas/index.html">
-        <span class="icon" aria-hidden="true">ℙ</span>
-        <h2>Prímtényezős felbontás</h2>
-        <p>Egy egyszerű tanári eszköz prímtényezős felbontás definiálására.</p>
-        <span class="go">Eszköz használata →</span>
-      </a>
+    <!-- 1. KATEGÓRIA: LOGIKAI JÁTÉKOK -->
+    <section class="category-section" aria-labelledby="cat-logic">
+      <h2 id="cat-logic" class="category-title">Logikai és stratégiai játékok</h2>
+      <div class="games">
+        <a class="card" href="jatekok/pandora-szelenceje/index.html">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">📦</span>
+            <div class="tags">
+              <span class="tag">Logika</span>
+            </div>
+          </div>
+          <h3>Pandora szelencéje</h3>
+          <p>Három kijelentés, két megfigyelő és rengeteg Skibidi. Melyik lehet a legnagyobb bajkeverő?</p>
+          <span class="go">Játék indítása →</span>
+        </a>
+
+        <!-- ITT A VÁLTOZÁS: Két címke a Szorgi vagy morgi kártyán -->
+        <a class="card" href="jatekok/szorgi-morgi/index.html">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">🎭</span>
+            <div class="tags">
+              <span class="tag">Logika</span>
+              <span class="tag">Számelmélet</span>
+            </div>
+          </div>
+          <h3>Szorgi vagy morgi?</h3>
+          <p>A szorgik mindig igazat mondanak, a morgik mindig hazudnak. Kövesd a matematikai nyomokat, és leplezd le őket!</p>
+          <span class="go">Játék indítása →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 2. KATEGÓRIA: SZÁMELMÉLET -->
+    <section class="category-section" aria-labelledby="cat-num">
+      <h2 id="cat-num" class="category-title">Számelmélet</h2>
+      <div class="games">
+        <a class="card" href="jatekok/eratoszthenesz-szitaja/index.html">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">🔢</span>
+            <div class="tags">
+              <span class="tag">Számelmélet</span>
+            </div>
+          </div>
+          <h3>Eratoszthenész szitája</h3>
+          <p>Változtasd a prímszámokat szitává, ejtsd ki a többszöröseiket, és gyűjtsd össze, ami fennmarad!</p>
+          <span class="go">Játék indítása →</span>
+        </a>
+
+        <a class="card" href="jatekok/primtenyezos-felbontas/index.html">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">ℙ</span>
+            <div class="tags">
+              <span class="tag">Számelmélet</span>
+            </div>
+          </div>
+          <h3>Prímtényezős felbontás</h3>
+          <p>Egy egyszerű eszköz számok prímtényezős szorzat alakjának vizsgálatára.</p>
+          <span class="go">Gyakorlás indítása →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 3. KATEGÓRIA: TANÁRI ESZKÖZÖK -->
+    <section class="category-section" aria-labelledby="cat-tools">
+      <h2 id="cat-tools" class="category-title">Tanári eszközök</h2>
+      <div class="games">
+        <a class="card" href="jatekok/ultetes/index.html">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">🪑</span>
+            <div class="tags">
+              <span class="tag">Segédeszköz</span>
+            </div>
+          </div>
+          <h3>Ültetés</h3>
+          <p>Egy egyszerű tanári eszköz véletlenszerű vagy szabály alapú ültetési rend generálására.</p>
+          <span class="go">Eszköz megnyitása →</span>
+        </a>
+      </div>
     </section>
 
     <footer>
