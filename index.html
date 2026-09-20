@@ -40,7 +40,7 @@
 
     header {
       max-width: 680px;
-      margin-bottom: 42px;
+      margin-bottom: 28px;
     }
 
     .eyebrow {
@@ -65,9 +65,62 @@
       line-height: 1.55;
     }
 
+    /* --- SZŰRŐSÁV STÍLUSOK --- */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      padding: 14px 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 4px 12px rgba(30, 39, 42, .03);
+    }
+
+    .filter-label {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .filter-chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fdfbf7;
+      color: var(--ink);
+      padding: 7px 14px;
+      border-radius: 12px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s ease;
+    }
+
+    .filter-chip:hover {
+      background: var(--accent-soft);
+      border-color: #b8d0cc;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
     /* Kategória blokkok */
     .category-section {
       margin-bottom: 48px;
+      transition: opacity .2s ease;
+    }
+
+    .category-section.is-hidden {
+      display: none;
     }
 
     .category-title {
@@ -106,6 +159,10 @@
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
+    .card.is-hidden {
+      display: none !important;
+    }
+
     .card:hover {
       transform: translateY(-5px);
       border-color: #b8d0cc;
@@ -134,21 +191,20 @@
       background: var(--icon);
     }
 
-    /* Új: Tag-ek tárolója, ha több is van */
     .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       justify-content: flex-end;
     }
 
     .tag {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      padding: 5px 10px;
-      border-radius: 10px;
+      padding: 5px 9px;
+      border-radius: 8px;
       background: var(--accent-soft);
       color: var(--accent);
     }
@@ -204,12 +260,6 @@
         font-size: 1.75rem;
       }
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      .card {
-        transition: none;
-      }
-    }
   </style>
 </head>
 
@@ -221,11 +271,20 @@
       <p class="lead">Logikai fejtörők, számelméleti feladatok és tanári segédeszközök telefonra és számítógépre.</p>
     </header>
 
-    <!-- 1. KATEGÓRIA: LOGIKAI JÁTÉKOK -->
+    <!-- SZŰRŐSÁV -->
+    <div class="filter-bar" role="toolbar" aria-label="Játékok szűrése témakör szerint">
+      <span class="filter-label">Szűrés:</span>
+      <button type="button" class="filter-chip active" data-filter="all">Mind</button>
+      <button type="button" class="filter-chip" data-filter="logika">Logika</button>
+      <button type="button" class="filter-chip" data-filter="szamelmelet">Számelmélet</button>
+      <button type="button" class="filter-chip" data-filter="segedeszkoz">Tanári eszköz</button>
+    </div>
+
+    <!-- 1. KATEGÓRIA: LOGIKA -->
     <section class="category-section" aria-labelledby="cat-logic">
       <h2 id="cat-logic" class="category-title">Logikai és stratégiai játékok</h2>
       <div class="games">
-        <a class="card" href="jatekok/pandora-szelenceje/index.html">
+        <a class="card" href="jatekok/pandora-szelenceje/index.html" data-tags="logika">
           <div class="card-top">
             <span class="icon" aria-hidden="true">📦</span>
             <div class="tags">
@@ -237,8 +296,8 @@
           <span class="go">Játék indítása →</span>
         </a>
 
-        <!-- ITT A VÁLTOZÁS: Két címke a Szorgi vagy morgi kártyán -->
-        <a class="card" href="jatekok/szorgi-morgi/index.html">
+        <!-- Szorgi-morgi mindkét tag-et megkapta: data-tags="logika szamelmelet" -->
+        <a class="card" href="jatekok/szorgi-morgi/index.html" data-tags="logika szamelmelet">
           <div class="card-top">
             <span class="icon" aria-hidden="true">🎭</span>
             <div class="tags">
@@ -257,7 +316,7 @@
     <section class="category-section" aria-labelledby="cat-num">
       <h2 id="cat-num" class="category-title">Számelmélet</h2>
       <div class="games">
-        <a class="card" href="jatekok/eratoszthenesz-szitaja/index.html">
+        <a class="card" href="jatekok/eratoszthenesz-szitaja/index.html" data-tags="szamelmelet">
           <div class="card-top">
             <span class="icon" aria-hidden="true">🔢</span>
             <div class="tags">
@@ -269,7 +328,7 @@
           <span class="go">Játék indítása →</span>
         </a>
 
-        <a class="card" href="jatekok/primtenyezos-felbontas/index.html">
+        <a class="card" href="jatekok/primtenyezos-felbontas/index.html" data-tags="szamelmelet">
           <div class="card-top">
             <span class="icon" aria-hidden="true">ℙ</span>
             <div class="tags">
@@ -287,7 +346,7 @@
     <section class="category-section" aria-labelledby="cat-tools">
       <h2 id="cat-tools" class="category-title">Tanári eszközök</h2>
       <div class="games">
-        <a class="card" href="jatekok/ultetes/index.html">
+        <a class="card" href="jatekok/ultetes/index.html" data-tags="segedeszkoz">
           <div class="card-top">
             <span class="icon" aria-hidden="true">🪑</span>
             <div class="tags">
@@ -306,6 +365,68 @@
       A téves próbálkozás is értékes nyom: megmutatja, mit kell másképp gondolnod a következő lépésben.
     </footer>
   </main>
+
+  <!-- MULTI-TAG SZŰRŐ MOTOR -->
+  <script>
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const cards = document.querySelectorAll('.card');
+    const sections = document.querySelectorAll('.category-section');
+    const allChip = document.querySelector('[data-filter="all"]');
+
+    let activeFilters = new Set();
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const tag = chip.dataset.filter;
+
+        if (tag === 'all') {
+          // Ha az "Összes"-re kattintunk, töröljük a kiválasztásokat
+          activeFilters.clear();
+          filterChips.forEach(c => c.classList.remove('active'));
+          allChip.classList.add('active');
+        } else {
+          allChip.classList.remove('active');
+
+          // Ki-be kapcsolás (toggle)
+          if (activeFilters.has(tag)) {
+            activeFilters.delete(tag);
+            chip.classList.remove('active');
+          } else {
+            activeFilters.add(tag);
+            chip.classList.add('active');
+          }
+
+          // Ha minden szűrőt kikattintott, visszalépünk "Mind"-re
+          if (activeFilters.size === 0) {
+            allChip.classList.add('active');
+          }
+        }
+
+        applyFilters();
+      });
+    });
+
+    function applyFilters() {
+      // 1. Kártyák megjelenítése / rejtése
+      cards.forEach(card => {
+        const cardTags = (card.dataset.tags || '').split(' ');
+        
+        if (activeFilters.size === 0) {
+          card.classList.remove('is-hidden');
+        } else {
+          // VAGY kapcsolat: ha a kártya bármelyik aktív címkével rendelkezik, látszik
+          const matches = [...activeFilters].some(f => cardTags.includes(f));
+          card.classList.toggle('is-hidden', !matches);
+        }
+      });
+
+      // 2. Kategória szekciók intelligens elrejtése, ha nincs bennük látható kártya
+      sections.forEach(section => {
+        const visibleCards = section.querySelectorAll('.card:not(.is-hidden)');
+        section.classList.toggle('is-hidden', visibleCards.length === 0);
+      });
+    }
+  </script>
 </body>
 
 </html>
