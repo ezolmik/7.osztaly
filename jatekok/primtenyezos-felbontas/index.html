@@ -204,6 +204,51 @@
       font-weight: 800;
     }
 
+    .reverse-power-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .reverse-power-step {
+      padding: 9px 12px;
+      border: 1px solid #dbe3ef;
+      border-radius: 11px;
+      color: var(--muted);
+      background: #fff;
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .reverse-power-step.current {
+      border-color: var(--blue);
+      color: var(--blue-dark);
+      background: var(--blue-soft);
+    }
+
+    .reverse-power-step.done {
+      border-color: #afd8c1;
+      color: var(--good);
+      background: var(--good-soft);
+    }
+
+    .reverse-terms {
+      color: var(--blue-dark);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: clamp(1.55rem, 5vw, 2.65rem);
+      font-weight: 800;
+    }
+
+    .reverse-history {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: 1.05rem;
+    }
+
     .reverse-feedback {
       min-height: 62px;
       display: flex;
@@ -1144,8 +1189,8 @@
 
         <div class="reverse-panel" id="reversePanel">
           <span class="demo-badge">Fordított játék</span>
-          <h2>Melyik szám tartozik hozzá?</h2>
-          <p class="demo-explanation">Számítsd ki a prímhatványokat, majd szorozd össze őket.</p>
+          <h2 id="reverseTitle">Számítsd ki az első prímhatványt!</h2>
+          <p class="demo-explanation" id="reverseHelp">Előbb külön meghatározzuk minden prímhatvány értékét.</p>
           <div class="choices" id="reverseChoices"></div>
           <div class="reverse-feedback" id="reverseFeedback" aria-live="polite">Válaszd ki a kanonikus alak értékét.</div>
           <div class="help-row">
@@ -1287,6 +1332,8 @@
         seriesRestart: document.querySelector('#seriesRestartButton'),
         reverseStart: document.querySelector('#reverseStartButton'),
         reversePanel: document.querySelector('#reversePanel'),
+        reverseTitle: document.querySelector('#reverseTitle'),
+        reverseHelp: document.querySelector('#reverseHelp'),
         reverseChoices: document.querySelector('#reverseChoices'),
         reverseFeedback: document.querySelector('#reverseFeedback'),
         reverseHint: document.querySelector('#reverseHintButton'),
@@ -1332,9 +1379,16 @@
         sessionRecorded: false,
         reverseTask: null,
         reverseOptions: [],
+        reverseStage: 'power',
+        reversePowerIndex: 0,
+        reversePowerAnswers: [],
+        reverseTerms: [],
+        reversePairOptions: [],
+        reverseSelectedPair: null,
+        reverseHistory: [],
         reverseSolved: false,
         reverseHintVisible: false,
-        reverseFeedbackText: 'Válaszd ki a kanonikus alak értékét.',
+        reverseFeedbackText: 'Számítsd ki külön az első prímhatvány értékét.',
         reverseFeedbackKind: '',
         options: [],
         finished: false,
@@ -1412,43 +1466,64 @@
           .join(' · ');
       }
 
-      function reverseExpanded(task) {
-        return task.powers
-          .flatMap(([prime, exponent]) => Array(exponent).fill(prime))
-          .join(' · ');
-      }
-
-      function reversePowerValues(task) {
-        return task.powers
-          .map(([prime, exponent]) => `${prime}${exponent === 1 ? '' : superscript(exponent)} = ${prime ** exponent}`)
-          .join(', ');
-      }
-
-      function prepareReverseOptions() {
-        const task = state.reverseTask;
-        if (!task) return;
-
-        const correct = reverseTaskValue(task);
-        const bases = task.powers.map(([prime]) => prime);
-        const powerValues = task.powers.map(([prime, exponent]) => prime ** exponent);
-        const repeatedPrime = task.powers.find(([, exponent]) => exponent > 1)?.[0] || bases[0];
-        const candidates = [
-          powerValues.reduce((sum, value) => sum + value, 0),
-          bases.reduce((product, prime) => product * prime, 1),
-          correct / repeatedPrime,
-          correct * repeatedPrime,
-          correct + bases.reduce((sum, prime) => sum + prime, 0),
-          Math.max(2, correct - bases.reduce((sum, prime) => sum + prime, 0))
-        ].filter(value => Number.isInteger(value) && value > 1 && value <= MAX_CUSTOM_NUMBER && value !== correct);
-
-        const unique = [...new Set(candidates)];
+      function reverseNumericOptions(correct, candidates) {
+        const unique = [...new Set(candidates)]
+          .filter(value => Number.isInteger(value) && value >= 1 && value <= MAX_CUSTOM_NUMBER && value !== correct);
         let offset = 1;
         while (unique.length < 3) {
           const filler = correct + offset;
           if (filler <= MAX_CUSTOM_NUMBER && !unique.includes(filler)) unique.push(filler);
           offset += 1;
         }
-        state.reverseOptions = shuffled([correct, ...shuffled(unique).slice(0, 3)]);
+        return shuffled([correct, ...shuffled(unique).slice(0, 3)]);
+      }
+
+      function prepareReversePowerOptions() {
+        const [prime, exponent] = state.reverseTask.powers[state.reversePowerIndex];
+        const correct = prime ** exponent;
+        state.reverseOptions = reverseNumericOptions(correct, [
+          prime * exponent,
+          prime ** Math.max(1, exponent - 1),
+          prime ** (exponent + 1),
+          correct + prime,
+          Math.max(1, correct - prime)
+        ]);
+      }
+
+      function prepareReversePairOptions() {
+        state.reversePairOptions = state.reverseTerms
+          .slice(0, -1)
+          .map((term, index) => ({ index, left: term.value, right: state.reverseTerms[index + 1].value }));
+        state.reverseOptions = [];
+      }
+
+      function prepareReverseProductOptions() {
+        const pair = state.reverseSelectedPair;
+        const correct = pair.left * pair.right;
+        state.reverseOptions = reverseNumericOptions(correct, [
+          pair.left + pair.right,
+          Math.abs(pair.left - pair.right),
+          correct + pair.left,
+          Math.max(1, correct - pair.left),
+          correct + pair.right,
+          Math.max(1, correct - pair.right)
+        ]);
+      }
+
+      function startOnlyRemainingReverseProduct() {
+        const [left, right] = state.reverseTerms;
+        state.reverseSelectedPair = { index: 0, left: left.value, right: right.value };
+        state.reverseStage = 'product';
+        state.reverseFeedbackText = `Már csak két tényező maradt. Számítsd ki: ${left.value} · ${right.value}.`;
+        state.reverseFeedbackKind = 'good';
+        prepareReverseProductOptions();
+      }
+
+      function prepareReverseOptions() {
+        if (!state.reverseTask) return;
+        if (state.reverseStage === 'power') prepareReversePowerOptions();
+        else if (state.reverseStage === 'pair') prepareReversePairOptions();
+        else if (state.reverseStage === 'product') prepareReverseProductOptions();
       }
 
       function chooseReverseTask() {
@@ -1465,25 +1540,92 @@
 
       function handleReverseChoice(value) {
         if (state.mode !== 'reverse' || state.reverseSolved) return;
-        const correct = reverseTaskValue(state.reverseTask);
+        const powerStage = state.reverseStage === 'power';
+        const [prime, exponent] = powerStage
+          ? state.reverseTask.powers[state.reversePowerIndex]
+          : [null, null];
+        const pair = state.reverseSelectedPair;
+        const correct = powerStage ? prime ** exponent : pair.left * pair.right;
+
         if (value !== correct) {
-          state.reverseFeedbackText = 'Ez még nem az. Számítsd ki külön a prímhatványokat, aztán szorozd össze őket.';
+          state.reverseFeedbackText = powerStage
+            ? `Ez még nem az. A ${prime}${superscript(exponent)} azt jelenti, hogy a ${prime}-et ${exponent}-szer szorozzuk össze önmagával.`
+            : `Ez még nem az. Ellenőrizd újra a ${pair.left} · ${pair.right} szorzatot.`;
           state.reverseFeedbackKind = 'bad';
           render();
           return;
         }
 
-        state.reverseSolved = true;
-        state.reverseHintVisible = true;
-        state.reverseFeedbackText = `Helyes: ${reverseCanonical(state.reverseTask)} = ${correct}.`;
-        state.reverseFeedbackKind = 'good';
+        if (powerStage) {
+          state.reversePowerAnswers[state.reversePowerIndex] = correct;
+          state.reverseHistory.push(`${prime}${superscript(exponent)} = ${correct}`);
+          state.reversePowerIndex += 1;
+          state.reverseHintVisible = false;
+
+          if (state.reversePowerIndex < state.reverseTask.powers.length) {
+            state.reverseFeedbackText = 'Helyes. Jöhet a következő prímhatvány.';
+            state.reverseFeedbackKind = 'good';
+            prepareReversePowerOptions();
+          } else {
+            state.reverseTerms = state.reversePowerAnswers.map(value => ({ value }));
+            if (state.reverseTerms.length === 2) {
+              startOnlyRemainingReverseProduct();
+            } else {
+              state.reverseStage = 'pair';
+              state.reverseFeedbackText = 'A hatványok készen vannak. Válaszd ki, melyik két szomszédos részszorzattal folytassuk.';
+              state.reverseFeedbackKind = 'good';
+              prepareReversePairOptions();
+            }
+          }
+          render();
+          return;
+        }
+
+        state.reverseHistory.push(`${pair.left} · ${pair.right} = ${correct}`);
+        state.reverseTerms.splice(pair.index, 2, { value: correct });
+        state.reverseSelectedPair = null;
+        state.reverseHintVisible = false;
+
+        if (state.reverseTerms.length === 1) {
+          state.reverseStage = 'done';
+          state.reverseSolved = true;
+          state.reverseOptions = [];
+          state.reverseFeedbackText = `Kész: ${reverseCanonical(state.reverseTask)} = ${correct}.`;
+          state.reverseFeedbackKind = 'good';
+        } else {
+          if (state.reverseTerms.length === 2) {
+            startOnlyRemainingReverseProduct();
+          } else {
+            state.reverseStage = 'pair';
+            state.reverseFeedbackText = 'Helyes részszorzat. Válaszd ki a következő összevonást.';
+            state.reverseFeedbackKind = 'good';
+            prepareReversePairOptions();
+          }
+        }
+        render();
+      }
+
+      function handleReversePairChoice(pair) {
+        if (state.mode !== 'reverse' || state.reverseStage !== 'pair' || state.reverseSolved) return;
+        state.reverseSelectedPair = pair;
+        state.reverseStage = 'product';
+        state.reverseHintVisible = false;
+        state.reverseFeedbackText = `Számítsd ki a kiválasztott részszorzatot: ${pair.left} · ${pair.right}.`;
+        state.reverseFeedbackKind = '';
+        prepareReverseProductOptions();
         render();
       }
 
       function showReverseHint() {
         if (state.mode !== 'reverse' || state.reverseSolved) return;
         state.reverseHintVisible = true;
-        state.reverseFeedbackText = 'Most számítsd ki a hatványokat, majd szorozd össze a kapott értékeket.';
+        if (state.reverseStage === 'power') {
+          const [prime, exponent] = state.reverseTask.powers[state.reversePowerIndex];
+          state.reverseFeedbackText = `${prime}${superscript(exponent)} = ${Array(exponent).fill(prime).join(' · ')}. Most végezd el a szorzást.`;
+        } else if (state.reverseStage === 'product') {
+          const { left, right } = state.reverseSelectedPair;
+          state.reverseFeedbackText = `Bontsd fel az egyik tényezőt, vagy ellenőrizd vissza osztással a ${left} · ${right} szorzatot.`;
+        }
         state.reverseFeedbackKind = '';
         render();
       }
@@ -1513,9 +1655,16 @@
         state.sessionRecorded = false;
         state.reverseTask = reverseTask;
         state.reverseOptions = [];
+        state.reverseStage = 'power';
+        state.reversePowerIndex = 0;
+        state.reversePowerAnswers = [];
+        state.reverseTerms = [];
+        state.reversePairOptions = [];
+        state.reverseSelectedPair = null;
+        state.reverseHistory = [];
         state.reverseSolved = false;
         state.reverseHintVisible = false;
-        state.reverseFeedbackText = 'Válaszd ki a kanonikus alak értékét.';
+        state.reverseFeedbackText = 'Számítsd ki külön az első prímhatvány értékét.';
         state.reverseFeedbackKind = '';
         if (lab) state.rule = 'free';
         state.finished = false;
@@ -1979,7 +2128,7 @@
         const reverseMode = state.mode === 'reverse';
         els.targetLabel.textContent = reverseMode ? 'Keresett szám' : 'Felbontandó szám';
         els.currentLabel.textContent = reverseMode ? 'Feladat' : 'Aktuális hányados';
-        els.target.textContent = reverseMode ? '?' : state.target;
+        els.target.textContent = reverseMode ? state.reverseSolved ? state.target : '?' : state.target;
         els.current.textContent = reverseMode ? '–' : state.finished ? '1' : state.current;
         els.treeTab.disabled = reverseMode;
         els.ladderTab.disabled = reverseMode;
@@ -1991,7 +2140,7 @@
         renderSeriesStatus();
 
         if (reverseMode) {
-          els.invariant.textContent = `? = ${reverseCanonical(state.reverseTask)}`;
+          els.invariant.textContent = `${state.reverseSolved ? state.target : '?'} = ${reverseCanonical(state.reverseTask)}`;
           return;
         }
 
@@ -2124,20 +2273,43 @@
 
         const expression = document.createElement('div');
         expression.className = 'reverse-expression';
-        expression.textContent = `? = ${reverseCanonical(state.reverseTask)}`;
+        expression.textContent = `${state.reverseSolved ? state.target : '?'} = ${reverseCanonical(state.reverseTask)}`;
         board.append(expression);
 
-        if (state.reverseHintVisible || state.reverseSolved) {
-          const expansion = document.createElement('div');
-          expansion.className = 'reverse-expansion';
-          expansion.textContent = `Kifejtve: ${reverseExpanded(state.reverseTask)}`;
-          board.append(expansion);
+        const powerGrid = document.createElement('div');
+        powerGrid.className = 'reverse-power-grid';
+        state.reverseTask.powers.forEach(([prime, exponent], index) => {
+          const step = document.createElement('span');
+          const isDone = index < state.reversePowerAnswers.length;
+          const isCurrent = state.reverseStage === 'power' && index === state.reversePowerIndex;
+          step.className = `reverse-power-step${isDone ? ' done' : isCurrent ? ' current' : ''}`;
+          step.textContent = `${prime}${superscript(exponent)} = ${isDone ? state.reversePowerAnswers[index] : '?'}`;
+          powerGrid.append(step);
+        });
+        board.append(powerGrid);
+
+        if (state.reverseStage !== 'power' && state.reverseTerms.length) {
+          const terms = document.createElement('div');
+          terms.className = 'reverse-terms';
+          terms.textContent = state.reverseTerms.map(term => term.value).join(' · ');
+          board.append(terms);
+        }
+
+        if (state.reverseHistory.length) {
+          const history = document.createElement('div');
+          history.className = 'reverse-history';
+          state.reverseHistory.forEach(entry => {
+            const row = document.createElement('span');
+            row.textContent = entry;
+            history.append(row);
+          });
+          board.append(history);
         }
 
         if (state.reverseSolved) {
           const result = document.createElement('div');
           result.className = 'reverse-result';
-          result.textContent = `${reversePowerValues(state.reverseTask)}; ezért ${reverseCanonical(state.reverseTask)} = ${reverseTaskValue(state.reverseTask)}.`;
+          result.textContent = `${reverseCanonical(state.reverseTask)} = ${reverseTaskValue(state.reverseTask)}`;
           board.append(result);
         }
 
@@ -2146,7 +2318,32 @@
 
       function renderReversePanel() {
         els.reverseChoices.replaceChildren();
-        if (!state.reverseSolved) {
+        if (state.reverseStage === 'power') {
+          const [prime, exponent] = state.reverseTask.powers[state.reversePowerIndex];
+          els.reverseTitle.textContent = `Mennyi ${prime}${superscript(exponent)}?`;
+          els.reverseHelp.textContent = `Prímhatványok · ${state.reversePowerIndex + 1}/${state.reverseTask.powers.length}`;
+        } else if (state.reverseStage === 'pair') {
+          els.reverseTitle.textContent = 'Melyik két részszorzatot számoljuk ki?';
+          els.reverseHelp.textContent = 'Bármelyik szomszédos pár jó. Te választod meg a szorzás sorrendjét.';
+        } else if (state.reverseStage === 'product') {
+          const { left, right } = state.reverseSelectedPair;
+          els.reverseTitle.textContent = `Mennyi ${left} · ${right}?`;
+          els.reverseHelp.textContent = 'A helyes részszorzat bekerül a kifejezésbe, majd folytatjuk.';
+        } else {
+          els.reverseTitle.textContent = 'Megvan a keresett szám!';
+          els.reverseHelp.textContent = 'A prímhatványoktól részszorzatokon át jutottál el a végeredményig.';
+        }
+
+        if (state.reverseStage === 'pair') {
+          state.reversePairOptions.forEach((pair, index) => {
+            const button = document.createElement('button');
+            button.className = 'choice';
+            button.type = 'button';
+            button.innerHTML = `<span class="key">${index + 1}</span>${pair.left} · ${pair.right}`;
+            button.addEventListener('click', () => handleReversePairChoice(pair));
+            els.reverseChoices.append(button);
+          });
+        } else if (!state.reverseSolved) {
           state.reverseOptions.forEach((value, index) => {
             const button = document.createElement('button');
             button.className = 'choice';
@@ -2160,7 +2357,8 @@
 
         els.reverseFeedback.textContent = state.reverseFeedbackText;
         els.reverseFeedback.className = `reverse-feedback${state.reverseFeedbackKind ? ` ${state.reverseFeedbackKind}` : ''}`;
-        els.reverseHint.hidden = state.reverseSolved;
+        els.reverseHint.hidden = state.reverseSolved || state.reverseStage === 'pair';
+        els.reverseHint.textContent = state.reverseStage === 'power' ? 'Hatvány kifejtése' : 'Szorzási segítség';
         els.reverseActions.classList.toggle('visible', state.reverseSolved);
       }
 
@@ -2367,9 +2565,11 @@
         const tagName = event.target && event.target.tagName;
         if (state.mode === 'reverse' && !state.reverseSolved && !['INPUT', 'SELECT', 'BUTTON'].includes(tagName)) {
           const reverseIndex = Number(event.key) - 1;
-          if (reverseIndex >= 0 && reverseIndex < state.reverseOptions.length) {
+          const reverseChoices = state.reverseStage === 'pair' ? state.reversePairOptions : state.reverseOptions;
+          if (reverseIndex >= 0 && reverseIndex < reverseChoices.length) {
             event.preventDefault();
-            handleReverseChoice(state.reverseOptions[reverseIndex]);
+            if (state.reverseStage === 'pair') handleReversePairChoice(state.reversePairOptions[reverseIndex]);
+            else handleReverseChoice(state.reverseOptions[reverseIndex]);
           }
           return;
         }
