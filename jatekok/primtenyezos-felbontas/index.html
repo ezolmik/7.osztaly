@@ -28,6 +28,7 @@
     }
 
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
 
     body {
       margin: 0;
@@ -213,6 +214,55 @@
       box-shadow: 0 8px 24px rgba(29,53,87,.05);
       backdrop-filter: blur(12px);
     }
+
+    .series-setup {
+      margin-bottom: 12px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid rgba(217, 226, 241, .9);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(29,53,87,.05);
+      overflow: hidden;
+    }
+
+    .series-setup summary {
+      padding: 13px 16px;
+      color: #40536f;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .series-controls {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(130px, .55fr) auto;
+      gap: 10px;
+      align-items: end;
+      padding: 0 14px 14px;
+    }
+
+    .series-control {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 750;
+    }
+
+    .series-control select { width: 100%; }
+
+    .series-status {
+      display: none;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 11px;
+      color: var(--good);
+      background: var(--good-soft);
+      font-size: .85rem;
+      font-weight: 850;
+    }
+
+    .series-status.visible { display: flex; }
 
     .segmented {
       display: inline-flex;
@@ -756,6 +806,76 @@
       grid-column: 1 / -1;
     }
 
+    .finish-actions .session-next { grid-column: 1 / -1; }
+
+    .series-summary {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: fade-up .3s ease both;
+    }
+
+    .series-summary.visible { display: flex; }
+
+    .series-summary h2 {
+      margin: 13px 0 6px;
+      font-size: 1.75rem;
+      letter-spacing: -.035em;
+    }
+
+    .series-summary-lead {
+      margin: 0 0 15px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .series-results {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .series-result {
+      display: grid;
+      grid-template-columns: minmax(70px, .7fr) 1fr auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafcff;
+    }
+
+    .series-result strong { font-size: 1.05rem; }
+
+    .series-result span {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .series-result em {
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--good);
+      background: var(--good-soft);
+      font-size: .72rem;
+      font-style: normal;
+      font-weight: 850;
+    }
+
+    .series-result em.practice {
+      color: var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .summary-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: auto;
+    }
+
     @keyframes pop-in {
       from { opacity: 0; transform: scale(.92); }
       to { opacity: 1; transform: scale(1); }
@@ -790,6 +910,7 @@
       .number-entry label { padding-left: 1px; }
       .input-error { grid-column: 1 / -1; }
       .toolbar { align-items: stretch; flex-direction: column; }
+      .series-controls { grid-template-columns: 1fr; }
       .segmented { display: grid; grid-template-columns: 1fr 1fr; }
       .rule-control { justify-content: space-between; }
       .number-strip { padding: 17px; }
@@ -797,6 +918,7 @@
       .action-card { padding: 18px; }
       .finish-actions { grid-template-columns: 1fr; }
       .path-comparison { grid-template-columns: 1fr; }
+      .summary-actions { grid-template-columns: 1fr; }
       .demo-actions { grid-template-columns: 1fr; }
       .demo-actions .try-button { grid-column: auto; }
     }
@@ -838,6 +960,28 @@
       <span class="input-error" id="customNumberError" role="status" aria-live="polite"></span>
     </form>
 
+    <details class="series-setup" id="seriesSetup">
+      <summary>Gyakorlósorozat</summary>
+      <div class="series-controls">
+        <label class="series-control">
+          <span>Nehézség</span>
+          <select id="seriesDifficulty">
+            <option value="basic">Alap – 2, 3 és 5</option>
+            <option value="mixed" selected>Vegyes – 7, 11 és 13 is</option>
+            <option value="advanced">Haladó – nagyobb számok</option>
+          </select>
+        </label>
+        <label class="series-control">
+          <span>Feladatok száma</span>
+          <select id="seriesLength">
+            <option value="5" selected>5 feladat</option>
+            <option value="10">10 feladat</option>
+          </select>
+        </label>
+        <button class="primary-button" id="seriesStartButton" type="button">Sorozat indítása</button>
+      </div>
+    </details>
+
     <section class="toolbar" aria-label="Játékbeállítások">
       <div class="segmented" role="group" aria-label="Ábrázolási mód">
         <button class="segment" id="treeTab" type="button" aria-pressed="true">Felbontási fa</button>
@@ -850,6 +994,7 @@
           <option value="ordered">Mindig a legkisebb</option>
         </select>
       </label>
+      <div class="series-status" id="seriesStatus"></div>
     </section>
 
     <section class="workspace">
@@ -933,6 +1078,17 @@
           <p class="comparison-conclusion">A sorrend eltér, de a prímtényezők és a multiplicitásaik ugyanazok.</p>
           <button class="primary-button" id="comparisonNextButton" type="button">Következő szám</button>
         </div>
+
+        <div class="series-summary" id="seriesSummary">
+          <span class="finish-badge">Sorozat kész</span>
+          <h2 id="seriesSummaryTitle"></h2>
+          <p class="series-summary-lead" id="seriesSummaryLead"></p>
+          <div class="series-results" id="seriesResults"></div>
+          <div class="summary-actions">
+            <button class="secondary-button" id="seriesRetryButton" type="button">Hibásak újra</button>
+            <button class="primary-button" id="seriesRestartButton" type="button">Új sorozat</button>
+          </div>
+        </div>
       </aside>
     </section>
   </main>
@@ -946,6 +1102,16 @@
         180, 200, 216, 240, 252, 270, 300, 360, 420, 480, 504,
         540, 600, 630, 720, 756, 840, 900
       ];
+      const SERIES_POOLS = {
+        basic: [24, 30, 36, 40, 45, 48, 54, 60, 72, 75, 80, 90, 100, 108, 120, 135, 150, 180, 200, 225],
+        mixed: [84, 126, 154, 198, 210, 252, 286, 330, 360, 420, 462, 504, 630, 693, 756, 840, 858, 900, 990, 1155],
+        advanced: [1001, 1386, 2310, 4096, 7425, 9999, 15015, 32768, 65536, 83160, 121275, 360360, 510510, 720720, 999983]
+      };
+      const DIFFICULTY_LABELS = {
+        basic: 'Alap',
+        mixed: 'Vegyes',
+        advanced: 'Haladó'
+      };
       const DISTRACTOR_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
       const MAX_CUSTOM_NUMBER = 1000000;
       const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -979,6 +1145,17 @@
         sortedComparison: document.querySelector('#sortedComparison'),
         comparisonCanonical: document.querySelector('#comparisonCanonical'),
         comparisonNext: document.querySelector('#comparisonNextButton'),
+        seriesSetup: document.querySelector('#seriesSetup'),
+        seriesDifficulty: document.querySelector('#seriesDifficulty'),
+        seriesLength: document.querySelector('#seriesLength'),
+        seriesStart: document.querySelector('#seriesStartButton'),
+        seriesStatus: document.querySelector('#seriesStatus'),
+        seriesSummary: document.querySelector('#seriesSummary'),
+        seriesSummaryTitle: document.querySelector('#seriesSummaryTitle'),
+        seriesSummaryLead: document.querySelector('#seriesSummaryLead'),
+        seriesResults: document.querySelector('#seriesResults'),
+        seriesRetry: document.querySelector('#seriesRetryButton'),
+        seriesRestart: document.querySelector('#seriesRestartButton'),
         expanded: document.querySelector('#expandedResult'),
         multiplicities: document.querySelector('#multiplicities'),
         canonical: document.querySelector('#canonicalResult'),
@@ -1012,9 +1189,23 @@
         firstPath: [],
         secondPath: [],
         comparisonReady: false,
+        taskMistakes: 0,
+        taskHints: 0,
+        hintKeys: new Set(),
+        sessionRecorded: false,
         options: [],
         finished: false,
         previousTarget: null
+      };
+
+      const session = {
+        active: false,
+        difficulty: 'mixed',
+        numbers: [],
+        index: 0,
+        results: [],
+        retryMode: false,
+        summaryVisible: false
       };
 
       function shuffled(values) {
@@ -1087,6 +1278,10 @@
         state.firstPath = lab ? [...lab.firstPath] : [];
         state.secondPath = [];
         state.comparisonReady = false;
+        state.taskMistakes = 0;
+        state.taskHints = 0;
+        state.hintKeys = new Set();
+        state.sessionRecorded = false;
         if (lab) state.rule = 'free';
         state.finished = false;
         setFeedback(
@@ -1136,6 +1331,7 @@
         }
 
         setCustomNumberError();
+        leaveSeries();
         resetGame(result.value, state.view, mode);
         els.customInput.blur();
       }
@@ -1145,9 +1341,85 @@
       }
 
       function startRandomNumber() {
+        leaveSeries();
         els.customInput.value = '';
         setCustomNumberError();
         resetGame(undefined, state.view, 'practice');
+      }
+
+      function leaveSeries() {
+        session.active = false;
+        session.summaryVisible = false;
+        session.retryMode = false;
+      }
+
+      function beginSeries(numbers, difficulty, retryMode = false) {
+        session.active = true;
+        session.difficulty = difficulty;
+        session.numbers = [...numbers];
+        session.index = 0;
+        session.results = [];
+        session.retryMode = retryMode;
+        session.summaryVisible = false;
+        els.seriesSetup.open = false;
+        startSessionTask();
+      }
+
+      function startConfiguredSeries() {
+        const difficulty = els.seriesDifficulty.value;
+        const length = Number(els.seriesLength.value);
+        const numbers = shuffled(SERIES_POOLS[difficulty]).slice(0, length);
+        beginSeries(numbers, difficulty, false);
+      }
+
+      function startSessionTask() {
+        resetGame(session.numbers[session.index], state.view, 'practice');
+      }
+
+      function recordSessionResult() {
+        if (!session.active || state.sessionRecorded) return;
+        session.results[session.index] = {
+          target: state.target,
+          mistakes: state.taskMistakes,
+          hints: state.taskHints
+        };
+        state.sessionRecorded = true;
+      }
+
+      function advanceSession() {
+        if (!session.active) {
+          startRandomNumber();
+          return;
+        }
+
+        if (session.index < session.numbers.length - 1) {
+          session.index += 1;
+          startSessionTask();
+          return;
+        }
+
+        session.summaryVisible = true;
+        render();
+      }
+
+      function retryMistakes() {
+        const numbers = session.results
+          .filter(result => result.mistakes > 0)
+          .map(result => result.target);
+        if (!numbers.length) return;
+        beginSeries(numbers, session.difficulty, true);
+      }
+
+      function registerMistake() {
+        if (session.active && !session.summaryVisible) state.taskMistakes += 1;
+      }
+
+      function registerHint() {
+        if (!session.active || session.summaryVisible) return;
+        const key = `${state.stage}:${state.steps.length}:${state.exponentIndex}`;
+        if (state.hintKeys.has(key)) return;
+        state.hintKeys.add(key);
+        state.taskHints += 1;
       }
 
       function addDemoStep(renderAfter = true) {
@@ -1293,6 +1565,7 @@
 
       function showHint() {
         clearFactorHighlights();
+        registerHint();
 
         if (state.stage === 'prime') {
           const excluded = state.uniquenessPhase === 'second' && state.steps.length === 0
@@ -1323,6 +1596,7 @@
         const smallest = smallestPrimeDivisor(state.current);
 
         if (!divides) {
+          registerMistake();
           const quotient = Math.floor(state.current / prime);
           const remainder = state.current % prime;
           setFeedback(
@@ -1336,10 +1610,12 @@
           state.steps.length === 0 &&
           prime === state.firstPath[0]
         ) {
+          registerMistake();
           setFeedback(`${prime} jó prímosztó, de most indulj egy másikkal, hogy valóban új utat kapjunk.`, 'hint');
           return;
         }
         if (state.rule === 'ordered' && prime !== smallest) {
+          registerMistake();
           setFeedback(`${prime} is prímosztó, de most először a legkisebbet keresd.`, 'hint');
           return;
         }
@@ -1354,6 +1630,7 @@
       function handleQuotientChoice(quotient) {
         const correct = state.current / state.selectedPrime;
         if (quotient !== correct) {
+          registerMistake();
           const product = state.selectedPrime * quotient;
           const relation = product < state.current ? 'kisebb' : 'nagyobb';
           setFeedback(
@@ -1401,6 +1678,7 @@
         const correct = factorCounts()[prime];
 
         if (value !== correct) {
+          registerMistake();
           setFeedback(`Számold meg újra, hányszor szerepel a ${prime} a szorzatban.`, 'bad');
           return;
         }
@@ -1411,6 +1689,7 @@
         if (state.exponentIndex >= state.exponentPrimes.length) {
           state.finished = true;
           state.stage = 'done';
+          recordSessionResult();
           render();
           return;
         }
@@ -1444,6 +1723,22 @@
           .join(' · ');
       }
 
+      function renderSeriesStatus() {
+        els.seriesStatus.classList.toggle('visible', session.active);
+        if (!session.active) {
+          els.seriesStatus.textContent = '';
+          return;
+        }
+
+        if (session.summaryVisible) {
+          els.seriesStatus.textContent = `Összegzés · ${session.results.length} feladat`;
+          return;
+        }
+
+        const prefix = session.retryMode ? 'Újrapróbálás' : DIFFICULTY_LABELS[session.difficulty];
+        els.seriesStatus.textContent = `${prefix} · ${session.index + 1}/${session.numbers.length}`;
+      }
+
       function renderHeader() {
         els.target.textContent = state.target;
         els.current.textContent = state.finished ? '1' : state.current;
@@ -1452,6 +1747,7 @@
         const uniquenessRun = state.uniquenessPhase === 'second';
         els.rule.value = state.mode === 'demo' ? 'ordered' : uniquenessRun ? 'free' : state.rule;
         els.rule.disabled = state.mode === 'demo' || uniquenessRun;
+        renderSeriesStatus();
 
         const factorPart = productText(state.factors);
         els.invariant.textContent = state.factors.length
@@ -1625,14 +1921,25 @@
 
         const otherName = state.view === 'tree' ? 'osztólétrával' : 'felbontási fával';
         els.otherView.textContent = `Újra ${otherName}`;
-        els.finishTry.classList.toggle('visible', state.mode === 'demo');
+        els.finishTry.classList.toggle('visible', state.mode === 'demo' && !session.active);
+        els.finishTry.hidden = session.active;
+        els.otherView.hidden = session.active;
         const hasAlternativePath = Object.keys(factorCounts()).length > 1;
-        els.uniqueness.classList.toggle('visible', hasAlternativePath);
-        els.finishMessage.textContent = hasAlternativePath
-          ? state.mode === 'demo'
-            ? 'A gép a legkisebb prímekkel haladt. Most kipróbálhatod más sorrendben is.'
-            : 'A sorrend változhat. Próbáld ki ugyanezt a számot másik kezdő prímmel.'
-          : 'Csak egyféle prím szerepel, ezért ennél a számnál nincs más sorrendű út.';
+        els.uniqueness.classList.toggle('visible', hasAlternativePath && !session.active);
+        els.nextNumber.classList.toggle('session-next', session.active);
+
+        if (session.active) {
+          const lastTask = session.index === session.numbers.length - 1;
+          els.nextNumber.textContent = lastTask ? 'Sorozat összegzése' : 'Következő feladat';
+          els.finishMessage.textContent = `Feladat kész · ${state.taskMistakes} hiba · ${state.taskHints} segítség.`;
+        } else {
+          els.nextNumber.textContent = 'Következő szám';
+          els.finishMessage.textContent = hasAlternativePath
+            ? state.mode === 'demo'
+              ? 'A gép a legkisebb prímekkel haladt. Most kipróbálhatod más sorrendben is.'
+              : 'A sorrend változhat. Próbáld ki ugyanezt a számot másik kezdő prímmel.'
+            : 'Csak egyféle prím szerepel, ezért ennél a számnál nincs más sorrendű út.';
+        }
       }
 
       function renderComparison() {
@@ -1646,21 +1953,53 @@
         els.comparisonCanonical.textContent = `${state.target} = ${canonicalText()}`;
       }
 
+      function renderSeriesSummary() {
+        const total = session.results.length;
+        const firstTry = session.results.filter(result => result.mistakes === 0).length;
+        const totalMistakes = session.results.reduce((sum, result) => sum + result.mistakes, 0);
+        const totalHints = session.results.reduce((sum, result) => sum + result.hints, 0);
+        const failed = session.results.filter(result => result.mistakes > 0);
+
+        els.seriesSummaryTitle.textContent = `${firstTry}/${total} feladat hibátlanul`;
+        els.seriesSummaryLead.textContent = `Összesen ${totalMistakes} hiba és ${totalHints} felhasznált segítség.`;
+        els.seriesRetry.hidden = failed.length === 0;
+        els.seriesResults.replaceChildren();
+
+        session.results.forEach(result => {
+          const row = document.createElement('div');
+          row.className = 'series-result';
+
+          const number = document.createElement('strong');
+          number.textContent = result.target;
+          const details = document.createElement('span');
+          details.textContent = `${result.mistakes} hiba · ${result.hints} segítség`;
+          const status = document.createElement('em');
+          status.textContent = result.mistakes === 0 ? 'Hibátlan' : 'Gyakorlandó';
+          if (result.mistakes > 0) status.className = 'practice';
+
+          row.append(number, details, status);
+          els.seriesResults.append(row);
+        });
+      }
+
       function render() {
         renderHeader();
         renderChips();
         renderVisual();
 
-        const showComparison = state.comparisonReady;
+        const showSummary = session.summaryVisible;
+        const showComparison = state.comparisonReady && !showSummary;
         const showExponent = !state.finished && state.stage === 'exponent';
-        const showQuestion = !state.finished && (state.mode === 'practice' || showExponent);
-        const showDemo = !state.finished && state.mode === 'demo' && !showExponent;
+        const showQuestion = !showSummary && !state.finished && (state.mode === 'practice' || showExponent);
+        const showDemo = !showSummary && !state.finished && state.mode === 'demo' && !showExponent;
         els.questionArea.classList.toggle('hidden', !showQuestion);
         els.demoPanel.classList.toggle('visible', showDemo);
-        els.finish.classList.toggle('visible', state.finished && !showComparison);
+        els.finish.classList.toggle('visible', state.finished && !showComparison && !showSummary);
         els.comparison.classList.toggle('visible', showComparison);
+        els.seriesSummary.classList.toggle('visible', showSummary);
 
-        if (showComparison) renderComparison();
+        if (showSummary) renderSeriesSummary();
+        else if (showComparison) renderComparison();
         else if (state.finished) renderFinish();
         else if (showDemo) renderDemo();
         else renderQuestion();
@@ -1698,8 +2037,11 @@
       els.finishTry.addEventListener('click', tryCurrentNumber);
       els.uniqueness.addEventListener('click', startUniquenessLab);
       els.comparisonNext.addEventListener('click', startRandomNumber);
+      els.seriesStart.addEventListener('click', startConfiguredSeries);
+      els.seriesRetry.addEventListener('click', retryMistakes);
+      els.seriesRestart.addEventListener('click', startConfiguredSeries);
       els.newNumber.addEventListener('click', startRandomNumber);
-      els.nextNumber.addEventListener('click', startRandomNumber);
+      els.nextNumber.addEventListener('click', advanceSession);
       els.otherView.addEventListener('click', () => {
         const other = state.view === 'tree' ? 'ladder' : 'tree';
         resetGame(state.target, other, state.mode);
