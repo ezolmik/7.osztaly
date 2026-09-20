@@ -57,6 +57,12 @@
       margin-bottom: 20px;
     }
 
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
     h1 {
       margin: 0;
       font-size: clamp(1.45rem, 3vw, 2.1rem);
@@ -149,6 +155,86 @@
     }
 
     .demo-panel.visible { display: flex; }
+
+    .reverse-panel {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      animation: fade-up .25s ease both;
+    }
+
+    .reverse-panel.visible { display: flex; }
+
+    .reverse-panel h2 {
+      margin: 13px 0 8px;
+      font-size: 1.7rem;
+      letter-spacing: -.035em;
+    }
+
+    .reverse-board {
+      height: 100%;
+      min-height: 360px;
+      display: grid;
+      place-content: center;
+      gap: 17px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .reverse-expression {
+      color: var(--blue-dark);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: clamp(2rem, 7vw, 4rem);
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .reverse-expansion {
+      min-height: 1.6em;
+      color: var(--muted);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: clamp(1.05rem, 3vw, 1.45rem);
+      line-height: 1.5;
+    }
+
+    .reverse-result {
+      color: var(--good);
+      font-family: "STIX Two Text", Georgia, serif;
+      font-size: clamp(1.25rem, 4vw, 1.9rem);
+      font-weight: 800;
+    }
+
+    .reverse-feedback {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      color: var(--muted);
+      background: #f6f8fc;
+      line-height: 1.4;
+    }
+
+    .reverse-feedback.good {
+      color: var(--good);
+      background: var(--good-soft);
+    }
+
+    .reverse-feedback.bad {
+      color: var(--prime);
+      background: var(--prime-soft);
+    }
+
+    .reverse-actions {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: auto;
+      padding-top: 15px;
+    }
+
+    .reverse-actions.visible { display: grid; }
 
     .demo-badge {
       align-self: flex-start;
@@ -287,6 +373,12 @@
       color: var(--blue-dark);
       background: #fff;
       box-shadow: 0 3px 10px rgba(38, 59, 92, .12);
+    }
+
+    .segment:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
     }
 
     select:disabled {
@@ -900,6 +992,7 @@
     @media (max-width: 560px) {
       .app { width: min(100% - 18px, 1180px); padding-top: 17px; }
       .topbar { align-items: flex-start; }
+      .top-actions { align-items: stretch; flex-direction: column; }
       .subtitle { display: none; }
       .new-button { min-height: 42px; padding: 0 12px; }
       .number-entry {
@@ -919,6 +1012,7 @@
       .finish-actions { grid-template-columns: 1fr; }
       .path-comparison { grid-template-columns: 1fr; }
       .summary-actions { grid-template-columns: 1fr; }
+      .reverse-actions { grid-template-columns: 1fr; }
       .demo-actions { grid-template-columns: 1fr; }
       .demo-actions .try-button { grid-column: auto; }
     }
@@ -940,7 +1034,10 @@
         <h1>Prímtényezős felbontás</h1>
         <p class="subtitle">Válassz prímet, számítsd ki a hányadost, és építsd fel a felbontást.</p>
       </div>
-      <button class="new-button" id="newNumberButton" type="button">Véletlen szám</button>
+      <div class="top-actions">
+        <button class="secondary-button" id="reverseStartButton" type="button">Fordított játék</button>
+        <button class="new-button" id="newNumberButton" type="button">Véletlen szám</button>
+      </div>
     </header>
 
     <form class="number-entry" id="customNumberForm" novalidate>
@@ -1001,11 +1098,11 @@
       <article class="card visual-card">
         <div class="number-strip">
           <div>
-            <span class="eyebrow">Felbontandó szám</span>
+            <span class="eyebrow" id="targetLabel">Felbontandó szám</span>
             <span class="target-number" id="targetNumber">480</span>
           </div>
           <div class="remaining">
-            <span class="eyebrow">Aktuális hányados</span>
+            <span class="eyebrow" id="currentLabel">Aktuális hányados</span>
             <strong id="currentNumber">480</strong>
           </div>
         </div>
@@ -1013,7 +1110,7 @@
         <div class="visual-wrap" id="visualWrap" aria-label="A felbontás ábrája"></div>
 
         <div class="factor-tray">
-          <span class="factor-tray-label">Begyűjtött prímek:</span>
+          <span class="factor-tray-label" id="factorTrayLabel">Begyűjtött prímek:</span>
           <div id="factorChips" style="display:contents"></div>
         </div>
       </article>
@@ -1042,6 +1139,21 @@
             <button class="primary-button" id="demoNextButton" type="button">Következő lépés</button>
             <button class="secondary-button" id="demoAllButton" type="button">Mutasd végig</button>
             <button class="secondary-button try-button" id="demoTryButton" type="button">Most én próbálom</button>
+          </div>
+        </div>
+
+        <div class="reverse-panel" id="reversePanel">
+          <span class="demo-badge">Fordított játék</span>
+          <h2>Melyik szám tartozik hozzá?</h2>
+          <p class="demo-explanation">Számítsd ki a prímhatványokat, majd szorozd össze őket.</p>
+          <div class="choices" id="reverseChoices"></div>
+          <div class="reverse-feedback" id="reverseFeedback" aria-live="polite">Válaszd ki a kanonikus alak értékét.</div>
+          <div class="help-row">
+            <button class="help-button" id="reverseHintButton" type="button">Szorzat kifejtése</button>
+          </div>
+          <div class="reverse-actions" id="reverseActions">
+            <button class="primary-button" id="reverseNextButton" type="button">Következő feladat</button>
+            <button class="secondary-button" id="reverseBackButton" type="button">Vissza a felbontáshoz</button>
           </div>
         </div>
 
@@ -1112,15 +1224,32 @@
         mixed: 'Vegyes',
         advanced: 'Haladó'
       };
+      const REVERSE_TASKS = [
+        { powers: [[2, 3], [3, 2], [5, 1]] },
+        { powers: [[2, 4], [3, 1], [7, 1]] },
+        { powers: [[3, 3], [5, 2]] },
+        { powers: [[2, 5], [11, 1]] },
+        { powers: [[2, 2], [3, 2], [5, 2]] },
+        { powers: [[7, 2], [11, 1]] },
+        { powers: [[2, 6], [3, 3]] },
+        { powers: [[5, 3], [13, 1]] },
+        { powers: [[2, 3], [3, 1], [5, 1], [7, 1]] },
+        { powers: [[3, 2], [11, 2]] },
+        { powers: [[2, 4], [3, 3], [5, 1]] },
+        { powers: [[2, 2], [7, 2], [13, 1]] }
+      ];
       const DISTRACTOR_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
       const MAX_CUSTOM_NUMBER = 1000000;
       const SVG_NS = 'http://www.w3.org/2000/svg';
 
       const els = {
         target: document.querySelector('#targetNumber'),
+        targetLabel: document.querySelector('#targetLabel'),
         current: document.querySelector('#currentNumber'),
+        currentLabel: document.querySelector('#currentLabel'),
         visual: document.querySelector('#visualWrap'),
         chips: document.querySelector('#factorChips'),
+        factorTrayLabel: document.querySelector('#factorTrayLabel'),
         invariant: document.querySelector('#invariant'),
         questionArea: document.querySelector('#questionArea'),
         questionCount: document.querySelector('#questionCount'),
@@ -1156,6 +1285,14 @@
         seriesResults: document.querySelector('#seriesResults'),
         seriesRetry: document.querySelector('#seriesRetryButton'),
         seriesRestart: document.querySelector('#seriesRestartButton'),
+        reverseStart: document.querySelector('#reverseStartButton'),
+        reversePanel: document.querySelector('#reversePanel'),
+        reverseChoices: document.querySelector('#reverseChoices'),
+        reverseFeedback: document.querySelector('#reverseFeedback'),
+        reverseHint: document.querySelector('#reverseHintButton'),
+        reverseActions: document.querySelector('#reverseActions'),
+        reverseNext: document.querySelector('#reverseNextButton'),
+        reverseBack: document.querySelector('#reverseBackButton'),
         expanded: document.querySelector('#expandedResult'),
         multiplicities: document.querySelector('#multiplicities'),
         canonical: document.querySelector('#canonicalResult'),
@@ -1193,6 +1330,12 @@
         taskHints: 0,
         hintKeys: new Set(),
         sessionRecorded: false,
+        reverseTask: null,
+        reverseOptions: [],
+        reverseSolved: false,
+        reverseHintVisible: false,
+        reverseFeedbackText: 'Válaszd ki a kanonikus alak értékét.',
+        reverseFeedbackKind: '',
         options: [],
         finished: false,
         previousTarget: null
@@ -1259,7 +1402,93 @@
         return candidates[Math.floor(Math.random() * candidates.length)];
       }
 
-      function resetGame(target = chooseNewTarget(), view = state.view, mode = 'practice', lab = null) {
+      function reverseTaskValue(task) {
+        return task.powers.reduce((product, [prime, exponent]) => product * (prime ** exponent), 1);
+      }
+
+      function reverseCanonical(task) {
+        return task.powers
+          .map(([prime, exponent]) => exponent === 1 ? `${prime}` : `${prime}${superscript(exponent)}`)
+          .join(' · ');
+      }
+
+      function reverseExpanded(task) {
+        return task.powers
+          .flatMap(([prime, exponent]) => Array(exponent).fill(prime))
+          .join(' · ');
+      }
+
+      function reversePowerValues(task) {
+        return task.powers
+          .map(([prime, exponent]) => `${prime}${exponent === 1 ? '' : superscript(exponent)} = ${prime ** exponent}`)
+          .join(', ');
+      }
+
+      function prepareReverseOptions() {
+        const task = state.reverseTask;
+        if (!task) return;
+
+        const correct = reverseTaskValue(task);
+        const bases = task.powers.map(([prime]) => prime);
+        const powerValues = task.powers.map(([prime, exponent]) => prime ** exponent);
+        const repeatedPrime = task.powers.find(([, exponent]) => exponent > 1)?.[0] || bases[0];
+        const candidates = [
+          powerValues.reduce((sum, value) => sum + value, 0),
+          bases.reduce((product, prime) => product * prime, 1),
+          correct / repeatedPrime,
+          correct * repeatedPrime,
+          correct + bases.reduce((sum, prime) => sum + prime, 0),
+          Math.max(2, correct - bases.reduce((sum, prime) => sum + prime, 0))
+        ].filter(value => Number.isInteger(value) && value > 1 && value <= MAX_CUSTOM_NUMBER && value !== correct);
+
+        const unique = [...new Set(candidates)];
+        let offset = 1;
+        while (unique.length < 3) {
+          const filler = correct + offset;
+          if (filler <= MAX_CUSTOM_NUMBER && !unique.includes(filler)) unique.push(filler);
+          offset += 1;
+        }
+        state.reverseOptions = shuffled([correct, ...shuffled(unique).slice(0, 3)]);
+      }
+
+      function chooseReverseTask() {
+        const currentKey = state.reverseTask ? reverseCanonical(state.reverseTask) : '';
+        const candidates = REVERSE_TASKS.filter(task => reverseCanonical(task) !== currentKey);
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      function startReverseGame() {
+        leaveSeries();
+        const task = chooseReverseTask();
+        resetGame(reverseTaskValue(task), state.view, 'reverse', null, task);
+      }
+
+      function handleReverseChoice(value) {
+        if (state.mode !== 'reverse' || state.reverseSolved) return;
+        const correct = reverseTaskValue(state.reverseTask);
+        if (value !== correct) {
+          state.reverseFeedbackText = 'Ez még nem az. Számítsd ki külön a prímhatványokat, aztán szorozd össze őket.';
+          state.reverseFeedbackKind = 'bad';
+          render();
+          return;
+        }
+
+        state.reverseSolved = true;
+        state.reverseHintVisible = true;
+        state.reverseFeedbackText = `Helyes: ${reverseCanonical(state.reverseTask)} = ${correct}.`;
+        state.reverseFeedbackKind = 'good';
+        render();
+      }
+
+      function showReverseHint() {
+        if (state.mode !== 'reverse' || state.reverseSolved) return;
+        state.reverseHintVisible = true;
+        state.reverseFeedbackText = 'Most számítsd ki a hatványokat, majd szorozd össze a kapott értékeket.';
+        state.reverseFeedbackKind = '';
+        render();
+      }
+
+      function resetGame(target = chooseNewTarget(), view = state.view, mode = 'practice', lab = null, reverseTask = null) {
         state.previousTarget = state.target;
         state.target = target;
         state.current = target;
@@ -1282,6 +1511,12 @@
         state.taskHints = 0;
         state.hintKeys = new Set();
         state.sessionRecorded = false;
+        state.reverseTask = reverseTask;
+        state.reverseOptions = [];
+        state.reverseSolved = false;
+        state.reverseHintVisible = false;
+        state.reverseFeedbackText = 'Válaszd ki a kanonikus alak értékét.';
+        state.reverseFeedbackKind = '';
         if (lab) state.rule = 'free';
         state.finished = false;
         setFeedback(
@@ -1293,6 +1528,7 @@
           lab || isPrime(target) ? 'hint' : 'neutral'
         );
         if (mode === 'practice') prepareOptions();
+        if (mode === 'reverse') prepareReverseOptions();
         render();
       }
 
@@ -1740,14 +1976,24 @@
       }
 
       function renderHeader() {
-        els.target.textContent = state.target;
-        els.current.textContent = state.finished ? '1' : state.current;
-        els.treeTab.setAttribute('aria-pressed', String(state.view === 'tree'));
-        els.ladderTab.setAttribute('aria-pressed', String(state.view === 'ladder'));
+        const reverseMode = state.mode === 'reverse';
+        els.targetLabel.textContent = reverseMode ? 'Keresett szám' : 'Felbontandó szám';
+        els.currentLabel.textContent = reverseMode ? 'Feladat' : 'Aktuális hányados';
+        els.target.textContent = reverseMode ? '?' : state.target;
+        els.current.textContent = reverseMode ? '–' : state.finished ? '1' : state.current;
+        els.treeTab.disabled = reverseMode;
+        els.ladderTab.disabled = reverseMode;
+        els.treeTab.setAttribute('aria-pressed', String(!reverseMode && state.view === 'tree'));
+        els.ladderTab.setAttribute('aria-pressed', String(!reverseMode && state.view === 'ladder'));
         const uniquenessRun = state.uniquenessPhase === 'second';
         els.rule.value = state.mode === 'demo' ? 'ordered' : uniquenessRun ? 'free' : state.rule;
-        els.rule.disabled = state.mode === 'demo' || uniquenessRun;
+        els.rule.disabled = reverseMode || state.mode === 'demo' || uniquenessRun;
         renderSeriesStatus();
+
+        if (reverseMode) {
+          els.invariant.textContent = `? = ${reverseCanonical(state.reverseTask)}`;
+          return;
+        }
 
         const factorPart = productText(state.factors);
         els.invariant.textContent = state.factors.length
@@ -1757,6 +2003,18 @@
 
       function renderChips() {
         els.chips.replaceChildren();
+        if (state.mode === 'reverse') {
+          els.factorTrayLabel.textContent = 'Prímhatványok:';
+          state.reverseTask.powers.forEach(([prime, exponent]) => {
+            const chip = document.createElement('span');
+            chip.className = 'factor-chip';
+            chip.textContent = exponent === 1 ? prime : `${prime}${superscript(exponent)}`;
+            els.chips.append(chip);
+          });
+          return;
+        }
+
+        els.factorTrayLabel.textContent = 'Begyűjtött prímek:';
         if (!state.factors.length) {
           const placeholder = document.createElement('span');
           placeholder.className = 'factor-placeholder';
@@ -1852,8 +2110,58 @@
       }
 
       function renderVisual() {
+        if (state.mode === 'reverse') {
+          renderReverseVisual();
+          return;
+        }
         if (state.view === 'tree') renderTree();
         else renderLadder();
+      }
+
+      function renderReverseVisual() {
+        const board = document.createElement('div');
+        board.className = 'reverse-board';
+
+        const expression = document.createElement('div');
+        expression.className = 'reverse-expression';
+        expression.textContent = `? = ${reverseCanonical(state.reverseTask)}`;
+        board.append(expression);
+
+        if (state.reverseHintVisible || state.reverseSolved) {
+          const expansion = document.createElement('div');
+          expansion.className = 'reverse-expansion';
+          expansion.textContent = `Kifejtve: ${reverseExpanded(state.reverseTask)}`;
+          board.append(expansion);
+        }
+
+        if (state.reverseSolved) {
+          const result = document.createElement('div');
+          result.className = 'reverse-result';
+          result.textContent = `${reversePowerValues(state.reverseTask)}; ezért ${reverseCanonical(state.reverseTask)} = ${reverseTaskValue(state.reverseTask)}.`;
+          board.append(result);
+        }
+
+        els.visual.replaceChildren(board);
+      }
+
+      function renderReversePanel() {
+        els.reverseChoices.replaceChildren();
+        if (!state.reverseSolved) {
+          state.reverseOptions.forEach((value, index) => {
+            const button = document.createElement('button');
+            button.className = 'choice';
+            button.type = 'button';
+            button.dataset.value = value;
+            button.innerHTML = `<span class="key">${index + 1}</span>${value}`;
+            button.addEventListener('click', () => handleReverseChoice(value));
+            els.reverseChoices.append(button);
+          });
+        }
+
+        els.reverseFeedback.textContent = state.reverseFeedbackText;
+        els.reverseFeedback.className = `reverse-feedback${state.reverseFeedbackKind ? ` ${state.reverseFeedbackKind}` : ''}`;
+        els.reverseHint.hidden = state.reverseSolved;
+        els.reverseActions.classList.toggle('visible', state.reverseSolved);
       }
 
       function renderQuestion() {
@@ -1988,17 +2296,20 @@
         renderVisual();
 
         const showSummary = session.summaryVisible;
+        const showReverse = state.mode === 'reverse' && !showSummary;
         const showComparison = state.comparisonReady && !showSummary;
         const showExponent = !state.finished && state.stage === 'exponent';
-        const showQuestion = !showSummary && !state.finished && (state.mode === 'practice' || showExponent);
+        const showQuestion = !showReverse && !showSummary && !state.finished && (state.mode === 'practice' || showExponent);
         const showDemo = !showSummary && !state.finished && state.mode === 'demo' && !showExponent;
         els.questionArea.classList.toggle('hidden', !showQuestion);
         els.demoPanel.classList.toggle('visible', showDemo);
-        els.finish.classList.toggle('visible', state.finished && !showComparison && !showSummary);
-        els.comparison.classList.toggle('visible', showComparison);
+        els.reversePanel.classList.toggle('visible', showReverse);
+        els.finish.classList.toggle('visible', !showReverse && state.finished && !showComparison && !showSummary);
+        els.comparison.classList.toggle('visible', !showReverse && showComparison);
         els.seriesSummary.classList.toggle('visible', showSummary);
 
         if (showSummary) renderSeriesSummary();
+        else if (showReverse) renderReversePanel();
         else if (showComparison) renderComparison();
         else if (state.finished) renderFinish();
         else if (showDemo) renderDemo();
@@ -2006,6 +2317,7 @@
       }
 
       function switchView(view) {
+        if (state.mode === 'reverse') return;
         state.view = view;
         render();
       }
@@ -2040,6 +2352,10 @@
       els.seriesStart.addEventListener('click', startConfiguredSeries);
       els.seriesRetry.addEventListener('click', retryMistakes);
       els.seriesRestart.addEventListener('click', startConfiguredSeries);
+      els.reverseStart.addEventListener('click', startReverseGame);
+      els.reverseHint.addEventListener('click', showReverseHint);
+      els.reverseNext.addEventListener('click', startReverseGame);
+      els.reverseBack.addEventListener('click', startRandomNumber);
       els.newNumber.addEventListener('click', startRandomNumber);
       els.nextNumber.addEventListener('click', advanceSession);
       els.otherView.addEventListener('click', () => {
@@ -2049,6 +2365,14 @@
 
       document.addEventListener('keydown', event => {
         const tagName = event.target && event.target.tagName;
+        if (state.mode === 'reverse' && !state.reverseSolved && !['INPUT', 'SELECT', 'BUTTON'].includes(tagName)) {
+          const reverseIndex = Number(event.key) - 1;
+          if (reverseIndex >= 0 && reverseIndex < state.reverseOptions.length) {
+            event.preventDefault();
+            handleReverseChoice(state.reverseOptions[reverseIndex]);
+          }
+          return;
+        }
         const acceptsAnswers = state.mode === 'practice' || state.stage === 'exponent';
         if (state.finished || !acceptsAnswers || ['INPUT', 'SELECT', 'BUTTON'].includes(tagName)) return;
         const index = Number(event.key) - 1;
