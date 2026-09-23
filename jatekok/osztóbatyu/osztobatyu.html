@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Osztóbatyu – építsd meg az összes osztót!</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, sans-serif; color: #26352c; background: #f7f4e9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    header { background: #225447; color: #fff; padding: 1.3rem max(1rem, calc((100vw - 1080px)/2)); }
+    header h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+    header p { margin: .35rem 0 0; color: #d7ede3; }
+    main { max-width: 1080px; margin: 1.25rem auto; padding: 0 1rem 3rem; }
+    .top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .given { background: #fff; border: 2px solid #d9e6d8; border-radius: 18px; padding: 1rem 1.3rem; min-width: min(100%, 350px); }
+    .eyebrow { margin: 0 0 .35rem; color: #527065; font-size: .85rem; font-weight: 750; text-transform: uppercase; letter-spacing: .06em; }
+    .number { font-size: clamp(1.45rem, 4vw, 2.1rem); font-weight: 750; line-height: 1.3; }
+    sup { font-size: .65em; }
+    .ghost { background: #fff; border: 1px solid #b1c7b7; color: #225447; border-radius: 11px; padding: .7rem 1rem; font-weight: 700; }
+    .ghost:hover, .ghost:focus-visible { background: #e8f3eb; }
+    .columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
+    .panel { background: #fff; border: 2px solid #e1e6d9; border-radius: 18px; padding: 1.2rem; min-height: 330px; }
+    .panel h2 { margin: 0 0 .4rem; font-size: 1.4rem; }
+    .hint { color: #53645a; margin: .2rem 0 1rem; line-height: 1.45; }
+    .bricks { display: flex; gap: .75rem; flex-wrap: wrap; margin: 1.2rem 0; }
+    .brick { width: 65px; height: 57px; border: none; border-bottom: 6px solid #b35e2c; border-radius: 9px; background: #e78b46; color: #fff; font-size: 1.65rem; font-weight: 800; box-shadow: 0 4px 8px #5d453323; }
+    .brick:nth-child(3n + 2) { background: #398aaa; border-bottom-color: #23627b; }
+    .brick:nth-child(3n) { background: #7f9d46; border-bottom-color: #546c2d; }
+    .brick:hover, .brick:focus-visible { transform: translateY(-3px); }
+    .work { border: 2px dashed #a8bdab; border-radius: 14px; padding: .9rem; background: #f7faf4; margin: 1rem 0; }
+    .work .expression { min-height: 2.5rem; font-size: 1.6rem; font-weight: 750; overflow-wrap: anywhere; }
+    .work .value { color: #526559; margin-top: .2rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .primary { border: 0; border-radius: 11px; background: #225447; color: #fff; padding: .75rem 1rem; font-weight: 750; }
+    .primary:hover, .primary:focus-visible { background: #163f34; }
+    .primary:disabled { background: #97a9a0; cursor: default; }
+    .note { min-height: 2.8rem; margin: .9rem 0 0; line-height: 1.35; font-weight: 650; }
+    .note.bad { color: #9b3528; }
+    .note.good { color: #24674b; }
+    .bag { display: flex; align-content: flex-start; gap: .6rem; flex-wrap: wrap; min-height: 205px; margin-top: 1rem; }
+    .card { border-radius: 12px; background: #fff3d6; border: 1px solid #e3c984; padding: .55rem .75rem; font-weight: 650; }
+    .card small { display: block; color: #735b33; font-size: .85rem; margin-top: .1rem; }
+    .empty { color: #708174; font-style: italic; }
+    .quiz { display: none; background: #e9f3e9; border: 2px solid #b8d2b7; border-radius: 18px; margin-top: 1rem; padding: 1.2rem; }
+    .quiz.visible { display: block; }
+    .quiz h2 { margin: 0 0 .5rem; }
+    .quiz input { width: 110px; padding: .65rem; border: 1px solid #9eb7a1; border-radius: 10px; margin-right: .5rem; }
+    .choices { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
+    .choice { background: #fff; border: 1px solid #94b3a0; border-radius: 11px; padding: .7rem .9rem; color: #1b4c3c; font-weight: 700; }
+    .choice:hover, .choice:focus-visible { background: #d6ead9; }
+    .formula { font-size: 1.15rem; font-weight: 750; }
+    @media (max-width: 700px) { .columns { grid-template-columns: 1fr; } .panel { min-height: unset; } }
+  </style>
+</head>
+<body>
+  <header><h1>Osztóbatyu</h1><p>Építsd meg egy szám minden különböző osztóját prímtéglákból!</p></header>
+  <main>
+    <div class="top">
+      <div class="given"><p class="eyebrow">A megadott szám</p><div class="number" id="given"></div></div>
+      <button class="ghost" id="new" type="button">Új összetett szám</button>
+    </div>
+    <div class="columns">
+      <section class="panel" aria-labelledby="buildTitle">
+        <h2 id="buildTitle">Épülő osztó</h2>
+        <p class="hint">Kattints a téglákra. Az 1-ből indulsz; akár többször is választhatod ugyanazt a prímet. Van kakukktojás is.</p>
+        <div class="bricks" id="bricks"></div>
+        <div class="work" aria-live="polite"><p class="eyebrow">Most ezt építed</p><div class="expression" id="expression">1</div><div class="value" id="value"></div></div>
+        <div class="actions">
+          <button class="primary" id="submit" type="button">Beteszem a batyuba</button>
+          <button class="ghost" id="undo" type="button">Utolsó tégla vissza</button>
+          <button class="ghost" id="clear" type="button">Újrakezdem</button>
+        </div>
+        <p class="note" id="feedback" role="status" aria-live="polite"></p>
+      </section>
+      <section class="panel" aria-labelledby="bagTitle"><h2 id="bagTitle">Batyu</h2><p class="hint">Ide kerülnek az elfogadott osztók. Ugyanazt más sorrendben sem teheted bele kétszer.</p><div class="bag" id="bag" aria-live="polite"></div></section>
+    </div>
+    <section class="quiz" id="quiz" aria-live="polite"></section>
+  </main>
+  <script>
+    'use strict';
+    const pool = [2, 3, 5, 7, 11, 13, 17, 19, 23];
+    const templates = [[1,1], [2,1], [3,1], [1,1,1], [2,1,1], [2,2]];
+    const $ = id => document.getElementById(id);
+    let puzzle, draft = [], bag = [], finished = false, previousKey = '';
+
+    function shuffled(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+    function powers(primes, counts) {
+      return primes.map((p, i) => counts[i] > 0 ? String(p) + (counts[i] > 1 ? '<sup>' + counts[i] + '</sup>' : '') : '').filter(Boolean).join(' · ') || '1';
+    }
+    function valueOf(primes, counts) {
+      return primes.reduce((n, p, i) => n * p ** counts[i], 1);
+    }
+    function totalDivisors(exponents) {
+      return exponents.reduce((n, e) => n * (e + 1), 1);
+    }
+    function keyFor(counts) { return counts.join(','); }
+    function countDraft() { return puzzle.primes.map(p => draft.filter(x => x === p).length); }
+    function buildPuzzle() {
+      let candidate, signature;
+      do {
+        const exponents = shuffled(templates[Math.floor(Math.random() * templates.length)]);
+        const withLarge = Math.random() < .55;
+        const picks = withLarge
+          ? [shuffled([11, 13, 17, 19, 23])[0], ...shuffled(pool.filter(p => p < 11)).slice(0, exponents.length - 1)]
+          : shuffled(pool).slice(0, exponents.length);
+        const pairs = picks.map((p, i) => [p, exponents[i]]).sort((a, b) => a[0] - b[0]);
+        candidate = { primes: pairs.map(x => x[0]), exponents: pairs.map(x => x[1]) };
+        signature = candidate.primes.join(',') + ':' + candidate.exponents.join(',');
+      } while (signature === previousKey || valueOf(candidate.primes, candidate.exponents) > 10000);
+      previousKey = signature;
+      candidate.number = valueOf(candidate.primes, candidate.exponents);
+      const decoys = shuffled(pool.filter(p => !candidate.primes.includes(p))).slice(0, 2);
+      candidate.bricks = shuffled([...candidate.primes, ...decoys]);
+      return candidate;
+    }
+    function renderDraft() {
+      $('expression').innerHTML = powers(pool, pool.map(p => draft.filter(x => x === p).length));
+      $('value').textContent = 'Értéke: ' + draft.reduce((n, p) => n * p, 1);
+      $('undo').disabled = $('clear').disabled = finished || draft.length === 0;
+    }
+    function renderBag() {
+      $('bag').replaceChildren();
+      if (!bag.length) { const empty = document.createElement('span'); empty.className = 'empty'; empty.textContent = 'A batyu még üres.'; $('bag').append(empty); }
+      for (const entry of bag) {
+        const card = document.createElement('div'); card.className = 'card';
+        const formula = document.createElement('span'); formula.innerHTML = powers(puzzle.primes, entry.counts);
+        const value = document.createElement('small'); value.textContent = '= ' + entry.value;
+        card.append(formula, value); $('bag').append(card);
+      }
+    }
+    function message(text, good = false) { $('feedback').textContent = text; $('feedback').className = 'note ' + (good ? 'good' : 'bad'); }
+    function start(tutorial = false) {
+      puzzle = tutorial ? {primes: [2,3], exponents: [2,1], number: 12, bricks: [2,3,5,7]} : buildPuzzle();
+      bag = []; draft = []; finished = false;
+      $('given').innerHTML = puzzle.number + ' = ' + powers(puzzle.primes, puzzle.exponents);
+      $('bricks').replaceChildren();
+      for (const p of puzzle.bricks) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'brick'; button.textContent = p;
+        button.setAttribute('aria-label', p + '-es prímtégla hozzáadása');
+        button.addEventListener('click', () => { draft.push(p); renderDraft(); message(''); });
+        $('bricks').append(button);
+      }
+      $('quiz').className = 'quiz'; $('quiz').replaceChildren(); $('submit').disabled = false;
+      for (const button of $('bricks').children) button.disabled = false;
+      message(''); renderDraft(); renderBag();
+    }
+    function submit() {
+      if (finished) return;
+      const bad = draft.find(p => !puzzle.primes.includes(p));
+      if (bad !== undefined) return message('A ' + bad + ' nem prímtényezője a megadott számnak.');
+      const counts = countDraft();
+      const tooMany = counts.findIndex((e, i) => e > puzzle.exponents[i]);
+      if (tooMany >= 0) return message('Túl sok ' + puzzle.primes[tooMany] + '-es téglát használtál.');
+      if (bag.some(item => item.key === keyFor(counts))) return message('Ez az osztó már benne van a batyuban.');
+      const value = valueOf(puzzle.primes, counts);
+      bag.push({counts, value, key: keyFor(counts)});
+      draft = []; renderDraft(); renderBag();
+      if (bag.length === totalDivisors(puzzle.exponents)) {
+        finished = true;
+        $('submit').disabled = true;
+        for (const button of $('bricks').children) button.disabled = true;
+        showCountQuestion();
+        message('Megtaláltad az összes különböző osztót!', true);
+      } else message('A ' + value + ' bekerült a batyuba.', true);
+    }
+    function showCountQuestion() {
+      const quiz = $('quiz'); quiz.className = 'quiz visible'; quiz.replaceChildren();
+      const title = document.createElement('h2'); title.textContent = 'Tele a batyu!';
+      const question = document.createElement('p'); question.textContent = 'Hány különböző osztót építettél?';
+      const input = document.createElement('input'); input.type = 'number'; input.min = '1'; input.inputMode = 'numeric'; input.setAttribute('aria-label', 'Az osztók száma');
+      const check = document.createElement('button'); check.className = 'primary'; check.type = 'button'; check.textContent = 'Ellenőrzöm';
+      const reply = document.createElement('p'); reply.setAttribute('role', 'status');
+      check.addEventListener('click', () => {
+        if (Number(input.value) === bag.length && input.value.trim()) showFormulaQuestion();
+        else reply.textContent = 'Számold meg a batyuban lévő különböző osztókat!';
+      });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') check.click(); });
+      quiz.append(title, question, input, check, reply); input.focus();
+    }
+    function showFormulaQuestion() {
+      const quiz = $('quiz'); quiz.replaceChildren();
+      const title = document.createElement('h2'); title.textContent = 'Honnan tudhattad volna előre?';
+      const question = document.createElement('p'); question.textContent = 'Válaszd ki azt a számítást, amely megadja az osztók számát!';
+      const ex = puzzle.exponents;
+      const correct = ex.map(e => '(' + e + ' + 1)').join(' × ');
+      const options = [
+        {label: correct, number: totalDivisors(ex), right: true},
+        {label: ex.map(e => '(' + e + ' + 1)').join(' + '), number: ex.reduce((s,e) => s + e + 1, 0)},
+        {label: ex.join(' × '), number: ex.reduce((n,e) => n * e, 1)},
+        {label: '1 + ' + ex.join(' + '), number: 1 + ex.reduce((s,e) => s + e, 0)},
+        {label: ex.join(' + '), number: ex.reduce((s,e) => s + e, 0)}
+      ];
+      const distinct = [options[0]];
+      for (const candidate of options.slice(1)) {
+        if (candidate.number !== options[0].number && !distinct.some(x => x.label === candidate.label)) distinct.push(candidate);
+        if (distinct.length === 3) break;
+      }
+      const choices = document.createElement('div'); choices.className = 'choices';
+      const reply = document.createElement('p'); reply.setAttribute('role', 'status');
+      for (const option of shuffled(distinct)) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'choice'; button.textContent = option.label;
+        button.addEventListener('click', () => {
+          if (!option.right) { reply.textContent = 'Nézd meg: minden prímnél 0, 1, …, a kitevőig választhattál téglát.'; return; }
+          showSuccess(correct);
+        });
+        choices.append(button);
+      }
+      quiz.append(title, question, choices, reply);
+    }
+    function showSuccess(formula) {
+      const quiz = $('quiz'); quiz.replaceChildren();
+      const title = document.createElement('h2'); title.textContent = 'Kész a gyűjtemény!';
+      const explanation = document.createElement('p'); explanation.textContent = 'Minden prímnél 0-tól a kitevőig választhattál téglát. Ez prímenként kitevő + 1 lehetőség.';
+      const result = document.createElement('p'); result.className = 'formula'; result.textContent = formula + ' = ' + bag.length + ' különböző osztó';
+      const again = document.createElement('button'); again.type = 'button'; again.className = 'primary'; again.textContent = 'Új összetett szám'; again.addEventListener('click', () => start());
+      quiz.append(title, explanation, result, again);
+    }
+    $('submit').addEventListener('click', submit);
+    $('undo').addEventListener('click', () => { draft.pop(); renderDraft(); message(''); });
+    $('clear').addEventListener('click', () => { draft = []; renderDraft(); message(''); });
+    $('new').addEventListener('click', () => start());
+    start(true);
+  </script>
+</body>
+</html>
