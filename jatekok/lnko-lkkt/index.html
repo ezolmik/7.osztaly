@@ -22,6 +22,9 @@
     sup { font-size: .68em; }
     .ghost { background: #fff; border: 1px solid #aec8b4; color: #225447; border-radius: 11px; padding: .7rem 1rem; font-weight: 700; }
     .ghost:hover, .ghost:focus-visible { background: #e8f3eb; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }
+    .controls label { font-weight: 700; color: #225447; }
+    .controls select { font: inherit; color: #225447; background: #fff; border: 1px solid #aec8b4; border-radius: 11px; padding: .65rem .7rem; }
     .panel { margin-top: 1rem; }
     .panel h2 { margin: 0 0 .5rem; font-size: 1.4rem; }
     .hint { color: #52665a; margin: .25rem 0 1rem; line-height: 1.5; }
@@ -63,7 +66,14 @@
         <div class="number-card"><p class="eyebrow">Első szám</p><div class="factor" id="first"></div></div>
         <div class="number-card"><p class="eyebrow">Második szám</p><div class="factor" id="second"></div></div>
       </div>
-      <button class="ghost" id="new" type="button">Új számpár</button>
+      <div class="controls">
+        <label for="difficulty">Nehézség:</label>
+        <select id="difficulty" aria-label="Feladat nehézsége">
+          <option value="basic">Alap</option>
+          <option value="hard" selected>Nehezebb</option>
+        </select>
+        <button class="ghost" id="new" type="button">Új számpár</button>
+      </div>
     </div>
 
     <section class="panel" id="selection" aria-labelledby="selectionTitle">
@@ -97,7 +107,7 @@
   <script>
     'use strict';
     const pool = [2, 3, 5, 7, 11, 13, 17, 19, 23];
-    const patterns = [
+    const basicPatterns = [
       [[3,1],[2,2],[0,1]],
       [[2,1],[0,1]],
       [[2,0],[1,2],[0,1]],
@@ -106,6 +116,15 @@
       [[1,0],[0,1]],
       [[2,1],[1,2]],
       [[1,2],[1,1],[0,1]]
+    ];
+    const hardPatterns = [
+      [[3,1],[2,3],[1,0],[0,1]],
+      [[4,2],[1,3],[0,1],[1,0]],
+      [[2,3],[3,1],[1,2]],
+      [[1,2],[2,1],[0,2],[1,0]],
+      [[3,2],[2,1],[1,2],[0,1]],
+      [[2,1],[1,3],[2,0],[0,1]],
+      [[4,1],[2,3],[1,0]]
     ];
     const $ = id => document.getElementById(id);
     let puzzle, mode = null, draft = [], stage = 'select', previous = '';
@@ -133,14 +152,19 @@
     }
     function generate() {
       let candidate, signature;
+      const hard = $('difficulty').value === 'hard';
+      const patterns = hard ? hardPatterns : basicPatterns;
       do {
         const pattern = shuffle(patterns[Math.floor(Math.random() * patterns.length)]);
-        const available = Math.random() < .5
-          ? [shuffle([11, 13, 17, 19, 23])[0], ...shuffle([2, 3, 5, 7]).slice(0, pattern.length - 1)]
+        const available = Math.random() < (hard ? .6 : .5)
+          ? [shuffle([11, 13, 17, 19, 23])[0], ...shuffle([2, 3, 5, 7, 11, 13]).slice(0, pattern.length - 1)]
           : shuffle(pool).slice(0, pattern.length);
         candidate = normalize(available.map((p, i) => [p, ...pattern[i]]));
         signature = candidate.primes.join(',') + ':' + candidate.left.join(',') + ':' + candidate.right.join(',');
-      } while (signature === previous || candidate.a > 2000n || candidate.b > 2000n || target(candidate, 'lcm') > 6000n);
+      } while (signature === previous || candidate.a > (hard ? 100000n : 2000n)
+        || candidate.b > (hard ? 100000n : 2000n)
+        || target(candidate, 'lcm') > (hard ? 250000n : 6000n)
+        || (hard && (candidate.a < 100n || candidate.b < 100n || target(candidate, 'lcm') < 2000n)));
       previous = signature;
       candidate.bricks = shuffle([...candidate.primes, ...shuffle(pool.filter(p => !candidate.primes.includes(p))).slice(0, 2)]);
       return candidate;
@@ -276,9 +300,8 @@
     $('undo').addEventListener('click', () => { if (stage === 'build') { draft.pop(); renderDraft(); setMessage(''); } });
     $('clear').addEventListener('click', () => { if (stage === 'build') { draft = []; renderDraft(); setMessage(''); } });
     $('new').addEventListener('click', () => start());
-    puzzle = normalize([[2,3,1], [3,2,2], [5,0,1]]);
-    puzzle.bricks = [2,3,5,7,11];
-    start(false);
+    $('difficulty').addEventListener('change', () => start());
+    start();
   </script>
 </body>
 </html>
