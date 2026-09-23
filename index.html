@@ -306,7 +306,8 @@
             </div>
           </div>
           <h3>Szorgi vagy morgi?</h3>
-          <p>A szorgik mindig igazat mondanak, a morgik mindig hazudnak. Kövesd a matematikai nyomokat, és leplezd le őket!</p>
+          <p>A szorgik mindig igazat mondanak, a morgik mindig hazudnak. Kövesd a matematikai nyomokat, és leplezd le
+            őket!</p>
           <span class="go">Játék indítása →</span>
         </a>
       </div>
@@ -339,6 +340,18 @@
           <p>Egy egyszerű eszköz számok prímtényezős szorzat alakjának vizsgálatára.</p>
           <span class="go">Gyakorlás indítása →</span>
         </a>
+        <a class="card" href="jatekok/osztóbatyu/index.html" data-tags="szamelmelet">
+          <div class="card-top">
+            <span class="icon" aria-hidden="true">🎒</span>
+            <div class="tags">
+              <span class="tag">Számelmélet</span>
+            </div>
+          </div>
+          <h3>Osztóbatyu</h3>
+          <p>Építsd meg prímtéglákból az összes osztót, majd válaszd ki az osztók számát megadó képletet!</p>
+          <span class="go">Játék indítása →</span>
+        </a>
+
       </div>
     </section>
 
@@ -410,7 +423,7 @@
       // 1. Kártyák megjelenítése / rejtése
       cards.forEach(card => {
         const cardTags = (card.dataset.tags || '').split(' ');
-        
+
         if (activeFilters.size === 0) {
           card.classList.remove('is-hidden');
         } else {

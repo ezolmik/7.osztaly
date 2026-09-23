@@ -18,6 +18,8 @@
     .given { background: #fff; border: 2px solid #d9e6d8; border-radius: 18px; padding: 1rem 1.3rem; min-width: min(100%, 350px); }
     .eyebrow { margin: 0 0 .35rem; color: #527065; font-size: .85rem; font-weight: 750; text-transform: uppercase; letter-spacing: .06em; }
     .number { font-size: clamp(1.45rem, 4vw, 2.1rem); font-weight: 750; line-height: 1.3; }
+    .progress-label { margin: .8rem 0 .3rem; font-weight: 700; color: #225447; }
+    progress { display: block; width: 100%; height: 12px; accent-color: #328267; }
     sup { font-size: .65em; }
     .ghost { background: #fff; border: 1px solid #b1c7b7; color: #225447; border-radius: 11px; padding: .7rem 1rem; font-weight: 700; }
     .ghost:hover, .ghost:focus-visible { background: #e8f3eb; }
@@ -47,7 +49,6 @@
     .quiz { display: none; background: #e9f3e9; border: 2px solid #b8d2b7; border-radius: 18px; margin-top: 1rem; padding: 1.2rem; }
     .quiz.visible { display: block; }
     .quiz h2 { margin: 0 0 .5rem; }
-    .quiz input { width: 110px; padding: .65rem; border: 1px solid #9eb7a1; border-radius: 10px; margin-right: .5rem; }
     .choices { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1rem 0; }
     .choice { background: #fff; border: 1px solid #94b3a0; border-radius: 11px; padding: .7rem .9rem; color: #1b4c3c; font-weight: 700; }
     .choice:hover, .choice:focus-visible { background: #d6ead9; }
@@ -59,7 +60,11 @@
   <header><h1>Osztóbatyu</h1><p>Építsd meg egy szám minden különböző osztóját prímtéglákból!</p></header>
   <main>
     <div class="top">
-      <div class="given"><p class="eyebrow">A megadott szám</p><div class="number" id="given"></div></div>
+      <div class="given">
+        <p class="eyebrow">A megadott szám</p><div class="number" id="given"></div>
+        <p class="progress-label" id="progressLabel"></p>
+        <progress id="progress" value="0" max="6" aria-label="Megtalált osztók"></progress>
+      </div>
       <button class="ghost" id="new" type="button">Új összetett szám</button>
     </div>
     <div class="columns">
@@ -129,6 +134,10 @@
       $('undo').disabled = $('clear').disabled = finished || draft.length === 0;
     }
     function renderBag() {
+      const total = totalDivisors(puzzle.exponents);
+      $('progressLabel').textContent = 'Megtalált osztók: ' + bag.length + ' / ' + total;
+      $('progress').max = total;
+      $('progress').value = bag.length;
       $('bag').replaceChildren();
       if (!bag.length) { const empty = document.createElement('span'); empty.className = 'empty'; empty.textContent = 'A batyu még üres.'; $('bag').append(empty); }
       for (const entry of bag) {
@@ -169,27 +178,13 @@
         finished = true;
         $('submit').disabled = true;
         for (const button of $('bricks').children) button.disabled = true;
-        showCountQuestion();
+        showFormulaQuestion();
         message('Megtaláltad az összes különböző osztót!', true);
       } else message('A ' + value + ' bekerült a batyuba.', true);
     }
-    function showCountQuestion() {
+    function showFormulaQuestion() {
       const quiz = $('quiz'); quiz.className = 'quiz visible'; quiz.replaceChildren();
       const title = document.createElement('h2'); title.textContent = 'Tele a batyu!';
-      const question = document.createElement('p'); question.textContent = 'Hány különböző osztót építettél?';
-      const input = document.createElement('input'); input.type = 'number'; input.min = '1'; input.inputMode = 'numeric'; input.setAttribute('aria-label', 'Az osztók száma');
-      const check = document.createElement('button'); check.className = 'primary'; check.type = 'button'; check.textContent = 'Ellenőrzöm';
-      const reply = document.createElement('p'); reply.setAttribute('role', 'status');
-      check.addEventListener('click', () => {
-        if (Number(input.value) === bag.length && input.value.trim()) showFormulaQuestion();
-        else reply.textContent = 'Számold meg a batyuban lévő különböző osztókat!';
-      });
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') check.click(); });
-      quiz.append(title, question, input, check, reply); input.focus();
-    }
-    function showFormulaQuestion() {
-      const quiz = $('quiz'); quiz.replaceChildren();
-      const title = document.createElement('h2'); title.textContent = 'Honnan tudhattad volna előre?';
       const question = document.createElement('p'); question.textContent = 'Válaszd ki azt a számítást, amely megadja az osztók számát!';
       const ex = puzzle.exponents;
       const correct = ex.map(e => '(' + e + ' + 1)').join(' × ');
