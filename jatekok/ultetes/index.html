@@ -93,6 +93,12 @@
     .mosaic-tabs button[aria-selected="true"]{color:#fff;background:var(--green);border-color:var(--green)}
     .group-summary{display:flex;flex-wrap:wrap;gap:7px}
     .group-summary span{border:1px solid currentColor;border-radius:99px;padding:5px 9px;font-size:.78rem;font-weight:850}
+    .group-name-settings{flex-basis:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+    .group-name-settings summary{cursor:pointer;color:var(--green);font-size:.88rem;font-weight:850}
+    .group-name-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+    .group-name-fields h3{grid-column:1/-1;margin:6px 0 0;font-size:.9rem}
+    .group-panel .group-name-fields label{display:grid;gap:4px;font-size:.8rem}
+    .group-name-fields input{width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.9rem}
     .group-note{flex-basis:100%;margin:0;color:var(--muted);font-size:.82rem;line-height:1.4}
     .group-note.error{border-radius:8px;padding:8px;color:var(--red);background:var(--red-soft);font-weight:800}
     .mosaic-coverage{display:grid;gap:4px;flex-basis:100%;border-radius:9px;padding:8px 10px;background:var(--gold-soft);font-size:.82rem;font-weight:750;line-height:1.45}
@@ -105,7 +111,7 @@
     .desk.grouped{border-color:var(--group-color);background:var(--group-bg);box-shadow:0 7px 0 var(--group-color),0 12px 20px rgba(21,57,50,.12)}
     .desk.grouped .avatar{background:var(--group-color)}
     .desk.grouped .student-name{color:var(--group-color)}
-    .group-label{position:absolute;top:-10px;left:50%;border:1px solid var(--group-color);border-radius:99px;padding:2px 8px;color:#fff;background:var(--group-color);transform:translateX(-50%);font-size:.7rem;font-weight:900;white-space:nowrap}
+    .group-label{position:absolute;top:-10px;left:50%;max-width:calc(100% - 8px);border:1px solid var(--group-color);border-radius:12px;padding:2px 8px;color:#fff;background:var(--group-color);transform:translateX(-50%);font-size:.7rem;font-weight:900;line-height:1.15;text-align:center;overflow-wrap:anywhere}
     .group-picker{grid-column:1/-1;justify-self:center;z-index:1;width:auto;min-height:34px;margin-top:5px;padding:3px 6px;font-size:.76rem}
     .desk.grouped.single .group-picker{grid-column:1}
     .desk.grouped .badge{left:auto;right:5px;top:auto;bottom:-10px;transform:none}
@@ -145,7 +151,7 @@
       .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.room.group-layout{overflow-x:auto}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(130px,1fr));min-width:420px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
     }
     @media print{
-      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
+      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note,.group-name-settings{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
     }
   </style>
 </head>
@@ -226,6 +232,7 @@
           </div>
           <div id="mosaicCoverage" class="mosaic-coverage" aria-live="polite" hidden></div>
           <div id="groupSummary" class="group-summary" aria-live="polite"></div>
+          <details class="group-name-settings" id="groupNameSettings"><summary>Csoportnevek</summary><div id="groupNameFields" class="group-name-fields"></div></details>
           <p id="groupNote" class="group-note"></p>
         </div>
         <div id="desks" class="desks"></div>
@@ -272,6 +279,14 @@
       const mosaicEnabled = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
       const expertCounts = {};
       const mosaicPlans = {};
+      const defaultGroupNames = {
+        base: ["Zöld", "Téglavörös", "Indigó", "Arany", "Ibolya", "Kék"],
+        expert: ["Alfa", "Béta", "Gamma", "Delta", "Epszilon", "Zéta"]
+      };
+      const previousExpertNames = ["A", "B", "C", "D", "E", "F"];
+      const groupNames = Object.fromEntries(Object.keys(rosters).map(classId => [classId, {
+        base: defaultGroupNames.base.slice(), expert: defaultGroupNames.expert.slice()
+      }]));
       const STORAGE_KEY = "ultetesrend-generator-settings-v3";
       const PREVIOUS_STORAGE_KEY = "ultetesrend-generator-settings-v2";
       const $ = id => document.getElementById(id);
@@ -337,6 +352,19 @@
         return new Set(avoidPairs[classId].map(pair => pairKey(pair[0], pair[1])));
       }
 
+      function cleanGroupName(value) {
+        return typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 28) : "";
+      }
+
+      function groupName(classId, view, number) {
+        const index = number - 1;
+        return groupNames[classId][view][index] || defaultGroupNames[view][index] || String(number);
+      }
+
+      function groupTitle(classId, view, number) {
+        return number + ". " + groupName(classId, view, number);
+      }
+
       function saveSettings() {
         const data = {
           attendanceDay,
@@ -353,6 +381,8 @@
           deskPositions,
           mosaicEnabled,
           expertCounts,
+          groupNames,
+          groupNamesVersion: 2,
           mosaicView,
           mosaicPlans,
           arrangementDay: attendanceDay,
@@ -420,6 +450,15 @@
               }
             }
             if (Number.isInteger(data.groupCounts?.[classId])) groupCounts[classId] = data.groupCounts[classId];
+            for (const view of ["base", "expert"]) {
+              const savedNames = data.groupNames?.[classId]?.[view];
+              if (Array.isArray(savedNames)) savedNames.slice(0, 6).forEach((name, index) => {
+                const cleaned = cleanGroupName(name);
+                groupNames[classId][view][index] = view === "expert" &&
+                  (data.groupNamesVersion ?? 1) < 2 && cleaned === previousExpertNames[index]
+                  ? defaultGroupNames.expert[index] : cleaned || defaultGroupNames[view][index];
+              });
+            }
             mosaicEnabled[classId] = data.mosaicEnabled?.[classId] === true;
             if (Number.isInteger(data.expertCounts?.[classId])) expertCounts[classId] = data.expertCounts[classId];
             if (data.arrangementDay === attendanceDay && typeof data.groupErrors?.[classId] === "string") {
@@ -1113,6 +1152,37 @@
         $("shuffleButton").textContent = groupMode ? "Csoportos ülésrend készítése" : "Alkalmazás és bezárás";
       }
 
+      function renderGroupNameEditor() {
+        const fields = $("groupNameFields");
+        fields.innerHTML = "";
+        for (const [view, count, heading] of [
+          ["base", groupCount(currentClass), "Alapcsoportok"],
+          ["expert", mosaicEnabled[currentClass] ? expertCount(currentClass) : 0, "Szakértői csoportok"]
+        ]) {
+          if (!count) continue;
+          const title = document.createElement("h3");
+          title.textContent = heading;
+          fields.appendChild(title);
+          for (let number = 1; number <= count; number += 1) {
+            const label = document.createElement("label");
+            label.textContent = number + ". csoport neve";
+            const input = document.createElement("input");
+            input.type = "text";
+            input.maxLength = 28;
+            input.value = groupName(currentClass, view, number);
+            input.setAttribute("aria-label", number + ". " + heading.toLowerCase() + " neve");
+            input.addEventListener("change", () => {
+              groupNames[currentClass][view][number - 1] =
+                cleanGroupName(input.value) || defaultGroupNames[view][number - 1];
+              saveSettings();
+              renderRoom();
+            });
+            label.appendChild(input);
+            fields.appendChild(label);
+          }
+        }
+      }
+
       function renderGroupPanel() {
         $("groupPanel").hidden = !groupMode;
         if (!groupMode) return;
@@ -1145,6 +1215,7 @@
           select.appendChild(option);
         }
         select.disabled = !count;
+        renderGroupNameEditor();
         const sizes = Array(count).fill(0);
         if (mosaic && mosaicPlans[currentClass]) {
           Object.values(mosaicPlans[currentClass].baseById).forEach(group => { sizes[group - 1] += 1; });
@@ -1165,7 +1236,8 @@
           const chip = document.createElement("span");
           chip.className = "group-" + (index + 1);
           chip.style.background = "var(--group-bg)";
-          chip.textContent = (index + 1) + (expertView ? ". szakértelem: " : ". csoport: ") + size + " fő";
+          chip.textContent = groupTitle(currentClass, expertView ? "expert" : "base", index + 1) +
+            ": " + size + " fő";
           summary.appendChild(chip);
         });
         const coverageBox = $("mosaicCoverage");
@@ -1181,8 +1253,9 @@
             if (!missing.length) continue;
             anyMissing = true;
             const line = document.createElement("span");
-            line.textContent = group + ". alapcsoport · hiányzó szakértelem: " +
-              missing.map(expert => expert + ".").join(", ");
+            line.textContent = groupTitle(currentClass, "base", group) +
+              " csoport · hiányzó szakértelem: " +
+              missing.map(expert => groupTitle(currentClass, "expert", expert)).join(", ");
             coverageBox.appendChild(line);
           }
           if (!anyMissing) coverageBox.textContent = "Minden alapcsoportban minden szakértelem jelen van.";
@@ -1203,7 +1276,7 @@
         for (let group = 1; group <= groupCount(currentClass); group += 1) {
           const option = document.createElement("option");
           option.value = group;
-          option.textContent = group + ". csoport";
+          option.textContent = groupTitle(currentClass, "base", group) + " csoport";
           option.selected = groupAssignments[currentClass][deskIndex] === group;
           select.appendChild(option);
         }
@@ -1584,7 +1657,7 @@
                 const expert = mosaicPlans[currentClass].expertById[student.id];
                 const mark = document.createElement("span");
                 mark.className = "expert-mark group-" + expert;
-                mark.textContent = expert + ". szakértő";
+                mark.textContent = groupTitle(currentClass, "expert", expert) + " · szakértő";
                 seat.appendChild(mark);
               }
               desk.appendChild(seat);
@@ -1594,7 +1667,7 @@
               desk.classList.add("grouped", "group-" + group);
               const label = document.createElement("span");
               label.className = "group-label";
-              label.textContent = group + ". csoport";
+              label.textContent = groupTitle(currentClass, "base", group) + " csoport";
               desk.appendChild(label);
               if (!mosaicEnabled[currentClass]) desk.appendChild(groupPicker(deskIndex));
             }
@@ -1649,12 +1722,14 @@
             seat.classList.add("group-" + group);
             const mark = document.createElement("span");
             mark.className = "expert-mark";
-            mark.textContent = (view === "expert" ? group + ". szakértő" : group + ". csoport");
+            mark.textContent = groupTitle(currentClass, view, group) +
+              (view === "expert" ? " · szakértő" : " csoport");
             seat.appendChild(mark);
             const other = document.createElement("span");
             other.className = "student-id";
             other.textContent = view === "expert"
-              ? secondary[id] + ". alapcsoport" : secondary[id] + ". szakértő";
+              ? groupTitle(currentClass, "base", secondary[id]) + " alapcsoport"
+              : groupTitle(currentClass, "expert", secondary[id]) + " · szakértő";
             seat.appendChild(other);
             if (manualMode && !printingMosaic) {
               const button = document.createElement("button");
@@ -1662,7 +1737,7 @@
               button.className = "mosaic-seat-button" +
                 (selectedMosaicSlot === slotIndex ? " selected" : "");
               button.setAttribute("aria-label", (slotIndex + 1) + ". hely, " +
-                displayName(student) + ", " + group + ". " +
+                displayName(student) + ", " + groupTitle(currentClass, view, group) + " " +
                 (view === "expert" ? "szakértő" : "alapcsoport"));
               button.addEventListener("click", () => pickMosaicSlot(slotIndex));
               button.append(...Array.from(seat.childNodes));
@@ -1868,6 +1943,8 @@
           groupMode,
           mosaic: groupMode && mosaicEnabled[currentClass],
           mosaicView,
+          baseGroupNames: groupNames[currentClass].base.slice(0, groupCount(currentClass)),
+          expertGroupNames: groupNames[currentClass].expert.slice(0, expertCount(currentClass)),
           baseById: groupMode && mosaicEnabled[currentClass]
             ? { ...mosaicPlans[currentClass]?.baseById } : {},
           baseSlots: groupMode && mosaicEnabled[currentClass]
