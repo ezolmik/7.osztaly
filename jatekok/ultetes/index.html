@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<!-- saved from url=(0051)https://ultetesrend-generator.ezolmik.chatgpt.site/ -->
-<html lang="hu"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0d4f4a">
-  <meta name="description" content="Véletlenszerű, páros ülésrend generátor öt osztályhoz.">
+  <meta name="description" content="Véletlenszerű, páros ülésrend generátor öt osztályhoz hiányzáskezeléssel.">
   <title>Ültetésrend-generátor</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d4f4a'/%3E%3Cpath d='M13 20h38v11H13zM17 34h13v17H17zm17 0h13v17H34z' fill='%23f1c75b'/%3E%3C/svg%3E">
   <style>
@@ -21,6 +21,7 @@
       --gold:#f1c75b;
       --gold-soft:#fff5d9;
       --red:#a94336;
+      --red-soft:#fbeae8;
       --shadow:0 16px 38px rgba(21,57,50,.1);
     }
     *{box-sizing:border-box}
@@ -32,13 +33,21 @@
     .primary{border-color:var(--green);color:#fff;background:var(--green)}
     .primary:hover{background:var(--green-2)}
     .shell{width:min(1240px,calc(100% - 28px));margin:auto;padding:22px 0 48px}
-    header{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:18px}
     .eyebrow{margin:0 0 5px;color:var(--green-2);font-size:.75rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
     h1{margin:0;font:850 clamp(2rem,5vw,3.7rem)/1 Georgia,serif;letter-spacing:-.045em}
-    .header-actions{display:flex;gap:8px}
-    .app{display:grid;grid-template-columns:310px minmax(0,1fr);gap:16px;align-items:start}
+    .header-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+    .app{display:block}
     .panel,.room{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.96);box-shadow:var(--shadow)}
-    .panel{position:sticky;top:16px;padding:20px}
+    .settings-menu{position:relative}
+    .settings-menu summary{display:flex;min-height:44px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 14px;color:var(--ink);background:#fff;font-weight:800;cursor:pointer;list-style:none;transition:transform .15s,border-color .15s,background .15s}
+    .settings-menu summary::-webkit-details-marker{display:none}
+    .settings-menu summary::after{content:"▾";margin-left:8px;color:var(--green)}
+    .settings-menu[open] summary{border-color:#8bbab1;background:var(--green-soft)}
+    .settings-menu[open] summary::after{content:"▴"}
+    .settings-menu summary:hover{transform:translateY(-1px);border-color:#8bbab1}
+    .settings-menu summary:focus-visible{outline:4px solid rgba(241,199,91,.62);outline-offset:2px}
+    .settings-menu .panel{position:absolute;top:calc(100% + 10px);right:0;z-index:20;width:min(340px,calc(100vw - 28px));max-height:calc(100vh - 105px);overflow:auto;padding:20px}
     label.title{display:grid;gap:7px;font-size:.85rem;font-weight:850}
     select{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:9px 11px;color:var(--ink);background:#fff;font-weight:780}
     .section-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin:22px 0 9px}
@@ -49,7 +58,9 @@
     .student-choice{display:flex;gap:9px;align-items:center;min-height:40px;border:1px solid transparent;border-radius:10px;padding:6px 8px;cursor:pointer}
     .student-choice:hover{background:var(--green-soft)}
     .student-choice:has(input:checked){border-color:#a8d0c7;background:var(--green-soft)}
+    .student-choice.absent-choice:has(input:checked){border-color:#f0b2aa;background:var(--red-soft);color:var(--red)}
     .student-choice input{width:18px;height:18px;margin:0;accent-color:var(--green)}
+    .student-choice.absent-choice input{accent-color:var(--red)}
     .student-choice span{font-size:.92rem;font-weight:700}
     .student-choice:has(input:disabled){cursor:not-allowed;opacity:.5}
     .pair-builder{display:grid;grid-template-columns:1fr 1fr;gap:7px}.pair-builder select{min-width:0}.pair-builder button{grid-column:1/-1}
@@ -86,10 +97,10 @@
     .toast{position:fixed;right:18px;bottom:18px;z-index:4;border-radius:12px;padding:11px 15px;color:#fff;background:var(--green);box-shadow:var(--shadow);font-weight:750;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s}
     .toast.show{opacity:1;transform:none}
     @media(max-width:820px){
-      header{align-items:start;flex-direction:column}.app{grid-template-columns:1fr}.panel{position:static}.student-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.room{min-height:0}.desks{gap:16px 10px}.student-name{font-size:.78rem}
+      header{align-items:start;flex-direction:column}.student-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.room{min-height:0}.desks{gap:16px 10px}.student-name{font-size:.78rem}
     }
     @media(max-width:560px){
-      .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%}.header-actions button{flex:1}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
+      .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
     }
     @media print{
       body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.desks{gap:17px}.desk{break-inside:avoid}.toast{display:none}
@@ -100,30 +111,33 @@
   <main class="shell">
     <header>
       <div><p class="eyebrow">Tanári eszköz</p><h1>Ültetésrend-generátor</h1></div>
-      <div class="header-actions"><button id="manualButton" type="button">Kézi szerkesztés</button><button id="printButton" type="button">Nyomtatás</button><button id="shuffleTop" class="primary" type="button">Új ülésrend</button></div>
-    </header>
-
-    <div class="app">
-      <aside class="panel" aria-label="Beállítások">
+      <div class="header-actions">
+        <details id="settingsMenu" class="settings-menu">
+          <summary id="settingsSummary">Beállítások · 7a_1</summary>
+          <aside class="panel" aria-label="Beállítások">
         <label class="title" for="classSelect">Osztály
           <select id="classSelect">
             <option value="5a_2">5a_2</option>
             <option value="5b_1">5b_1</option>
-            <option value="7a_1" selected="">7a_1</option>
+            <option value="7a_1" selected>7a_1</option>
             <option value="8c_1">8c_1</option>
             <option value="11c_ma">11c_ma</option>
           </select>
         </label>
 
-        <div class="section-head"><h2>Ki üljön egyedül?</h2><span id="singleCount" class="count">2 kijelölve</span></div>
-        <p class="hint">A kijelölt tanuló teljes padot kap. A többieket párokba rendezzük; páratlan maradék esetén még valaki egyedül ül.</p>
-        <div id="studentList" class="student-list"><label class="student-choice"><input type="checkbox" aria-label="Zorka egyedül üljön"><span>1. Zorka</span></label><label class="student-choice"><input type="checkbox" aria-label="Matyi egyedül üljön"><span>2. Matyi</span></label><label class="student-choice"><input type="checkbox" aria-label="Eszter egyedül üljön"><span>3. Eszter</span></label><label class="student-choice"><input type="checkbox" aria-label="Domos egyedül üljön"><span>4. Domos</span></label><label class="student-choice"><input type="checkbox" aria-label="Vince egyedül üljön"><span>5. Vince</span></label><label class="student-choice"><input type="checkbox" aria-label="Flóra egyedül üljön"><span>6. Flóra</span></label><label class="student-choice"><input type="checkbox" aria-label="Zoé egyedül üljön"><span>7. Zoé</span></label><label class="student-choice"><input type="checkbox" aria-label="Izabella egyedül üljön"><span>8. Izabella</span></label><label class="student-choice"><input type="checkbox" aria-label="Bálint egyedül üljön"><span>9. Bálint</span></label><label class="student-choice"><input type="checkbox" aria-label="Bobby egyedül üljön"><span>10. Bobby</span></label><label class="student-choice"><input type="checkbox" aria-label="Balázs egyedül üljön"><span>11. Balázs</span></label><label class="student-choice"><input type="checkbox" aria-label="Aliz egyedül üljön"><span>12. Aliz</span></label><label class="student-choice"><input type="checkbox" aria-label="Boti egyedül üljön"><span>13. Boti</span></label><label class="student-choice"><input type="checkbox" aria-label="Zsiga egyedül üljön"><span>14. Zsiga</span></label><label class="student-choice"><input type="checkbox" aria-label="Sára egyedül üljön"><span>15. Sára</span></label><label class="student-choice"><input type="checkbox" aria-label="Alina egyedül üljön"><span>16. Alina</span></label></div>
+        <div class="section-head"><h2>Ki hiányzik ma?</h2><span id="absentCount" class="count"></span></div>
+        <p class="hint">A hiányzókat kihagyjuk az ülésrendből. A jelölés csak a mai napra szól.</p>
+        <div id="absentList" class="student-list"></div>
 
-        <div class="section-head"><h2>Rögzített párok</h2><span id="pairCount" class="count">nincs</span></div>
-        <p class="hint">Ők minden új sorsolásnál egy padba kerülnek.</p>
+        <div class="section-head"><h2>Ki üljön egyedül?</h2><span id="singleCount" class="count"></span></div>
+        <p class="hint">A kijelölt tanuló teljes padot kap. A többieket párokba rendezzük; páratlan maradék esetén még valaki egyedül ül.</p>
+        <div id="studentList" class="student-list"></div>
+
+        <div class="section-head"><h2>Rögzített párok</h2><span id="pairCount" class="count"></span></div>
+        <p class="hint">Ők minden új sorsolásnál egy padba kerülnek, ha mindketten jelen vannak.</p>
         <div class="pair-builder">
-          <select id="pairFirst" aria-label="A pár első tagja"><option value="">Első tanuló</option><option value="7a_1-1">1. Zorka</option><option value="7a_1-2">2. Matyi</option><option value="7a_1-4">4. Domos</option><option value="7a_1-5">5. Vince</option><option value="7a_1-6">6. Flóra</option><option value="7a_1-8">8. Izabella</option><option value="7a_1-9">9. Bálint</option><option value="7a_1-10">10. Bobby</option><option value="7a_1-11">11. Balázs</option><option value="7a_1-12">12. Aliz</option><option value="7a_1-13">13. Boti</option><option value="7a_1-14">14. Zsiga</option><option value="7a_1-15">15. Sára</option><option value="7a_1-16">16. Alina</option></select>
-          <select id="pairSecond" aria-label="A pár második tagja"><option value="">Második tanuló</option><option value="7a_1-1">1. Zorka</option><option value="7a_1-2">2. Matyi</option><option value="7a_1-4">4. Domos</option><option value="7a_1-5">5. Vince</option><option value="7a_1-6">6. Flóra</option><option value="7a_1-8">8. Izabella</option><option value="7a_1-9">9. Bálint</option><option value="7a_1-10">10. Bobby</option><option value="7a_1-11">11. Balázs</option><option value="7a_1-12">12. Aliz</option><option value="7a_1-13">13. Boti</option><option value="7a_1-14">14. Zsiga</option><option value="7a_1-15">15. Sára</option><option value="7a_1-16">16. Alina</option></select>
+          <select id="pairFirst" aria-label="A pár első tagja"></select>
+          <select id="pairSecond" aria-label="A pár második tagja"></select>
           <button id="addPairButton" type="button">Pár rögzítése</button>
         </div>
         <div id="pairList" class="pair-list"></div>
@@ -134,24 +148,32 @@
           <span><strong>Fiú–lány párok maximalizálása</strong><span>A rögzítések megtartása mellett a lehető legtöbb vegyes párt keressük.</span></span>
         </label>
 
-        <div class="section-head"><h2>Kik ne üljenek együtt?</h2><span id="avoidCount" class="count">nincs</span></div>
+        <div class="section-head"><h2>Kik ne üljenek együtt?</h2><span id="avoidCount" class="count"></span></div>
         <p class="hint">Puha kikötés: ha minden kérés nem teljesíthető, a lehető legkevesebb ütközést hagyjuk meg.</p>
         <div class="pair-builder">
-          <select id="avoidFirst" aria-label="A tiltott pár első tagja"><option value="">Első tanuló</option><option value="7a_1-1">1. Zorka</option><option value="7a_1-2">2. Matyi</option><option value="7a_1-3">3. Eszter</option><option value="7a_1-4">4. Domos</option><option value="7a_1-5">5. Vince</option><option value="7a_1-6">6. Flóra</option><option value="7a_1-7">7. Zoé</option><option value="7a_1-8">8. Izabella</option><option value="7a_1-9">9. Bálint</option><option value="7a_1-10">10. Bobby</option><option value="7a_1-11">11. Balázs</option><option value="7a_1-12">12. Aliz</option><option value="7a_1-13">13. Boti</option><option value="7a_1-14">14. Zsiga</option><option value="7a_1-15">15. Sára</option><option value="7a_1-16">16. Alina</option></select>
-          <select id="avoidSecond" aria-label="A tiltott pár második tagja"><option value="">Második tanuló</option><option value="7a_1-1">1. Zorka</option><option value="7a_1-2">2. Matyi</option><option value="7a_1-3">3. Eszter</option><option value="7a_1-4">4. Domos</option><option value="7a_1-5">5. Vince</option><option value="7a_1-6">6. Flóra</option><option value="7a_1-7">7. Zoé</option><option value="7a_1-8">8. Izabella</option><option value="7a_1-9">9. Bálint</option><option value="7a_1-10">10. Bobby</option><option value="7a_1-11">11. Balázs</option><option value="7a_1-12">12. Aliz</option><option value="7a_1-13">13. Boti</option><option value="7a_1-14">14. Zsiga</option><option value="7a_1-15">15. Sára</option><option value="7a_1-16">16. Alina</option></select>
+          <select id="avoidFirst" aria-label="A tiltott pár első tagja"></select>
+          <select id="avoidSecond" aria-label="A tiltott pár második tagja"></select>
           <button id="addAvoidButton" type="button">Tiltott pár hozzáadása</button>
         </div>
         <div id="avoidList" class="pair-list avoid-list"></div>
 
-        <div class="panel-actions"><button id="shuffleButton" class="primary" type="button">Új ülésrend készítése</button></div>
-      </aside>
+            <div class="panel-actions"><button id="shuffleButton" class="primary" type="button">Alkalmazás és bezárás</button></div>
+          </aside>
+        </details>
+        <button id="manualButton" type="button">Kézi szerkesztés</button>
+        <button id="printButton" type="button">Nyomtatás</button>
+        <button id="shuffleTop" class="primary" type="button">Új ülésrend</button>
+      </div>
+    </header>
+
+    <div class="app">
 
       <section class="room" aria-labelledby="roomTitle">
         <div id="roomTitle" class="board">TÁBLA</div>
         <div class="teacher">TANÁRI ASZTAL</div>
-        <div class="room-meta"><span id="classTitle"><strong>7a_1</strong> · 16 tanuló</span><span id="roomStats">9 pad · 2 egyedül</span></div>
+        <div class="room-meta"><span id="classTitle"></span><span id="roomStats"></span></div>
         <div id="constraintReport" class="constraint-report" aria-live="polite"></div>
-        <div id="desks" class="desks"><article class="desk"><div class="seat"><span class="avatar">D</span><span class="student-name">Domos</span></div><div class="seat"><span class="avatar">A</span><span class="student-name">Aliz</span></div></article><article class="desk"><div class="seat"><span class="avatar">Z</span><span class="student-name">Zorka</span></div><div class="seat"><span class="avatar">B</span><span class="student-name">Balázs</span></div></article><article class="desk"><div class="seat"><span class="avatar">F</span><span class="student-name">Flóra</span></div><div class="seat"><span class="avatar">I</span><span class="student-name">Izabella</span></div></article><article class="desk"><div class="seat"><span class="avatar">B</span><span class="student-name">Bálint</span></div><div class="seat"><span class="avatar">A</span><span class="student-name">Alina</span></div></article><article class="desk single"><div class="seat"><span class="avatar">E</span><span class="student-name">Eszter</span></div><span class="badge">egyedül ül</span></article><article class="desk single"><div class="seat"><span class="avatar">Z</span><span class="student-name">Zoé</span></div><span class="badge">egyedül ül</span></article><article class="desk"><div class="seat"><span class="avatar">M</span><span class="student-name">Matyi</span></div><div class="seat"><span class="avatar">V</span><span class="student-name">Vince</span></div></article><article class="desk"><div class="seat"><span class="avatar">B</span><span class="student-name">Boti</span></div><div class="seat"><span class="avatar">Z</span><span class="student-name">Zsiga</span></div></article><article class="desk"><div class="seat"><span class="avatar">B</span><span class="student-name">Bobby</span></div><div class="seat"><span class="avatar">S</span><span class="student-name">Sára</span></div></article></div>
+        <div id="desks" class="desks"></div>
       </section>
     </div>
   </main>
@@ -166,7 +188,7 @@
         "5b_1": ["Janka","Nándor","Shiran","Dániel","Zétény","Dorka","Lilla","Málna","Marcell","Benedek","Ida","Sámuel","Andor","Lili","Natália","Félix"],
         "7a_1": ["Zorka","Matyi","Eszter","Domos","Vince","Flóra","Zoé","Izabella","Bálint","Bobby","Balázs","Aliz","Boti","Zsiga","Sára","Alina"],
         "8c_1": ["Júlia","Júlia","Rebeka","Bendegúz","Máté Dominik","Máté Dániel","Kata Sára","Samu","Emily","Maja","Huba","András","Anti","Gréta","Sára","Péter"],
-        "11c_ma": ["Dalma","Dorottya","Marcell Gábor","Emma","Mira","Boti","Szabolcs","Hanna","Bianka","Bálint","Izabella","Szonja","Sára","Tímea"]
+        "11c_ma": ["Dalma","Dorottya","Marcell Gábor","Emma","Mira","Botond","Szabolcs","Hanna","Bianka","Bálint","Izabella","Szonja","Sára","Tímea"]
       };
 
       const genders = {
@@ -181,14 +203,21 @@
         classId,
         names.map((name, index) => ({ id: classId + "-" + (index + 1), name, number: index + 1, gender: genders[classId][index] }))
       ]));
+      const absent = Object.fromEntries(Object.keys(rosters).map(classId => [classId, new Set()]));
       const singles = Object.fromEntries(Object.keys(rosters).map(classId => [classId, new Set()]));
       const fixedPairs = Object.fromEntries(Object.keys(rosters).map(classId => [classId, []]));
       const avoidPairs = Object.fromEntries(Object.keys(rosters).map(classId => [classId, []]));
       const maximizeMixed = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
       const arrangements = {};
       const manualLayouts = {};
-      const STORAGE_KEY = "ultetesrend-generator-settings-v2";
+      const STORAGE_KEY = "ultetesrend-generator-settings-v3";
+      const PREVIOUS_STORAGE_KEY = "ultetesrend-generator-settings-v2";
       const $ = id => document.getElementById(id);
+      const localDay = () => {
+        const now = new Date();
+        return [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
+      };
+      let attendanceDay = localDay();
 
       singles["7a_1"].add("7a_1-3");
       singles["7a_1"].add("7a_1-7");
@@ -218,6 +247,10 @@
         return Boolean(studentById(classId, id));
       }
 
+      function presentStudents(classId) {
+        return students[classId].filter(student => !absent[classId].has(student.id));
+      }
+
       function hasDuplicateName(classId, name) {
         return students[classId].filter(student => student.name === name).length > 1;
       }
@@ -240,6 +273,8 @@
 
       function saveSettings() {
         const data = {
+          attendanceDay,
+          absent: Object.fromEntries(Object.entries(absent).map(([classId, ids]) => [classId, [...ids]])),
           singles: Object.fromEntries(Object.entries(singles).map(([classId, ids]) => [classId, [...ids]])),
           fixedPairs,
           avoidPairs,
@@ -251,10 +286,13 @@
 
       function loadSettings() {
         try {
-          const raw = localStorage.getItem(STORAGE_KEY);
+          const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(PREVIOUS_STORAGE_KEY);
           if (!raw) return;
           const data = JSON.parse(raw);
           Object.keys(rosters).forEach(classId => {
+            if (data.attendanceDay === attendanceDay && Array.isArray(data.absent?.[classId])) {
+              absent[classId] = new Set(data.absent[classId].filter(id => validId(classId, id)));
+            }
             if (Array.isArray(data.singles?.[classId])) {
               singles[classId] = new Set(data.singles[classId].filter(id => validId(classId, id)));
             }
@@ -290,6 +328,22 @@
             }
           });
         } catch (error) {}
+      }
+
+      function ensureToday() {
+        const today = localDay();
+        if (attendanceDay === today) return false;
+        attendanceDay = today;
+        Object.keys(rosters).forEach(classId => {
+          absent[classId].clear();
+          if (arrangements[classId]) arrangements[classId] = manualLayouts[classId]
+            ? layoutToArrangement(classId, manualLayouts[classId])
+            : buildRandomArrangement(classId);
+        });
+        saveSettings();
+        renderControls();
+        renderRoom();
+        return true;
       }
 
       function bitCount(mask) {
@@ -355,22 +409,25 @@
 
       function buildRandomArrangement(classId) {
         const fixedSingleIds = singles[classId];
-        const usedInPairs = pairedIds(classId);
-        const desks = students[classId]
+        const activeStudents = presentStudents(classId);
+        const assigned = new Set();
+        const desks = activeStudents
           .filter(student => fixedSingleIds.has(student.id))
-          .map(student => ({ seats: [student], fixedSingle: true, fixedPair: false }));
+          .map(student => {
+            assigned.add(student.id);
+            return { seats: [student], fixedSingle: true, fixedPair: false };
+          });
 
         fixedPairs[classId].forEach(pair => {
-          desks.push({
-            seats: pair.map(id => studentById(classId, id)).filter(Boolean),
-            fixedSingle: false,
-            fixedPair: true
-          });
+          const members = pair.map(id => studentById(classId, id))
+            .filter(student => student && !absent[classId].has(student.id) && !assigned.has(student.id));
+          if (members.length === 2) {
+            desks.push({ seats: members, fixedSingle: false, fixedPair: true });
+            members.forEach(student => assigned.add(student.id));
+          }
         });
 
-        const others = students[classId].filter(student =>
-          !fixedSingleIds.has(student.id) && !usedInPairs.has(student.id)
-        );
+        const others = activeStudents.filter(student => !assigned.has(student.id));
         optimizedGroups(classId, others).forEach(group => {
           desks.push({ seats: group, fixedSingle: false, fixedPair: false });
         });
@@ -378,6 +435,7 @@
       }
 
       function createArrangement() {
+        ensureToday();
         manualMode = false;
         updateManualButton();
         arrangements[currentClass] = buildRandomArrangement(currentClass);
@@ -400,7 +458,7 @@
           const seats = [layout[index], layout[index + 1]]
             .filter(Boolean)
             .map(id => studentById(classId, id))
-            .filter(Boolean);
+            .filter(student => student && !absent[classId].has(student.id));
           if (seats.length) result.push({ seats, fixedSingle: false, fixedPair: false, manual: true });
         }
         return result;
@@ -413,8 +471,10 @@
       }
 
       function toggleManualMode() {
+        ensureToday();
         if (!manualMode) {
           ensureManualLayout();
+          arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
           manualMode = true;
           showToast("A teljes ülésrend szerkeszthető");
         } else {
@@ -432,6 +492,36 @@
         $("manualButton").classList.toggle("primary", manualMode);
       }
 
+      function renderAbsentList() {
+        const box = $("absentList");
+        box.innerHTML = "";
+        students[currentClass].forEach(student => {
+          const label = document.createElement("label");
+          label.className = "student-choice absent-choice";
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = absent[currentClass].has(student.id);
+          input.setAttribute("aria-label", displayName(student) + " hiányzik");
+          input.addEventListener("change", () => {
+            ensureToday();
+            if (input.checked) absent[currentClass].add(student.id);
+            else absent[currentClass].delete(student.id);
+            arrangements[currentClass] = manualMode && manualLayouts[currentClass]
+              ? layoutToArrangement(currentClass, manualLayouts[currentClass])
+              : buildRandomArrangement(currentClass);
+            saveSettings();
+            renderControls();
+            renderRoom();
+          });
+          const name = document.createElement("span");
+          name.textContent = student.number + ". " + student.name;
+          label.append(input, name);
+          box.appendChild(label);
+        });
+        $("absentCount").textContent = absent[currentClass].size
+          ? absent[currentClass].size + " hiányzó" : "mindenki jelen";
+      }
+
       function renderStudentList() {
         const box = $("studentList");
         box.innerHTML = "";
@@ -443,8 +533,9 @@
           label.className = "student-choice";
           const input = document.createElement("input");
           input.type = "checkbox";
-          input.checked = selected.has(student.id);
-          input.disabled = paired.has(student.id);
+          const isAbsent = absent[currentClass].has(student.id);
+          input.checked = selected.has(student.id) && !isAbsent;
+          input.disabled = paired.has(student.id) || isAbsent;
           input.setAttribute("aria-label", displayName(student) + " egyedül üljön");
           input.addEventListener("change", () => {
             if (input.checked) selected.add(student.id);
@@ -454,11 +545,12 @@
             createArrangement();
           });
           const name = document.createElement("span");
-          name.textContent = student.number + ". " + student.name;
+          name.textContent = student.number + ". " + student.name + (isAbsent ? " (hiányzik)" : "");
           label.append(input, name);
           box.appendChild(label);
         });
-        $("singleCount").textContent = selected.size ? selected.size + " kijelölve" : "senki";
+        const activeSingles = [...selected].filter(id => !absent[currentClass].has(id)).length;
+        $("singleCount").textContent = activeSingles ? activeSingles + " kijelölve" : "senki";
       }
 
       function pairOption(select, label, available) {
@@ -478,7 +570,7 @@
       function renderPairs() {
         const paired = pairedIds(currentClass);
         const available = students[currentClass].filter(student =>
-          !singles[currentClass].has(student.id) && !paired.has(student.id)
+          !absent[currentClass].has(student.id) && !singles[currentClass].has(student.id) && !paired.has(student.id)
         );
         pairOption($("pairFirst"), "Első tanuló", available);
         pairOption($("pairSecond"), "Második tanuló", available);
@@ -491,7 +583,8 @@
           const row = document.createElement("div");
           row.className = "pair-item";
           const names = document.createElement("span");
-          names.textContent = pair.map(id => displayName(studentById(currentClass, id))).join(" + ");
+          names.textContent = pair.map(id => displayName(studentById(currentClass, id))).join(" + ") +
+            (pair.some(id => absent[currentClass].has(id)) ? " (hiányzó miatt inaktív)" : "");
           const remove = document.createElement("button");
           remove.type = "button";
           remove.textContent = "Törlés";
@@ -540,7 +633,7 @@
         const second = $("pairSecond").value;
         if (!first || !second) return showToast("Válassz ki két tanulót");
         if (first === second) return showToast("Két különböző tanulót válassz");
-        const blocked = new Set([...singles[currentClass], ...pairedIds(currentClass)]);
+        const blocked = new Set([...absent[currentClass], ...singles[currentClass], ...pairedIds(currentClass)]);
         if (blocked.has(first) || blocked.has(second)) return showToast("Az egyik tanuló már rögzítve van");
         fixedPairs[currentClass].push([first, second]);
         const conflicts = avoidPairKeys(currentClass).has(pairKey(first, second));
@@ -566,6 +659,7 @@
       }
 
       function renderControls() {
+        renderAbsentList();
         renderStudentList();
         renderPairs();
         renderSpecialConstraints();
@@ -621,13 +715,15 @@
 
       function maximumMixedPairs(classId) {
         let fixedMixed = 0;
-        const excluded = new Set(singles[classId]);
+        const excluded = new Set([...absent[classId], ...singles[classId]]);
         fixedPairs[classId].forEach(pair => {
-          pair.forEach(id => excluded.add(id));
-          const pairStudents = pair.map(id => studentById(classId, id));
-          if (pairStudents[0]?.gender !== pairStudents[1]?.gender) fixedMixed += 1;
+          if (pair.every(id => !absent[classId].has(id))) {
+            pair.forEach(id => excluded.add(id));
+            const pairStudents = pair.map(id => studentById(classId, id));
+            if (pairStudents[0].gender !== pairStudents[1].gender) fixedMixed += 1;
+          }
         });
-        const free = students[classId].filter(student => !excluded.has(student.id));
+        const free = presentStudents(classId).filter(student => !excluded.has(student.id));
         const boys = free.filter(student => student.gender === "F").length;
         const girls = free.filter(student => student.gender === "L").length;
         return fixedMixed + Math.min(boys, girls);
@@ -636,8 +732,9 @@
       function renderConstraintReport() {
         const arrangement = arrangements[currentClass] || [];
         const assigned = arrangement.flatMap(desk => desk.seats).length;
+        const active = presentStudents(currentClass);
         const parts = [];
-        if (assigned < students[currentClass].length && (maximizeMixed[currentClass] || avoidPairs[currentClass].length)) {
+        if (assigned < active.length && (maximizeMixed[currentClass] || avoidPairs[currentClass].length)) {
           $("constraintReport").textContent = "A kikötéseket a teljes ülésrend elkészültekor értékeljük.";
           return;
         }
@@ -645,9 +742,11 @@
         if (avoidPairs[currentClass].length) {
           const deskByStudent = new Map();
           arrangement.forEach((desk, deskIndex) => desk.seats.forEach(student => deskByStudent.set(student.id, deskIndex)));
-          const violations = avoidPairs[currentClass].filter(pair => deskByStudent.get(pair[0]) === deskByStudent.get(pair[1])).length;
-          const separated = avoidPairs[currentClass].length - violations;
-          parts.push(separated + "/" + avoidPairs[currentClass].length + " tiltott pár szétválasztva");
+          const relevant = avoidPairs[currentClass].filter(pair => pair.every(id => !absent[currentClass].has(id)));
+          if (relevant.length) {
+            const violations = relevant.filter(pair => deskByStudent.get(pair[0]) === deskByStudent.get(pair[1])).length;
+            parts.push((relevant.length - violations) + "/" + relevant.length + " jelenlévő tiltott pár szétválasztva");
+          }
         }
         if (maximizeMixed[currentClass]) {
           const mixed = arrangement.filter(desk => desk.seats.length === 2 && desk.seats[0].gender !== desk.seats[1].gender).length;
@@ -665,7 +764,7 @@
         empty.value = "";
         empty.textContent = "— üres —";
         select.appendChild(empty);
-        students[currentClass].forEach(student => {
+        presentStudents(currentClass).forEach(student => {
           const option = document.createElement("option");
           option.value = student.id;
           option.textContent = student.number + ". " + student.name;
@@ -678,6 +777,7 @@
       }
 
       function assignManualSeat(slotIndex, studentId) {
+        ensureToday();
         const layout = manualLayouts[currentClass];
         if (studentId) {
           const previous = layout.indexOf(studentId);
@@ -698,25 +798,31 @@
           desk.append(editorSelect(deskIndex * 2), editorSelect(deskIndex * 2 + 1));
           box.appendChild(desk);
         }
-        const assigned = manualLayouts[currentClass].filter(Boolean).length;
-        $("roomStats").textContent = assigned + "/" + students[currentClass].length + " tanuló leültetve";
+        const assigned = manualLayouts[currentClass].filter(id => id && !absent[currentClass].has(id)).length;
+        $("roomStats").textContent = assigned + "/" + presentStudents(currentClass).length + " jelenlévő tanuló leültetve";
       }
 
       function renderRoom() {
         $("desks").innerHTML = "";
-        $("classTitle").innerHTML = "<strong>" + currentClass + "</strong> · " + students[currentClass].length + " tanuló";
+        $("classTitle").innerHTML = "<strong>" + currentClass + "</strong> · " +
+          presentStudents(currentClass).length + "/" + students[currentClass].length + " jelen";
         if (manualMode) renderManualRoom();
         else renderRandomRoom();
         renderConstraintReport();
       }
 
       function selectClass(classId) {
+        ensureToday();
         currentClass = classId;
         $("classSelect").value = classId;
+        $("settingsSummary").textContent = "Beállítások · " + classId;
         if (!arrangements[classId]) arrangements[classId] = manualLayouts[classId]
           ? layoutToArrangement(classId, manualLayouts[classId])
           : buildRandomArrangement(classId);
-        if (manualMode) ensureManualLayout();
+        if (manualMode) {
+          ensureManualLayout();
+          arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
+        }
         renderControls();
         renderRoom();
       }
@@ -746,11 +852,12 @@
           context.registerTool({
             name: "generate_seating_plan",
             title: "Ültetésrend készítése",
-            description: "Kiválaszt egy osztályt, rögzíti az egyedül ülőket és a párokat, majd véletlen ülésrendet készít.",
+            description: "Kiválaszt egy osztályt, megadja a mai hiányzókat és az ülésrend kikötéseit, majd véletlen ülésrendet készít.",
             inputSchema: {
               type: "object",
               properties: {
                 classId: { type: "string", enum: Object.keys(rosters) },
+                absentStudentNumbers: { type: "array", items: { type: "integer", minimum: 1 } },
                 singleStudentNumbers: { type: "array", items: { type: "integer", minimum: 1 } },
                 fixedPairs: {
                   type: "array",
@@ -778,14 +885,22 @@
             annotations: { readOnlyHint: false, untrustedContentHint: false },
             execute(input) {
               if (!input || !students[input.classId]) throw new Error("Ismeretlen osztály.");
+              ensureToday();
               const validNumbers = new Set(students[input.classId].map(student => student.number));
               const flattened = input.fixedPairs?.flat() || [];
               const allNumbers = [...input.singleStudentNumbers, ...flattened];
               if (!Array.isArray(input.singleStudentNumbers) || !Array.isArray(input.fixedPairs) ||
+                  (input.absentStudentNumbers !== undefined &&
+                    (!Array.isArray(input.absentStudentNumbers) ||
+                      input.absentStudentNumbers.some(number => !validNumbers.has(number)) ||
+                      new Set(input.absentStudentNumbers).size !== input.absentStudentNumbers.length)) ||
                   allNumbers.some(number => !validNumbers.has(number)) ||
                   new Set(allNumbers).size !== allNumbers.length ||
                   input.fixedPairs.some(pair => !Array.isArray(pair) || pair.length !== 2)) {
                 throw new Error("Érvénytelen vagy ütköző rögzítés.");
+              }
+              if (Array.isArray(input.absentStudentNumbers)) {
+                absent[input.classId] = new Set(input.absentStudentNumbers.map(number => input.classId + "-" + number));
               }
               singles[input.classId] = new Set(input.singleStudentNumbers.map(number => input.classId + "-" + number));
               fixedPairs[input.classId] = input.fixedPairs.map(pair => pair.map(number => input.classId + "-" + number));
@@ -824,16 +939,22 @@
         createArrangement();
       });
       $("manualButton").addEventListener("click", toggleManualMode);
-      $("shuffleButton").addEventListener("click", createArrangement);
+      $("shuffleButton").addEventListener("click", () => {
+        createArrangement();
+        $("settingsMenu").open = false;
+      });
       $("shuffleTop").addEventListener("click", createArrangement);
       $("printButton").addEventListener("click", () => window.print());
       window.addEventListener("resize", renderRoom);
+      window.addEventListener("focus", ensureToday);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) ensureToday();
+      });
 
       selectClass(currentClass);
       updateManualButton();
       registerAgentTool();
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3c98f301ccc68af',t:'MTc4OTY2MzI5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; visibility: hidden;" src="./index_files/saved_resource.html"></iframe>
-
-</body></html>
+</body>
+</html>
