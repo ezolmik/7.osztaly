@@ -95,6 +95,8 @@
     .group-summary span{border:1px solid currentColor;border-radius:99px;padding:5px 9px;font-size:.78rem;font-weight:850}
     .group-note{flex-basis:100%;margin:0;color:var(--muted);font-size:.82rem;line-height:1.4}
     .group-note.error{border-radius:8px;padding:8px;color:var(--red);background:var(--red-soft);font-weight:800}
+    .mosaic-coverage{display:grid;gap:4px;flex-basis:100%;border-radius:9px;padding:8px 10px;background:var(--gold-soft);font-size:.82rem;font-weight:750;line-height:1.45}
+    .mosaic-coverage[hidden]{display:none}
     .desks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 22px;align-items:stretch}
     .desk{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:104px;border:2px solid #9c7440;border-radius:10px 10px 16px 16px;padding:13px 9px 10px;background:linear-gradient(#e9c57f,#d6a65c);box-shadow:0 8px 0 #9a6b35,0 12px 20px rgba(89,61,29,.13)}
     .desk.single{grid-template-columns:1fr}
@@ -113,7 +115,10 @@
     .desk.mosaic .seat .avatar{width:32px;height:32px;background:var(--group-color)}
     .desk.mosaic .seat .student-name{color:var(--group-color)}
     .desk.mosaic .seat.vacant{border:0;background:transparent}
+    .desk.mosaic .seat.vacant.editable{background:#fff8;border:1px dashed #9c7440}
     .desk.mosaic .expert-mark{display:block;margin-top:3px;color:var(--group-color);font-size:.69rem;font-weight:900}
+    .mosaic-seat-button{width:100%;height:100%;min-height:68px;border:0;border-radius:7px;padding:4px;color:inherit;background:transparent;text-align:center;font-weight:800}
+    .mosaic-seat-button.selected{outline:4px solid var(--gold);outline-offset:1px}
     .desk.grouped .seat .expert-mark{display:block;margin-top:3px;color:var(--group-color);font-size:.69rem;font-weight:900}
     .group-1{--group-color:#0d4f4a;--group-bg:#cdece4}
     .group-2{--group-color:#8b3b30;--group-bg:#f5d9cf}
@@ -140,7 +145,7 @@
       .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.room.group-layout{overflow-x:auto}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(130px,1fr));min-width:420px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
     }
     @media print{
-      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast{display:none!important}.group-panel{break-inside:avoid}
+      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
     }
   </style>
 </head>
@@ -219,6 +224,7 @@
             <button id="baseViewButton" type="button" role="tab" aria-selected="true" aria-controls="desks">Alapcsoportok</button>
             <button id="expertViewButton" type="button" role="tab" aria-selected="false" aria-controls="desks">Szakértői csoportok</button>
           </div>
+          <div id="mosaicCoverage" class="mosaic-coverage" aria-live="polite" hidden></div>
           <div id="groupSummary" class="group-summary" aria-live="polite"></div>
           <p id="groupNote" class="group-note"></p>
         </div>
@@ -282,6 +288,8 @@
       let manualMode = false;
       let groupMode = false;
       let mosaicView = "base";
+      let selectedMosaicSlot = null;
+      let printingMosaic = false;
       let toastTimer;
 
       function shuffled(items) {
@@ -453,6 +461,7 @@
         const today = localDay();
         if (attendanceDay === today) return false;
         attendanceDay = today;
+        selectedMosaicSlot = null;
         Object.keys(rosters).forEach(classId => {
           absent[classId].clear();
           delete groupAssignments[classId];
@@ -581,6 +590,10 @@
         return present ? Math.max(1, Math.min(6, present, expertCounts[classId] ?? groupCount(classId))) : 0;
       }
 
+      function activeFixedPairs(classId) {
+        return fixedPairs[classId].filter(pair => pair.every(id => !absent[classId].has(id)));
+      }
+
       function connectedSlots(cells) {
         if (!cells.length) return false;
         const allowed = new Set(cells);
@@ -618,6 +631,10 @@
           return [...singles[classId]].filter(id => !absent[classId].has(id)).every(id => {
             const slot = slots.indexOf(id);
             return slot >= 0 && !slots[slot ^ 1];
+          }) && activeFixedPairs(classId).every(pair => {
+            const first = slots.indexOf(pair[0]);
+            const second = slots.indexOf(pair[1]);
+            return first >= 0 && second >= 0 && Math.floor(first / 2) === Math.floor(second / 2);
           });
         });
       }
@@ -653,20 +670,26 @@
         return place(0) ? byId : null;
       }
 
-      function assignExpertise(classId, baseById) {
+      function assignExpertise(classId, baseById, keepPairsTogether = true) {
         const count = expertCount(classId);
         const byId = {};
         const totals = Array(count).fill(0);
         for (let group = 1; group <= groupCount(classId); group += 1) {
-          const members = shuffled(presentStudents(classId).filter(student => baseById[student.id] === group));
+          const members = presentStudents(classId).filter(student => baseById[student.id] === group);
+          const paired = new Set();
+          const units = keepPairsTogether
+            ? activeFixedPairs(classId).filter(pair => pair.every(id => baseById[id] === group)) : [];
+          units.forEach(pair => pair.forEach(id => paired.add(id)));
+          shuffled(members.filter(student => !paired.has(student.id))).forEach(student => units.push([student.id]));
           const local = Array(count).fill(0);
-          for (const student of members) {
+          for (const unit of units) {
             const choices = shuffled(Array.from({ length: count }, (_, index) => index));
-            choices.sort((a, b) => local[a] - local[b] || totals[a] - totals[b]);
+            choices.sort((a, b) => (local[a] > 0) - (local[b] > 0) ||
+              totals[a] - totals[b] || local[a] - local[b]);
             const expert = choices[0];
-            byId[student.id] = expert + 1;
-            local[expert] += 1;
-            totals[expert] += 1;
+            unit.forEach(id => { byId[id] = expert + 1; });
+            local[expert] += unit.length;
+            totals[expert] += unit.length;
           }
         }
         return byId;
@@ -720,6 +743,39 @@
               }
               if (cellsByType.some(cells => !connectedSlots(cells))) continue;
               const slots = Array(18).fill(null);
+              const slotGroup = Array(18).fill(0);
+              cellsByType.forEach((cells, type) => cells.forEach(slot => { slotGroup[slot] = type + 1; }));
+              const pairs = activeFixedPairs(classId).map(pair => {
+                const options = [];
+                for (let desk = 0; desk < 9; desk += 1) {
+                  const left = desk * 2;
+                  if (!blank.has(left) && !blank.has(left + 1)) {
+                    if (slotGroup[left] === membership[pair[0]] &&
+                        slotGroup[left + 1] === membership[pair[1]]) {
+                      options.push([left, pair[0], pair[1]]);
+                    }
+                    if (slotGroup[left] === membership[pair[1]] &&
+                        slotGroup[left + 1] === membership[pair[0]]) {
+                      options.push([left, pair[1], pair[0]]);
+                    }
+                  }
+                }
+                return options;
+              }).sort((a, b) => a.length - b.length);
+              function placePairs(index, used) {
+                if (index === pairs.length) return true;
+                for (const [left, first, second] of pairs[index]) {
+                  if (used.has(left)) continue;
+                  used.add(left);
+                  slots[left] = first;
+                  slots[left + 1] = second;
+                  if (placePairs(index + 1, used)) return true;
+                  slots[left] = slots[left + 1] = null;
+                  used.delete(left);
+                }
+                return false;
+              }
+              if (!placePairs(0, new Set())) continue;
               let possible = true;
               for (const type of types) {
                 const members = buckets[type];
@@ -727,7 +783,7 @@
                 const soloCells = cellsByType[type].filter(slot => blank.has(slot ^ 1));
                 if (soloCells.length < lone.length) { possible = false; break; }
                 lone.forEach((student, index) => { slots[soloCells[index]] = student.id; });
-                const rest = shuffled(members.filter(student => !singles[classId].has(student.id)));
+                const rest = shuffled(members.filter(student => !slots.includes(student.id)));
                 cellsByType[type].filter(slot => !slots[slot]).forEach((slot, index) => {
                   slots[slot] = rest[index].id;
                 });
@@ -739,21 +795,114 @@
         return null;
       }
 
+      function mosaicSeatMetrics(classId, slots) {
+        const relevant = avoidPairs[classId].filter(pair => pair.every(id => !absent[classId].has(id)));
+        const violations = relevant.filter(pair =>
+          Math.floor(slots.indexOf(pair[0]) / 2) === Math.floor(slots.indexOf(pair[1]) / 2)).length;
+        let mixed = 0;
+        for (let desk = 0; desk < 9; desk += 1) {
+          const first = slots[desk * 2];
+          const second = slots[desk * 2 + 1];
+          if (first && second && studentById(classId, first).gender !== studentById(classId, second).gender) {
+            mixed += 1;
+          }
+        }
+        return { violations, mixed, relevant: relevant.length };
+      }
+
+      function optimizeMosaicSeats(classId, slots, membership) {
+        const locked = new Set([...singles[classId], ...activeFixedPairs(classId).flat()]);
+        let score = mosaicSeatMetrics(classId, slots);
+        if (!avoidPairs[classId].length && !maximizeMixed[classId]) return;
+        for (let pass = 0; pass < 12; pass += 1) {
+          let changed = false;
+          for (const first of shuffled(Array.from({ length: 18 }, (_, index) => index))) {
+            if (!slots[first] || locked.has(slots[first])) continue;
+            for (const second of shuffled(Array.from({ length: 18 }, (_, index) => index))) {
+              if (first === second || !slots[second] || locked.has(slots[second]) ||
+                  membership[slots[first]] !== membership[slots[second]]) continue;
+              [slots[first], slots[second]] = [slots[second], slots[first]];
+              const candidate = mosaicSeatMetrics(classId, slots);
+              if (candidate.violations < score.violations ||
+                  (candidate.violations === score.violations && maximizeMixed[classId] &&
+                    candidate.mixed > score.mixed)) {
+                score = candidate;
+                changed = true;
+                break;
+              }
+              [slots[first], slots[second]] = [slots[second], slots[first]];
+            }
+            if (changed) break;
+          }
+          if (!changed) break;
+        }
+      }
+
+      function mosaicQuality(classId, plan) {
+        const coverage = Array.from({ length: groupCount(classId) }, (_, index) =>
+          new Set(Object.keys(plan.baseById).filter(id => plan.baseById[id] === index + 1)
+            .map(id => plan.expertById[id])).size);
+        const counts = Array.from({ length: expertCount(classId) }, (_, index) =>
+          Object.values(plan.expertById).filter(value => value === index + 1).length);
+        const base = mosaicSeatMetrics(classId, plan.baseSlots);
+        const expert = mosaicSeatMetrics(classId, plan.expertSlots);
+        const ideal = presentStudents(classId).length / expertCount(classId);
+        return {
+          covered: coverage.reduce((sum, count) => sum + count, 0),
+          least: Math.min(...coverage),
+          violations: base.violations + expert.violations,
+          balance: counts.reduce((sum, count) => sum + (count - ideal) ** 2, 0),
+          mixed: base.mixed + expert.mixed
+        };
+      }
+
+      function betterMosaic(classId, candidate, best) {
+        if (!best) return true;
+        for (const [key, direction] of [["covered", 1], ["least", 1],
+          ["balance", -1], ["violations", -1], ["mixed", maximizeMixed[classId] ? 1 : 0]]) {
+          if (direction && candidate[key] !== best[key]) return direction * candidate[key] > direction * best[key];
+        }
+        return false;
+      }
+
       function buildMosaicPlan(classId) {
         if (!presentStudents(classId).length) return {
           baseById: {}, baseSlots: Array(18).fill(null),
           expertById: {}, expertSlots: Array(18).fill(null)
         };
-        for (let attempt = 0; attempt < 20; attempt += 1) {
+        let best = null;
+        let bestQuality = null;
+        const attempts = groupCount(classId) + expertCount(classId) >= 11 ? 8 : 24;
+        const present = presentStudents(classId).length;
+        const ideal = present / expertCount(classId);
+        const remainder = present % expertCount(classId);
+        const minimumBalance = remainder * (Math.ceil(ideal) - ideal) ** 2 +
+          (expertCount(classId) - remainder) * (Math.floor(ideal) - ideal) ** 2;
+        const forcedConflicts = activeFixedPairs(classId).filter(pair =>
+          avoidPairKeys(classId).has(pairKey(...pair))).length * 2;
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
           const baseById = assignBaseGroups(classId);
           if (!baseById) return null;
           const baseSlots = layoutCohorts(classId, baseById, groupCount(classId));
           if (!baseSlots) continue;
-          const expertById = assignExpertise(classId, baseById);
+          const expertById = assignExpertise(classId, baseById, attempt % 2 === 0);
           const expertSlots = layoutCohorts(classId, expertById, expertCount(classId));
-          if (expertSlots) return { baseById, baseSlots, expertById, expertSlots };
+          if (!expertSlots) continue;
+          optimizeMosaicSeats(classId, baseSlots, baseById);
+          optimizeMosaicSeats(classId, expertSlots, expertById);
+          const plan = { baseById, baseSlots, expertById, expertSlots };
+          const quality = mosaicQuality(classId, plan);
+          if (betterMosaic(classId, quality, bestQuality)) {
+            best = plan;
+            bestQuality = quality;
+          }
+          if (!maximizeMixed[classId] && bestQuality.covered === Math.min(present,
+              groupCount(classId) * expertCount(classId)) &&
+              bestQuality.least === Math.min(Math.floor(present / groupCount(classId)), expertCount(classId)) &&
+              Math.abs(bestQuality.balance - minimumBalance) < 1e-9 &&
+              bestQuality.violations === forcedConflicts) break;
         }
-        return null;
+        return best;
       }
 
       const neighbors = [
@@ -1019,9 +1168,29 @@
           chip.textContent = (index + 1) + (expertView ? ". szakértelem: " : ". csoport: ") + size + " fő";
           summary.appendChild(chip);
         });
+        const coverageBox = $("mosaicCoverage");
+        coverageBox.hidden = !mosaic || !plan || !count;
+        coverageBox.innerHTML = "";
+        if (!coverageBox.hidden) {
+          let anyMissing = false;
+          for (let group = 1; group <= count; group += 1) {
+            const present = new Set(Object.keys(plan.baseById)
+              .filter(id => plan.baseById[id] === group).map(id => plan.expertById[id]));
+            const missing = Array.from({ length: expertCount(currentClass) }, (_, index) => index + 1)
+              .filter(expert => !present.has(expert));
+            if (!missing.length) continue;
+            anyMissing = true;
+            const line = document.createElement("span");
+            line.textContent = group + ". alapcsoport · hiányzó szakértelem: " +
+              missing.map(expert => expert + ".").join(", ");
+            coverageBox.appendChild(line);
+          }
+          if (!anyMissing) coverageBox.textContent = "Minden alapcsoportban minden szakértelem jelen van.";
+        }
         $("groupNote").classList.toggle("error", Boolean(groupErrors[currentClass]));
         $("groupNote").textContent = groupErrors[currentClass] || (!count ? "Nincs jelenlévő tanuló."
-          : mosaic ? "A nézetváltás nem sorsol újra. A rögzített és tiltott párokat, valamint a fiú–lány kérést mozaikmódban még nem érvényesítjük."
+          : mosaic && manualMode ? "Válassz ki egy tanulót, majd kattints a célhelyre. Csak összefüggő, érvényes cserét engedünk."
+          : mosaic ? "A nézetváltás nem sorsol újra. A hiányzó szakértők más alapcsoportnak is segíthetnek."
           : sizes.some(size => size < 3 || size > 4)
             ? "A mostani ülésrendben van 3–4 főtől eltérő csoport. Készíts új csoportos ülésrendet, vagy módosítsd a padok csoportját."
             : "A pad csoportját a padon lévő választóval módosíthatod. Csak összefüggő padblokkokat engedünk.");
@@ -1074,13 +1243,7 @@
             return false;
           }
           mosaicPlans[classId] = plan;
-          arrangements[classId] = Array.from({ length: 9 }, (_, desk) =>
-            plan.baseSlots.slice(desk * 2, desk * 2 + 2).filter(Boolean))
-            .filter(ids => ids.length).map(ids => ({
-              seats: ids.map(id => studentById(classId, id)),
-              fixedSingle: ids.length === 1 && singles[classId].has(ids[0]),
-              fixedPair: ids.length === 2 && fixedPairs[classId].some(pair => pairKey(...pair) === pairKey(...ids))
-            }));
+          arrangements[classId] = mosaicBaseArrangement(classId, plan.baseSlots);
           groupAssignments[classId] = [];
           delete deskPositions[classId];
           delete groupErrors[classId];
@@ -1103,9 +1266,19 @@
         return true;
       }
 
+      function mosaicBaseArrangement(classId, slots) {
+        return Array.from({ length: 9 }, (_, desk) => slots.slice(desk * 2, desk * 2 + 2).filter(Boolean))
+          .filter(ids => ids.length).map(ids => ({
+            seats: ids.map(id => studentById(classId, id)),
+            fixedSingle: ids.length === 1 && singles[classId].has(ids[0]),
+            fixedPair: ids.length === 2 && fixedPairs[classId].some(pair => pairKey(...pair) === pairKey(...ids))
+          }));
+      }
+
       function createArrangement() {
         ensureToday();
         manualMode = false;
+        selectedMosaicSlot = null;
         updateManualButton();
         const success = generateArrangementForClass(currentClass);
         renderRoom();
@@ -1142,6 +1315,16 @@
 
       function toggleManualMode() {
         ensureToday();
+        if (groupMode && mosaicEnabled[currentClass]) {
+          if (!mosaicPlans[currentClass]) return showToast("Előbb készíts érvényes mozaikülésrendet");
+          manualMode = !manualMode;
+          selectedMosaicSlot = null;
+          updateManualButton();
+          renderRoom();
+          saveSettings();
+          showToast(manualMode ? "Válassz tanulót, majd célhelyet" : "Kézi mozaikülésrend rögzítve");
+          return;
+        }
         if (!manualMode) {
           groupMode = false;
           delete groupErrors[currentClass];
@@ -1184,10 +1367,11 @@
             ensureToday();
             if (input.checked) absent[currentClass].add(student.id);
             else absent[currentClass].delete(student.id);
-            if (manualMode && manualLayouts[currentClass]) {
+            if (manualMode && !groupMode && manualLayouts[currentClass]) {
               arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
               resetGroups(currentClass);
             } else {
+              if (manualMode) { manualMode = false; selectedMosaicSlot = null; updateManualButton(); }
               generateArrangementForClass(currentClass);
             }
             saveSettings();
@@ -1442,11 +1626,20 @@
           desk.className = "desk mosaic";
           const ids = slots.slice(deskIndex * 2, deskIndex * 2 + 2);
           if (ids.every(id => !id)) desk.classList.add("empty");
-          ids.forEach(id => {
+          ids.forEach((id, offset) => {
+            const slotIndex = deskIndex * 2 + offset;
             if (!id) {
               const vacant = document.createElement("div");
-              vacant.className = "seat vacant";
-              vacant.setAttribute("aria-hidden", "true");
+              vacant.className = "seat vacant" + (manualMode && !printingMosaic ? " editable" : "");
+              if (manualMode && !printingMosaic) {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "mosaic-seat-button";
+                button.textContent = "üres";
+                button.setAttribute("aria-label", (slotIndex + 1) + ". hely, üres");
+                button.addEventListener("click", () => pickMosaicSlot(slotIndex));
+                vacant.appendChild(button);
+              } else vacant.setAttribute("aria-hidden", "true");
               desk.appendChild(vacant);
               return;
             }
@@ -1463,6 +1656,18 @@
             other.textContent = view === "expert"
               ? secondary[id] + ". alapcsoport" : secondary[id] + ". szakértő";
             seat.appendChild(other);
+            if (manualMode && !printingMosaic) {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "mosaic-seat-button" +
+                (selectedMosaicSlot === slotIndex ? " selected" : "");
+              button.setAttribute("aria-label", (slotIndex + 1) + ". hely, " +
+                displayName(student) + ", " + group + ". " +
+                (view === "expert" ? "szakértő" : "alapcsoport"));
+              button.addEventListener("click", () => pickMosaicSlot(slotIndex));
+              button.append(...Array.from(seat.childNodes));
+              seat.appendChild(button);
+            }
             desk.appendChild(seat);
           });
           box.appendChild(desk);
@@ -1470,6 +1675,34 @@
         $("roomStats").textContent = (view === "expert" ? expertCount(currentClass) + " szakértői csoport" :
           groupCount(currentClass) + " alapcsoport") + " · " +
           presentStudents(currentClass).length + " tanuló";
+      }
+
+      function pickMosaicSlot(index) {
+        const plan = mosaicPlans[currentClass];
+        const key = mosaicView + "Slots";
+        if (selectedMosaicSlot === null) {
+          if (!plan[key][index]) return showToast("Előbb válassz ki egy tanulót");
+          selectedMosaicSlot = index;
+          renderRoom();
+          $("desks").querySelectorAll(".mosaic-seat-button")[index]?.focus();
+          return;
+        }
+        const first = selectedMosaicSlot;
+        selectedMosaicSlot = null;
+        if (first === index) { renderRoom(); return; }
+        const proposed = plan[key].slice();
+        [proposed[first], proposed[index]] = [proposed[index], proposed[first]];
+        const old = plan[key];
+        plan[key] = proposed;
+        if (!validMosaicPlan(currentClass, plan)) {
+          plan[key] = old;
+          renderRoom();
+          return showToast("A csere szétszakítana egy csoportot, vagy sértene egy rögzített padot");
+        }
+        if (mosaicView === "base") arrangements[currentClass] = mosaicBaseArrangement(currentClass, proposed);
+        saveSettings();
+        renderRoom();
+        showToast("Helycsere rögzítve");
       }
 
       function maximumMixedPairs(classId) {
@@ -1490,7 +1723,17 @@
 
       function renderConstraintReport() {
         if (groupMode && mosaicEnabled[currentClass]) {
-          $("constraintReport").textContent = "";
+          const plan = mosaicPlans[currentClass];
+          if (!plan) { $("constraintReport").textContent = ""; return; }
+          const slots = plan[mosaicView + "Slots"];
+          const metrics = mosaicSeatMetrics(currentClass, slots);
+          const parts = [];
+          const fixed = activeFixedPairs(currentClass);
+          if (fixed.length) parts.push(fixed.length + " rögzített pár együtt");
+          if (metrics.relevant) parts.push((metrics.relevant - metrics.violations) + "/" +
+            metrics.relevant + " tiltott pár szétválasztva");
+          if (maximizeMixed[currentClass]) parts.push(metrics.mixed + " fiú–lány pár");
+          $("constraintReport").textContent = parts.join(" · ");
           return;
         }
         if (groupMode && groupErrors[currentClass]) {
@@ -1578,7 +1821,7 @@
         $("classTitle").innerHTML = "<strong>" + currentClass + "</strong> · " +
           presentStudents(currentClass).length + "/" + students[currentClass].length + " jelen";
         renderGroupPanel();
-        if (manualMode) renderManualRoom();
+        if (manualMode && !(groupMode && mosaicEnabled[currentClass])) renderManualRoom();
         else renderRandomRoom();
         renderConstraintReport();
       }
@@ -1586,13 +1829,18 @@
       function selectClass(classId) {
         ensureToday();
         currentClass = classId;
+        selectedMosaicSlot = null;
+        if (manualMode && groupMode && !mosaicEnabled[classId]) {
+          manualMode = false;
+          updateManualButton();
+        }
         $("classSelect").value = classId;
         $("settingsSummary").textContent = "Beállítások · " + classId;
         if (!groupMode && groupErrors[classId]) generateArrangementForClass(classId);
         if (!arrangements[classId]) arrangements[classId] = manualLayouts[classId]
           ? layoutToArrangement(classId, manualLayouts[classId])
           : buildRandomArrangement(classId);
-        if (manualMode) {
+        if (manualMode && !(groupMode && mosaicEnabled[classId])) {
           ensureManualLayout();
           arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
         }
@@ -1754,6 +2002,7 @@
       for (const [id, view] of [["baseViewButton", "base"], ["expertViewButton", "expert"]]) {
         $(id).addEventListener("click", () => {
           mosaicView = view;
+          selectedMosaicSlot = null;
           renderRoom();
           saveSettings();
         });
@@ -1782,6 +2031,18 @@
       });
       $("shuffleTop").addEventListener("click", createArrangement);
       $("printButton").addEventListener("click", () => window.print());
+      window.addEventListener("beforeprint", () => {
+        if (manualMode && groupMode && mosaicEnabled[currentClass]) {
+          printingMosaic = true;
+          renderRoom();
+        }
+      });
+      window.addEventListener("afterprint", () => {
+        if (printingMosaic) {
+          printingMosaic = false;
+          renderRoom();
+        }
+      });
       window.addEventListener("resize", renderRoom);
       window.addEventListener("focus", ensureToday);
       document.addEventListener("visibilitychange", () => {
