@@ -85,6 +85,12 @@
     .group-panel[hidden]{display:none}
     .group-panel label{display:flex;gap:8px;align-items:center;font-size:.88rem;font-weight:800}
     .group-panel select{width:auto;min-height:40px;padding:5px 9px}
+    .group-panel .mosaic-setting{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:800}
+    .mosaic-setting input{width:19px;height:19px;accent-color:var(--green)}
+    .mosaic-tabs{display:flex;gap:7px;width:100%}
+    .mosaic-tabs[hidden],.mosaic-experts[hidden]{display:none}
+    .mosaic-tabs button{min-height:38px;padding:6px 11px;font-size:.85rem}
+    .mosaic-tabs button[aria-selected="true"]{color:#fff;background:var(--green);border-color:var(--green)}
     .group-summary{display:flex;flex-wrap:wrap;gap:7px}
     .group-summary span{border:1px solid currentColor;border-radius:99px;padding:5px 9px;font-size:.78rem;font-weight:850}
     .group-note{flex-basis:100%;margin:0;color:var(--muted);font-size:.82rem;line-height:1.4}
@@ -101,6 +107,14 @@
     .group-picker{grid-column:1/-1;justify-self:center;z-index:1;width:auto;min-height:34px;margin-top:5px;padding:3px 6px;font-size:.76rem}
     .desk.grouped.single .group-picker{grid-column:1}
     .desk.grouped .badge{left:auto;right:5px;top:auto;bottom:-10px;transform:none}
+    .desk.mosaic{padding:8px 5px;grid-template-columns:1fr 1fr;background:#e6c58c}
+    .desk.mosaic .seat{border:1px solid var(--group-color);border-radius:8px;background:var(--group-bg);padding:4px 2px}
+    .desk.mosaic .seat+.seat{border-left:1px solid var(--group-color)}
+    .desk.mosaic .seat .avatar{width:32px;height:32px;background:var(--group-color)}
+    .desk.mosaic .seat .student-name{color:var(--group-color)}
+    .desk.mosaic .seat.vacant{border:0;background:transparent}
+    .desk.mosaic .expert-mark{display:block;margin-top:3px;color:var(--group-color);font-size:.69rem;font-weight:900}
+    .desk.grouped .seat .expert-mark{display:block;margin-top:3px;color:var(--group-color);font-size:.69rem;font-weight:900}
     .group-1{--group-color:#0d4f4a;--group-bg:#cdece4}
     .group-2{--group-color:#8b3b30;--group-bg:#f5d9cf}
     .group-3{--group-color:#42478b;--group-bg:#dfdff5}
@@ -199,6 +213,12 @@
         <div id="constraintReport" class="constraint-report" aria-live="polite"></div>
         <div id="groupPanel" class="group-panel" hidden>
           <label for="groupCountSelect">Csoportok száma <select id="groupCountSelect"></select></label>
+          <label class="mosaic-setting" for="mosaicToggle"><input id="mosaicToggle" type="checkbox">Mozaik</label>
+          <label class="mosaic-experts" id="mosaicExpertsLabel" for="expertCountSelect" hidden>Szakértelmek száma <select id="expertCountSelect"></select></label>
+          <div class="mosaic-tabs" id="mosaicTabs" role="tablist" aria-label="Mozaik nézetei" hidden>
+            <button id="baseViewButton" type="button" role="tab" aria-selected="true" aria-controls="desks">Alapcsoportok</button>
+            <button id="expertViewButton" type="button" role="tab" aria-selected="false" aria-controls="desks">Szakértői csoportok</button>
+          </div>
           <div id="groupSummary" class="group-summary" aria-live="polite"></div>
           <p id="groupNote" class="group-note"></p>
         </div>
@@ -243,6 +263,9 @@
       const groupCounts = {};
       const groupErrors = {};
       const deskPositions = {};
+      const mosaicEnabled = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
+      const expertCounts = {};
+      const mosaicPlans = {};
       const STORAGE_KEY = "ultetesrend-generator-settings-v3";
       const PREVIOUS_STORAGE_KEY = "ultetesrend-generator-settings-v2";
       const $ = id => document.getElementById(id);
@@ -258,6 +281,7 @@
       let currentClass = "7a_1";
       let manualMode = false;
       let groupMode = false;
+      let mosaicView = "base";
       let toastTimer;
 
       function shuffled(items) {
@@ -319,6 +343,10 @@
           groupAssignments,
           groupErrors,
           deskPositions,
+          mosaicEnabled,
+          expertCounts,
+          mosaicView,
+          mosaicPlans,
           arrangementDay: attendanceDay,
           savedArrangements: Object.fromEntries(Object.entries(arrangements).map(([classId, desks]) => [
             classId, desks.map(desk => desk.seats.map(student => student.id))
@@ -384,6 +412,8 @@
               }
             }
             if (Number.isInteger(data.groupCounts?.[classId])) groupCounts[classId] = data.groupCounts[classId];
+            mosaicEnabled[classId] = data.mosaicEnabled?.[classId] === true;
+            if (Number.isInteger(data.expertCounts?.[classId])) expertCounts[classId] = data.expertCounts[classId];
             if (data.arrangementDay === attendanceDay && typeof data.groupErrors?.[classId] === "string") {
               groupErrors[classId] = data.groupErrors[classId];
             }
@@ -404,8 +434,13 @@
                 deskPositions[classId] = positions.slice();
               }
             }
+            if (data.arrangementDay === attendanceDay &&
+                validMosaicPlan(classId, data.mosaicPlans?.[classId])) {
+              mosaicPlans[classId] = data.mosaicPlans[classId];
+            }
           });
           groupMode = data.groupMode === true;
+          mosaicView = data.mosaicView === "expert" ? "expert" : "base";
           if (groupMode) Object.keys(groupErrors).forEach(classId => {
             arrangements[classId] = [];
             groupAssignments[classId] = [];
@@ -423,6 +458,7 @@
           delete groupAssignments[classId];
           delete groupErrors[classId];
           delete deskPositions[classId];
+          delete mosaicPlans[classId];
           if (arrangements[classId]) {
             if (groupMode) generateArrangementForClass(classId);
             else arrangements[classId] = manualLayouts[classId]
@@ -538,6 +574,186 @@
         const present = presentStudents(classId).length;
         return Array.from({ length: count }, (_, index) =>
           Math.floor(present / count) + (index < present % count ? 1 : 0));
+      }
+
+      function expertCount(classId) {
+        const present = presentStudents(classId).length;
+        return present ? Math.max(1, Math.min(6, present, expertCounts[classId] ?? groupCount(classId))) : 0;
+      }
+
+      function connectedSlots(cells) {
+        if (!cells.length) return false;
+        const allowed = new Set(cells);
+        const seen = new Set([cells[0]]);
+        const queue = [cells[0]];
+        for (let index = 0; index < queue.length; index += 1) {
+          const cell = queue[index];
+          for (const next of [cell - 6, cell + 6, cell % 6 ? cell - 1 : -1,
+            cell % 6 < 5 ? cell + 1 : -1]) {
+            if (allowed.has(next) && !seen.has(next)) {
+              seen.add(next);
+              queue.push(next);
+            }
+          }
+        }
+        return seen.size === cells.length;
+      }
+
+      function validMosaicPlan(classId, plan) {
+        if (!plan) return false;
+        const present = presentStudents(classId).map(student => student.id);
+        return [["base", groupCount(classId)], ["expert", expertCount(classId)]].every(([view, count]) => {
+          const slots = plan[view + "Slots"];
+          const byId = plan[view + "ById"];
+          if (!Array.isArray(slots) || slots.length !== 18 || !byId || typeof byId !== "object") return false;
+          const seated = slots.filter(Boolean);
+          if (seated.length !== present.length || new Set(seated).size !== seated.length ||
+              !seated.every(id => present.includes(id))) return false;
+          if (!present.every(id => Number.isInteger(byId[id]) && byId[id] >= 1 && byId[id] <= count)) return false;
+          for (let group = 1; group <= count; group += 1) {
+            const cells = slots.map((id, index) => id && byId[id] === group ? index : -1)
+              .filter(index => index >= 0);
+            if (!connectedSlots(cells)) return false;
+          }
+          return [...singles[classId]].filter(id => !absent[classId].has(id)).every(id => {
+            const slot = slots.indexOf(id);
+            return slot >= 0 && !slots[slot ^ 1];
+          });
+        });
+      }
+
+      function assignBaseGroups(classId) {
+        const sizes = balancedGroupSizes(classId);
+        const byId = {};
+        const active = presentStudents(classId);
+        const paired = new Set();
+        const units = [];
+        fixedPairs[classId].forEach(pair => {
+          if (pair.every(id => active.some(student => student.id === id))) {
+            units.push(pair);
+            pair.forEach(id => paired.add(id));
+          }
+        });
+        shuffled(active.filter(student => !paired.has(student.id))).forEach(student => units.push([student.id]));
+        const remaining = sizes.slice();
+        function place(index) {
+          if (index === units.length) return true;
+          const tried = new Set();
+          for (const group of shuffled(Array.from({ length: sizes.length }, (_, i) => i))
+            .sort((a, b) => remaining[b] - remaining[a])) {
+            if (remaining[group] < units[index].length || tried.has(remaining[group])) continue;
+            tried.add(remaining[group]);
+            remaining[group] -= units[index].length;
+            units[index].forEach(id => { byId[id] = group + 1; });
+            if (place(index + 1)) return true;
+            remaining[group] += units[index].length;
+          }
+          return false;
+        }
+        return place(0) ? byId : null;
+      }
+
+      function assignExpertise(classId, baseById) {
+        const count = expertCount(classId);
+        const byId = {};
+        const totals = Array(count).fill(0);
+        for (let group = 1; group <= groupCount(classId); group += 1) {
+          const members = shuffled(presentStudents(classId).filter(student => baseById[student.id] === group));
+          const local = Array(count).fill(0);
+          for (const student of members) {
+            const choices = shuffled(Array.from({ length: count }, (_, index) => index));
+            choices.sort((a, b) => local[a] - local[b] || totals[a] - totals[b]);
+            const expert = choices[0];
+            byId[student.id] = expert + 1;
+            local[expert] += 1;
+            totals[expert] += 1;
+          }
+        }
+        return byId;
+      }
+
+      function expertPaths() {
+        const rows = [0, 1, 2].flatMap(row =>
+          Array.from({ length: 6 }, (_, col) => row * 6 + (row % 2 ? 5 - col : col)));
+        const columns = [0, 1, 2, 3, 4, 5].flatMap(col =>
+          Array.from({ length: 3 }, (_, row) => (col % 2 ? 2 - row : row) * 6 + col));
+        return [rows, rows.slice().reverse(), columns, columns.slice().reverse()];
+      }
+
+      function layoutCohorts(classId, membership, count) {
+        const buckets = Array.from({ length: count }, (_, index) =>
+          presentStudents(classId).filter(student => membership[student.id] === index + 1));
+        const solo = presentStudents(classId).filter(student => singles[classId].has(student.id));
+        const emptyCount = 18 - presentStudents(classId).length;
+        if (solo.length > emptyCount) return null;
+        const types = Array.from({ length: count }, (_, index) => index);
+        const orders = [];
+        function permute(prefix, remaining) {
+          if (!remaining.length) { orders.push(prefix); return; }
+          for (const value of remaining) permute([...prefix, value], remaining.filter(item => item !== value));
+        }
+        permute([], types);
+
+        for (const path of expertPaths()) {
+          // Each designated single needs an empty second half of a distinct desk.
+          const blankChoices = [];
+          function chooseBlanks(startDesk, blanks) {
+            if (blanks.length === solo.length) { blankChoices.push(blanks); return; }
+            for (let desk = startDesk; desk < 9; desk += 1) {
+              chooseBlanks(desk + 1, [...blanks, desk * 2]);
+              chooseBlanks(desk + 1, [...blanks, desk * 2 + 1]);
+            }
+          }
+          chooseBlanks(0, []);
+          for (const required of blankChoices) {
+            const blank = new Set(required);
+            for (let index = path.length - 1; blank.size < emptyCount && index >= 0; index -= 1) {
+              blank.add(path[index]);
+            }
+            const open = path.filter(slot => !blank.has(slot));
+            for (const order of orders) {
+              const cellsByType = Array.from({ length: count }, () => []);
+              let cursor = 0;
+              for (const type of order) {
+                cellsByType[type] = open.slice(cursor, cursor + buckets[type].length);
+                cursor += buckets[type].length;
+              }
+              if (cellsByType.some(cells => !connectedSlots(cells))) continue;
+              const slots = Array(18).fill(null);
+              let possible = true;
+              for (const type of types) {
+                const members = buckets[type];
+                const lone = members.filter(student => singles[classId].has(student.id));
+                const soloCells = cellsByType[type].filter(slot => blank.has(slot ^ 1));
+                if (soloCells.length < lone.length) { possible = false; break; }
+                lone.forEach((student, index) => { slots[soloCells[index]] = student.id; });
+                const rest = shuffled(members.filter(student => !singles[classId].has(student.id)));
+                cellsByType[type].filter(slot => !slots[slot]).forEach((slot, index) => {
+                  slots[slot] = rest[index].id;
+                });
+              }
+              if (possible) return slots;
+            }
+          }
+        }
+        return null;
+      }
+
+      function buildMosaicPlan(classId) {
+        if (!presentStudents(classId).length) return {
+          baseById: {}, baseSlots: Array(18).fill(null),
+          expertById: {}, expertSlots: Array(18).fill(null)
+        };
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          const baseById = assignBaseGroups(classId);
+          if (!baseById) return null;
+          const baseSlots = layoutCohorts(classId, baseById, groupCount(classId));
+          if (!baseSlots) continue;
+          const expertById = assignExpertise(classId, baseById);
+          const expertSlots = layoutCohorts(classId, expertById, expertCount(classId));
+          if (expertSlots) return { baseById, baseSlots, expertById, expertSlots };
+        }
+        return null;
       }
 
       const neighbors = [
@@ -751,7 +967,24 @@
       function renderGroupPanel() {
         $("groupPanel").hidden = !groupMode;
         if (!groupMode) return;
-        ensureGroups(currentClass);
+        const mosaic = mosaicEnabled[currentClass];
+        if (!mosaic) ensureGroups(currentClass);
+        $("mosaicToggle").checked = mosaic;
+        $("mosaicExpertsLabel").hidden = !mosaic;
+        $("mosaicTabs").hidden = !mosaic;
+        $("baseViewButton").setAttribute("aria-selected", String(mosaicView === "base"));
+        $("expertViewButton").setAttribute("aria-selected", String(mosaicView === "expert"));
+        $("baseViewButton").tabIndex = mosaicView === "base" ? 0 : -1;
+        $("expertViewButton").tabIndex = mosaicView === "expert" ? 0 : -1;
+        const expertSelect = $("expertCountSelect");
+        expertSelect.innerHTML = "";
+        for (let value = 1; value <= Math.min(6, presentStudents(currentClass).length); value += 1) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          option.selected = value === expertCount(currentClass);
+          expertSelect.appendChild(option);
+        }
         const count = groupCount(currentClass);
         const select = $("groupCountSelect");
         select.innerHTML = "";
@@ -764,20 +997,31 @@
         }
         select.disabled = !count;
         const sizes = Array(count).fill(0);
-        (arrangements[currentClass] || []).forEach((desk, index) => {
-          sizes[groupAssignments[currentClass][index] - 1] += desk.seats.length;
-        });
+        if (mosaic && mosaicPlans[currentClass]) {
+          Object.values(mosaicPlans[currentClass].baseById).forEach(group => { sizes[group - 1] += 1; });
+        } else {
+          (arrangements[currentClass] || []).forEach((desk, index) => {
+            sizes[groupAssignments[currentClass][index] - 1] += desk.seats.length;
+          });
+        }
+        const expertView = mosaic && mosaicView === "expert";
+        const plan = mosaicPlans[currentClass];
+        const shownSizes = expertView && plan
+          ? Array.from({ length: expertCount(currentClass) }, (_, index) =>
+            Object.values(plan.expertById).filter(value => value === index + 1).length)
+          : sizes;
         const summary = $("groupSummary");
         summary.innerHTML = "";
-        sizes.forEach((size, index) => {
+        shownSizes.forEach((size, index) => {
           const chip = document.createElement("span");
           chip.className = "group-" + (index + 1);
           chip.style.background = "var(--group-bg)";
-          chip.textContent = (index + 1) + ". csoport: " + size + " fő";
+          chip.textContent = (index + 1) + (expertView ? ". szakértelem: " : ". csoport: ") + size + " fő";
           summary.appendChild(chip);
         });
         $("groupNote").classList.toggle("error", Boolean(groupErrors[currentClass]));
         $("groupNote").textContent = groupErrors[currentClass] || (!count ? "Nincs jelenlévő tanuló."
+          : mosaic ? "A nézetváltás nem sorsol újra. A rögzített és tiltott párokat, valamint a fiú–lány kérést mozaikmódban még nem érvényesítjük."
           : sizes.some(size => size < 3 || size > 4)
             ? "A mostani ülésrendben van 3–4 főtől eltérő csoport. Készíts új csoportos ülésrendet, vagy módosítsd a padok csoportját."
             : "A pad csoportját a padon lévő választóval módosíthatod. Csak összefüggő padblokkokat engedünk.");
@@ -816,6 +1060,30 @@
           resetGroups(classId);
           delete groupErrors[classId];
           delete deskPositions[classId];
+          delete mosaicPlans[classId];
+          return true;
+        }
+        if (mosaicEnabled[classId]) {
+          const plan = buildMosaicPlan(classId);
+          if (!plan) {
+            arrangements[classId] = [];
+            groupAssignments[classId] = [];
+            delete deskPositions[classId];
+            delete mosaicPlans[classId];
+            groupErrors[classId] = "A két összefüggő nézet nem alakítható ki a kijelölt egyedül ülőkkel és rögzített párokkal. Módosítsd a kikötéseket.";
+            return false;
+          }
+          mosaicPlans[classId] = plan;
+          arrangements[classId] = Array.from({ length: 9 }, (_, desk) =>
+            plan.baseSlots.slice(desk * 2, desk * 2 + 2).filter(Boolean))
+            .filter(ids => ids.length).map(ids => ({
+              seats: ids.map(id => studentById(classId, id)),
+              fixedSingle: ids.length === 1 && singles[classId].has(ids[0]),
+              fixedPair: ids.length === 2 && fixedPairs[classId].some(pair => pairKey(...pair) === pairKey(...ids))
+            }));
+          groupAssignments[classId] = [];
+          delete deskPositions[classId];
+          delete groupErrors[classId];
           return true;
         }
         const result = buildGroupArrangement(classId);
@@ -824,11 +1092,13 @@
           groupAssignments[classId] = [];
           groupErrors[classId] = result.error;
           delete deskPositions[classId];
+          delete mosaicPlans[classId];
           return false;
         }
         arrangements[classId] = result.desks;
         groupAssignments[classId] = result.groups;
         deskPositions[classId] = result.positions;
+        delete mosaicPlans[classId];
         delete groupErrors[classId];
         return true;
       }
@@ -876,6 +1146,7 @@
           groupMode = false;
           delete groupErrors[currentClass];
           delete deskPositions[currentClass];
+          delete mosaicPlans[currentClass];
           updateGroupButton();
           manualLayouts[currentClass] = arrangementToLayout(arrangements[currentClass] || []);
           arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
@@ -885,6 +1156,7 @@
           arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
           manualMode = false;
           delete deskPositions[currentClass];
+          delete mosaicPlans[currentClass];
           resetGroups(currentClass);
           showToast("Kézi ülésrend rögzítve");
         }
@@ -1104,6 +1376,10 @@
           box.appendChild(message);
           return;
         }
+        if (groupMode && mosaicEnabled[currentClass]) {
+          renderMosaicRoom();
+          return;
+        }
         const columns = window.innerWidth <= 560 ? 2 : 3;
         const positions = groupMode && deskPositions[currentClass];
         const padded = positions ? Array(9).fill(null) : arrangement.slice();
@@ -1118,14 +1394,25 @@
             desk.classList.add("empty");
           } else {
             if (deskData.seats.length === 1) desk.classList.add("single");
-            deskData.seats.forEach(student => desk.appendChild(seatElement(student)));
+            deskData.seats.forEach(student => {
+              const seat = seatElement(student);
+              if (groupMode && mosaicEnabled[currentClass] && mosaicPlans[currentClass]) {
+                const expert = mosaicPlans[currentClass].expertById[student.id];
+                const mark = document.createElement("span");
+                mark.className = "expert-mark group-" + expert;
+                mark.textContent = expert + ". szakértő";
+                seat.appendChild(mark);
+              }
+              desk.appendChild(seat);
+            });
             if (groupMode) {
               const group = groupAssignments[currentClass][deskIndex];
               desk.classList.add("grouped", "group-" + group);
               const label = document.createElement("span");
               label.className = "group-label";
               label.textContent = group + ". csoport";
-              desk.append(label, groupPicker(deskIndex));
+              desk.appendChild(label);
+              if (!mosaicEnabled[currentClass]) desk.appendChild(groupPicker(deskIndex));
             }
             if (deskData.seats.length === 1 || deskData.fixedPair) {
               const badge = document.createElement("span");
@@ -1140,6 +1427,49 @@
         const alone = arrangement.filter(desk => desk.seats.length === 1).length;
         $("roomStats").textContent = arrangement.length + " pad · " + alone + " egyedül" +
           (groupMode ? " · " + groupCount(currentClass) + " csoport" : "");
+      }
+
+      function renderMosaicRoom() {
+        const plan = mosaicPlans[currentClass];
+        if (!plan) return;
+        const view = mosaicView;
+        const slots = plan[view + "Slots"];
+        const membership = plan[view + "ById"];
+        const secondary = plan[view === "base" ? "expertById" : "baseById"];
+        const box = $("desks");
+        for (let deskIndex = 0; deskIndex < 9; deskIndex += 1) {
+          const desk = document.createElement("article");
+          desk.className = "desk mosaic";
+          const ids = slots.slice(deskIndex * 2, deskIndex * 2 + 2);
+          if (ids.every(id => !id)) desk.classList.add("empty");
+          ids.forEach(id => {
+            if (!id) {
+              const vacant = document.createElement("div");
+              vacant.className = "seat vacant";
+              vacant.setAttribute("aria-hidden", "true");
+              desk.appendChild(vacant);
+              return;
+            }
+            const student = studentById(currentClass, id);
+            const seat = seatElement(student);
+            const group = membership[id];
+            seat.classList.add("group-" + group);
+            const mark = document.createElement("span");
+            mark.className = "expert-mark";
+            mark.textContent = (view === "expert" ? group + ". szakértő" : group + ". csoport");
+            seat.appendChild(mark);
+            const other = document.createElement("span");
+            other.className = "student-id";
+            other.textContent = view === "expert"
+              ? secondary[id] + ". alapcsoport" : secondary[id] + ". szakértő";
+            seat.appendChild(other);
+            desk.appendChild(seat);
+          });
+          box.appendChild(desk);
+        }
+        $("roomStats").textContent = (view === "expert" ? expertCount(currentClass) + " szakértői csoport" :
+          groupCount(currentClass) + " alapcsoport") + " · " +
+          presentStudents(currentClass).length + " tanuló";
       }
 
       function maximumMixedPairs(classId) {
@@ -1159,6 +1489,10 @@
       }
 
       function renderConstraintReport() {
+        if (groupMode && mosaicEnabled[currentClass]) {
+          $("constraintReport").textContent = "";
+          return;
+        }
         if (groupMode && groupErrors[currentClass]) {
           $("constraintReport").textContent = "";
           return;
@@ -1262,7 +1596,8 @@
           ensureManualLayout();
           arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
         }
-        if (groupMode && !deskPositions[classId] && !groupErrors[classId]) {
+        if (groupMode && (mosaicEnabled[classId] ? !mosaicPlans[classId] : !deskPositions[classId]) &&
+            !groupErrors[classId]) {
           generateArrangementForClass(classId);
           saveSettings();
         }
@@ -1283,11 +1618,26 @@
           classId: currentClass,
           mode: manualMode ? "manual" : "random",
           groupMode,
+          mosaic: groupMode && mosaicEnabled[currentClass],
+          mosaicView,
+          baseById: groupMode && mosaicEnabled[currentClass]
+            ? { ...mosaicPlans[currentClass]?.baseById } : {},
+          baseSlots: groupMode && mosaicEnabled[currentClass]
+            ? (mosaicPlans[currentClass]?.baseSlots || []).slice() : [],
+          expertById: groupMode && mosaicEnabled[currentClass]
+            ? { ...mosaicPlans[currentClass]?.expertById } : {},
+          expertSlots: groupMode && mosaicEnabled[currentClass]
+            ? (mosaicPlans[currentClass]?.expertSlots || []).slice() : [],
           groupNumbers: groupMode ? (groupAssignments[currentClass] || []).slice() : [],
           deskPositions: groupMode ? (deskPositions[currentClass] || []).slice() : [],
-          desks: (arrangements[currentClass] || []).map(desk =>
-            desk.seats.map(student => ({ number: student.number, name: student.name }))
-          )
+          desks: groupMode && mosaicEnabled[currentClass] && mosaicPlans[currentClass]
+            ? Array.from({ length: 9 }, (_, index) =>
+              mosaicPlans[currentClass][mosaicView + "Slots"].slice(index * 2, index * 2 + 2)
+                .map(id => id ? studentById(currentClass, id) : null)
+                .map(student => student ? { number: student.number, name: student.name } : null))
+            : (arrangements[currentClass] || []).map(desk =>
+              desk.seats.map(student => ({ number: student.number, name: student.name }))
+            )
         };
       }
 
@@ -1385,12 +1735,37 @@
         groupMode = !groupMode;
         updateGroupButton();
         if (!groupMode && groupErrors[currentClass]) generateArrangementForClass(currentClass);
-        if (groupMode && !deskPositions[currentClass] && !groupErrors[currentClass]) {
+        if (groupMode && (mosaicEnabled[currentClass] ? !mosaicPlans[currentClass] : !deskPositions[currentClass]) &&
+            !groupErrors[currentClass]) {
           generateArrangementForClass(currentClass);
         }
         renderRoom();
         saveSettings();
       });
+      $("mosaicToggle").addEventListener("change", event => {
+        mosaicEnabled[currentClass] = event.target.checked;
+        mosaicView = "base";
+        createArrangement();
+      });
+      $("expertCountSelect").addEventListener("change", event => {
+        expertCounts[currentClass] = Number(event.target.value);
+        createArrangement();
+      });
+      for (const [id, view] of [["baseViewButton", "base"], ["expertViewButton", "expert"]]) {
+        $(id).addEventListener("click", () => {
+          mosaicView = view;
+          renderRoom();
+          saveSettings();
+        });
+        $(id).addEventListener("keydown", event => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          const target = event.key === "ArrowLeft" || event.key === "Home"
+            ? $("baseViewButton") : $("expertViewButton");
+          target.click();
+          target.focus();
+        });
+      }
       $("groupCountSelect").addEventListener("change", event => {
         groupCounts[currentClass] = Number(event.target.value);
         createArrangement();
