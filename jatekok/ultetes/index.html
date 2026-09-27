@@ -88,6 +88,7 @@
     .group-summary{display:flex;flex-wrap:wrap;gap:7px}
     .group-summary span{border:1px solid currentColor;border-radius:99px;padding:5px 9px;font-size:.78rem;font-weight:850}
     .group-note{flex-basis:100%;margin:0;color:var(--muted);font-size:.82rem;line-height:1.4}
+    .group-note.error{border-radius:8px;padding:8px;color:var(--red);background:var(--red-soft);font-weight:800}
     .desks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 22px;align-items:stretch}
     .desk{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:104px;border:2px solid #9c7440;border-radius:10px 10px 16px 16px;padding:13px 9px 10px;background:linear-gradient(#e9c57f,#d6a65c);box-shadow:0 8px 0 #9a6b35,0 12px 20px rgba(89,61,29,.13)}
     .desk.single{grid-template-columns:1fr}
@@ -115,16 +116,17 @@
     .badge{position:absolute;top:-9px;left:50%;border:1px solid #e4b748;border-radius:99px;padding:2px 7px;color:#5e4108;background:var(--gold-soft);transform:translateX(-50%);font-size:.66rem;font-weight:900;white-space:nowrap}
     .teacher{width:190px;margin:0 auto 26px;border-radius:8px;padding:10px;color:#fff;background:var(--green);text-align:center;font-size:.78rem;font-weight:850;box-shadow:0 6px 0 #083d39}
     .empty-state{display:grid;min-height:430px;place-items:center;color:var(--muted);text-align:center}
+    .desks>.empty-state{grid-column:1/-1}
     .toast{position:fixed;right:18px;bottom:18px;z-index:4;border-radius:12px;padding:11px 15px;color:#fff;background:var(--green);box-shadow:var(--shadow);font-weight:750;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s}
     .toast.show{opacity:1;transform:none}
     @media(max-width:820px){
       header{align-items:start;flex-direction:column}.student-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.room{min-height:0}.desks{gap:16px 10px}.student-name{font-size:.78rem}
     }
     @media(max-width:560px){
-      .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
+      .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.room.group-layout{overflow-x:auto}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(130px,1fr));min-width:420px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
     }
     @media print{
-      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast{display:none!important}.group-panel{break-inside:avoid}
+      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast{display:none!important}.group-panel{break-inside:avoid}
     }
   </style>
 </head>
@@ -170,7 +172,7 @@
         </label>
 
         <div class="section-head"><h2>Kik ne üljenek együtt?</h2><span id="avoidCount" class="count"></span></div>
-        <p class="hint">Puha kikötés: ha minden kérés nem teljesíthető, a lehető legkevesebb ütközést hagyjuk meg.</p>
+        <p class="hint">Puha kikötés: törekszünk a tiltott párok szétválasztására; az eredményt az ülésrend mellett jelezzük.</p>
         <div class="pair-builder">
           <select id="avoidFirst" aria-label="A tiltott pár első tagja"></select>
           <select id="avoidSecond" aria-label="A tiltott pár második tagja"></select>
@@ -239,6 +241,8 @@
       const manualLayouts = {};
       const groupAssignments = {};
       const groupCounts = {};
+      const groupErrors = {};
+      const deskPositions = {};
       const STORAGE_KEY = "ultetesrend-generator-settings-v3";
       const PREVIOUS_STORAGE_KEY = "ultetesrend-generator-settings-v2";
       const $ = id => document.getElementById(id);
@@ -313,6 +317,8 @@
           groupMode,
           groupCounts,
           groupAssignments,
+          groupErrors,
+          deskPositions,
           arrangementDay: attendanceDay,
           savedArrangements: Object.fromEntries(Object.entries(arrangements).map(([classId, desks]) => [
             classId, desks.map(desk => desk.seats.map(student => student.id))
@@ -378,6 +384,9 @@
               }
             }
             if (Number.isInteger(data.groupCounts?.[classId])) groupCounts[classId] = data.groupCounts[classId];
+            if (data.arrangementDay === attendanceDay && typeof data.groupErrors?.[classId] === "string") {
+              groupErrors[classId] = data.groupErrors[classId];
+            }
             if (arrangements[classId] && Array.isArray(data.groupAssignments?.[classId])) {
               const savedGroups = data.groupAssignments[classId];
               if (savedGroups.length === arrangements[classId].length &&
@@ -385,8 +394,23 @@
                 groupAssignments[classId] = savedGroups.slice();
               }
             }
+            if (arrangements[classId] && groupAssignments[classId] &&
+                Array.isArray(data.deskPositions?.[classId])) {
+              const positions = data.deskPositions[classId];
+              if (positions.length === arrangements[classId].length &&
+                  positions.every(cell => Number.isInteger(cell) && cell >= 0 && cell < 9) &&
+                  new Set(positions).size === positions.length &&
+                  connectedGroupLayout(groupAssignments[classId], positions, groupCount(classId))) {
+                deskPositions[classId] = positions.slice();
+              }
+            }
           });
           groupMode = data.groupMode === true;
+          if (groupMode) Object.keys(groupErrors).forEach(classId => {
+            arrangements[classId] = [];
+            groupAssignments[classId] = [];
+            delete deskPositions[classId];
+          });
         } catch (error) {}
       }
 
@@ -397,9 +421,14 @@
         Object.keys(rosters).forEach(classId => {
           absent[classId].clear();
           delete groupAssignments[classId];
-          if (arrangements[classId]) arrangements[classId] = manualLayouts[classId]
-            ? layoutToArrangement(classId, manualLayouts[classId])
-            : buildRandomArrangement(classId);
+          delete groupErrors[classId];
+          delete deskPositions[classId];
+          if (arrangements[classId]) {
+            if (groupMode) generateArrangementForClass(classId);
+            else arrangements[classId] = manualLayouts[classId]
+              ? layoutToArrangement(classId, manualLayouts[classId])
+              : buildRandomArrangement(classId);
+          }
         });
         saveSettings();
         renderControls();
@@ -503,6 +532,169 @@
         return Math.max(1, Math.min(maximum, chosen));
       }
 
+      function balancedGroupSizes(classId) {
+        const count = groupCount(classId);
+        if (!count) return [];
+        const present = presentStudents(classId).length;
+        return Array.from({ length: count }, (_, index) =>
+          Math.floor(present / count) + (index < present % count ? 1 : 0));
+      }
+
+      const neighbors = [
+        [1, 3], [0, 2, 4], [1, 5],
+        [0, 4, 6], [1, 3, 5, 7], [2, 4, 8],
+        [3, 7], [4, 6, 8], [5, 7]
+      ];
+      const regionCache = new Map();
+
+      function connectedCells(cells) {
+        if (!cells.length) return false;
+        const allowed = new Set(cells);
+        const seen = new Set([cells[0]]);
+        const queue = [cells[0]];
+        for (let index = 0; index < queue.length; index += 1) {
+          for (const next of neighbors[queue[index]]) {
+            if (allowed.has(next) && !seen.has(next)) {
+              seen.add(next);
+              queue.push(next);
+            }
+          }
+        }
+        return seen.size === cells.length;
+      }
+
+      function connectedGroupLayout(groups, positions, count) {
+        if (groups.length !== positions.length) return false;
+        for (let group = 1; group <= count; group += 1) {
+          const cells = positions.filter((_, index) => groups[index] === group);
+          if (!connectedCells(cells)) return false;
+        }
+        return true;
+      }
+
+      function findConnectedRegions(counts) {
+        const key = counts.join(",");
+        if (regionCache.has(key)) return regionCache.get(key);
+        const masksBySize = counts.map(size => {
+          const masks = [];
+          for (let mask = 1; mask < 512; mask += 1) {
+            if (bitCount(mask) !== size) continue;
+            const cells = Array.from({ length: 9 }, (_, index) => index)
+              .filter(index => mask & (1 << index));
+            if (connectedCells(cells)) masks.push(mask);
+          }
+          return masks;
+        });
+        const chosen = [];
+        function search(index, used) {
+          if (index === counts.length) return chosen.slice();
+          for (const mask of masksBySize[index]) {
+            if (mask & used) continue;
+            chosen[index] = mask;
+            const result = search(index + 1, used | mask);
+            if (result) return result;
+          }
+          return null;
+        }
+        const result = search(0, 0);
+        regionCache.set(key, result);
+        return result;
+      }
+
+      function placeDesksInGroups(desks, sizes) {
+        const order = desks.map((_, index) => index)
+          .sort((first, second) => desks[second].seats.length - desks[first].seats.length);
+        const remaining = sizes.slice();
+        const labels = Array(desks.length);
+
+        let placement = null;
+        function place(position) {
+          if (position === order.length) {
+            if (!remaining.every(size => size === 0)) return false;
+            const deskCounts = sizes.map((_, index) => labels.filter(group => group === index + 1).length);
+            const regions = findConnectedRegions(deskCounts);
+            if (!regions) return false;
+            const positions = Array(desks.length);
+            regions.forEach((mask, group) => {
+              const cells = Array.from({ length: 9 }, (_, index) => index)
+                .filter(index => mask & (1 << index));
+              const members = labels.map((label, index) => label === group + 1 ? index : -1)
+                .filter(index => index >= 0);
+              members.forEach((deskIndex, index) => { positions[deskIndex] = cells[index]; });
+            });
+            placement = { labels: labels.slice(), positions };
+            return true;
+          }
+          const deskIndex = order[position];
+          const size = desks[deskIndex].seats.length;
+          const tried = new Set();
+          for (let group = 0; group < remaining.length; group += 1) {
+            if (remaining[group] < size || tried.has(remaining[group])) continue;
+            tried.add(remaining[group]);
+            remaining[group] -= size;
+            labels[deskIndex] = group + 1;
+            if (place(position + 1)) return true;
+            remaining[group] += size;
+          }
+          return false;
+        }
+        place(0);
+        return placement;
+      }
+
+      function buildGroupArrangement(classId) {
+        const base = buildRandomArrangement(classId);
+        const sizes = balancedGroupSizes(classId);
+        if (!sizes.length) return { desks: [], groups: [], positions: [] };
+        const splittable = base.map((desk, index) => desk.seats.length === 2 && !desk.fixedPair ? index : -1)
+          .filter(index => index >= 0);
+        const maxSplits = Math.min(splittable.length, 9 - base.length);
+        const forbidden = avoidPairKeys(classId);
+        let best = null;
+
+        function consider(indices) {
+          const split = new Set(indices);
+          const desks = base.flatMap((desk, index) => split.has(index)
+            ? desk.seats.map(student => ({ seats: [student], fixedSingle: false, fixedPair: false }))
+            : [desk]);
+          const placement = placeDesksInGroups(desks, sizes);
+          if (!placement) return;
+          const violations = desks.filter(desk => desk.seats.length === 2 &&
+            forbidden.has(pairKey(desk.seats[0].id, desk.seats[1].id))).length;
+          const mixed = desks.filter(desk => desk.seats.length === 2 &&
+            desk.seats[0].gender !== desk.seats[1].gender).length;
+          if (!best || violations < best.violations ||
+              (violations === best.violations && desks.length < best.desks.length) ||
+              (violations === best.violations && desks.length === best.desks.length && mixed > best.mixed)) {
+            best = { desks, ...placement, violations, mixed };
+          }
+        }
+
+        for (let splits = 0; splits <= maxSplits; splits += 1) {
+          function choose(start, selected) {
+            if (selected.length === splits) return consider(selected);
+            for (let index = start; index <= splittable.length - (splits - selected.length); index += 1) {
+              choose(index + 1, [...selected, splittable[index]]);
+            }
+          }
+          choose(0, []);
+          if (best?.violations === 0) break;
+        }
+        if (!best) {
+          return { error: sizes.join("+") + " fős csoportok nem alakíthatók ki a rögzített párok és az egyedül ülők megtartásával, legfeljebb 9 padon. Módosítsd a kikötéseket vagy a csoportok számát." };
+        }
+
+        const blocks = sizes.map((_, index) => shuffled(best.desks
+          .map((desk, deskIndex) => ({ desk, position: best.positions[deskIndex], group: best.labels[deskIndex] }))
+          .filter(item => item.group === index + 1)));
+        const placed = blocks.flat();
+        return {
+          desks: placed.map(item => item.desk),
+          groups: placed.map(item => item.group),
+          positions: placed.map(item => item.position)
+        };
+      }
+
       function makeGroupAssignments(classId) {
         const desks = arrangements[classId] || [];
         const count = groupCount(classId);
@@ -552,6 +744,8 @@
       function updateGroupButton() {
         $("groupModeButton").setAttribute("aria-pressed", String(groupMode));
         $("groupModeButton").textContent = groupMode ? "Csoportmód: be" : "Csoportmód";
+        $("shuffleTop").textContent = groupMode ? "Új csoportos ülésrend" : "Új ülésrend";
+        $("shuffleButton").textContent = groupMode ? "Csoportos ülésrend készítése" : "Alkalmazás és bezárás";
       }
 
       function renderGroupPanel() {
@@ -582,10 +776,11 @@
           chip.textContent = (index + 1) + ". csoport: " + size + " fő";
           summary.appendChild(chip);
         });
-        $("groupNote").textContent = !count ? "Nincs jelenlévő tanuló."
+        $("groupNote").classList.toggle("error", Boolean(groupErrors[currentClass]));
+        $("groupNote").textContent = groupErrors[currentClass] || (!count ? "Nincs jelenlévő tanuló."
           : sizes.some(size => size < 3 || size > 4)
-            ? "A mostani padbeosztásban van 3–4 főtől eltérő csoport. A pad csoportját átállíthatod; az átültetést a következő fejlesztési kör végzi majd."
-            : "A pad csoportját a padon lévő választóval módosíthatod. Az együtt ülők egy csoportba tartoznak; a padok közelségét még nem optimalizáljuk.";
+            ? "A mostani ülésrendben van 3–4 főtől eltérő csoport. Készíts új csoportos ülésrendet, vagy módosítsd a padok csoportját."
+            : "A pad csoportját a padon lévő választóval módosíthatod. Csak összefüggő padblokkokat engedünk.");
       }
 
       function groupPicker(deskIndex) {
@@ -600,22 +795,52 @@
           select.appendChild(option);
         }
         select.addEventListener("change", () => {
-          groupAssignments[currentClass][deskIndex] = Number(select.value);
+          const proposed = groupAssignments[currentClass].slice();
+          proposed[deskIndex] = Number(select.value);
+          if (deskPositions[currentClass] &&
+              !connectedGroupLayout(proposed, deskPositions[currentClass], groupCount(currentClass))) {
+            showToast("Ez a váltás szétszakítaná valamelyik csoport padblokkját");
+            renderRoom();
+            return;
+          }
+          groupAssignments[currentClass] = proposed;
           saveSettings();
           renderRoom();
         });
         return select;
       }
 
+      function generateArrangementForClass(classId) {
+        if (!groupMode) {
+          arrangements[classId] = buildRandomArrangement(classId);
+          resetGroups(classId);
+          delete groupErrors[classId];
+          delete deskPositions[classId];
+          return true;
+        }
+        const result = buildGroupArrangement(classId);
+        if (result.error) {
+          arrangements[classId] = [];
+          groupAssignments[classId] = [];
+          groupErrors[classId] = result.error;
+          delete deskPositions[classId];
+          return false;
+        }
+        arrangements[classId] = result.desks;
+        groupAssignments[classId] = result.groups;
+        deskPositions[classId] = result.positions;
+        delete groupErrors[classId];
+        return true;
+      }
+
       function createArrangement() {
         ensureToday();
         manualMode = false;
         updateManualButton();
-        arrangements[currentClass] = buildRandomArrangement(currentClass);
-        resetGroups(currentClass);
+        const success = generateArrangementForClass(currentClass);
         renderRoom();
         saveSettings();
-        showToast("Új ülésrend elkészült");
+        showToast(success ? "Új ülésrend elkészült" : "A csoportos ülésrend nem alakítható ki; nézd meg az üzenetet");
       }
 
       function arrangementToLayout(arrangement) {
@@ -649,14 +874,17 @@
         ensureToday();
         if (!manualMode) {
           groupMode = false;
+          delete groupErrors[currentClass];
+          delete deskPositions[currentClass];
           updateGroupButton();
-          ensureManualLayout();
+          manualLayouts[currentClass] = arrangementToLayout(arrangements[currentClass] || []);
           arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
           manualMode = true;
           showToast("A teljes ülésrend szerkeszthető");
         } else {
           arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
           manualMode = false;
+          delete deskPositions[currentClass];
           resetGroups(currentClass);
           showToast("Kézi ülésrend rögzítve");
         }
@@ -684,10 +912,12 @@
             ensureToday();
             if (input.checked) absent[currentClass].add(student.id);
             else absent[currentClass].delete(student.id);
-            arrangements[currentClass] = manualMode && manualLayouts[currentClass]
-              ? layoutToArrangement(currentClass, manualLayouts[currentClass])
-              : buildRandomArrangement(currentClass);
-            resetGroups(currentClass);
+            if (manualMode && manualLayouts[currentClass]) {
+              arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
+              resetGroups(currentClass);
+            } else {
+              generateArrangementForClass(currentClass);
+            }
             saveSettings();
             renderControls();
             renderRoom();
@@ -866,11 +1096,22 @@
       function renderRandomRoom() {
         const arrangement = arrangements[currentClass] || [];
         const box = $("desks");
+        if (groupMode && groupErrors[currentClass]) {
+          $("roomStats").textContent = "Nincs csoportos ülésrend";
+          const message = document.createElement("div");
+          message.className = "empty-state";
+          message.textContent = "A megadott kikötésekkel nem készíthető csoportos ülésrend.";
+          box.appendChild(message);
+          return;
+        }
         const columns = window.innerWidth <= 560 ? 2 : 3;
-        const padded = arrangement.slice();
-        while (padded.length % columns !== 0) padded.push(null);
+        const positions = groupMode && deskPositions[currentClass];
+        const padded = positions ? Array(9).fill(null) : arrangement.slice();
+        if (positions) arrangement.forEach((desk, index) => { padded[positions[index]] = desk; });
+        else while (padded.length % columns !== 0) padded.push(null);
 
-        padded.forEach((deskData, deskIndex) => {
+        padded.forEach((deskData, cellIndex) => {
+          const deskIndex = positions ? positions.indexOf(cellIndex) : cellIndex;
           const desk = document.createElement("article");
           desk.className = "desk";
           if (!deskData) {
@@ -918,6 +1159,10 @@
       }
 
       function renderConstraintReport() {
+        if (groupMode && groupErrors[currentClass]) {
+          $("constraintReport").textContent = "";
+          return;
+        }
         const arrangement = arrangements[currentClass] || [];
         const assigned = arrangement.flatMap(desk => desk.seats).length;
         const active = presentStudents(currentClass);
@@ -938,7 +1183,8 @@
         }
         if (maximizeMixed[currentClass]) {
           const mixed = arrangement.filter(desk => desk.seats.length === 2 && desk.seats[0].gender !== desk.seats[1].gender).length;
-          parts.push(mixed + "/" + maximumMixedPairs(currentClass) + " lehetséges fiú–lány pár");
+          parts.push(groupMode ? mixed + " fiú–lány pár" :
+            mixed + "/" + maximumMixedPairs(currentClass) + " lehetséges fiú–lány pár");
         }
         $("constraintReport").textContent = parts.join(" · ");
       }
@@ -973,6 +1219,7 @@
         }
         layout[slotIndex] = studentId;
         arrangements[currentClass] = layoutToArrangement(currentClass, layout);
+        delete deskPositions[currentClass];
         resetGroups(currentClass);
         saveSettings();
         renderRoom();
@@ -993,6 +1240,7 @@
 
       function renderRoom() {
         $("desks").innerHTML = "";
+        $("desks").closest(".room").classList.toggle("group-layout", groupMode);
         $("classTitle").innerHTML = "<strong>" + currentClass + "</strong> · " +
           presentStudents(currentClass).length + "/" + students[currentClass].length + " jelen";
         renderGroupPanel();
@@ -1006,12 +1254,17 @@
         currentClass = classId;
         $("classSelect").value = classId;
         $("settingsSummary").textContent = "Beállítások · " + classId;
+        if (!groupMode && groupErrors[classId]) generateArrangementForClass(classId);
         if (!arrangements[classId]) arrangements[classId] = manualLayouts[classId]
           ? layoutToArrangement(classId, manualLayouts[classId])
           : buildRandomArrangement(classId);
         if (manualMode) {
           ensureManualLayout();
           arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
+        }
+        if (groupMode && !deskPositions[classId] && !groupErrors[classId]) {
+          generateArrangementForClass(classId);
+          saveSettings();
         }
         renderControls();
         renderRoom();
@@ -1031,6 +1284,7 @@
           mode: manualMode ? "manual" : "random",
           groupMode,
           groupNumbers: groupMode ? (groupAssignments[currentClass] || []).slice() : [],
+          deskPositions: groupMode ? (deskPositions[currentClass] || []).slice() : [],
           desks: (arrangements[currentClass] || []).map(desk =>
             desk.seats.map(student => ({ number: student.number, name: student.name }))
           )
@@ -1130,14 +1384,16 @@
         if (manualMode) toggleManualMode();
         groupMode = !groupMode;
         updateGroupButton();
+        if (!groupMode && groupErrors[currentClass]) generateArrangementForClass(currentClass);
+        if (groupMode && !deskPositions[currentClass] && !groupErrors[currentClass]) {
+          generateArrangementForClass(currentClass);
+        }
         renderRoom();
         saveSettings();
       });
       $("groupCountSelect").addEventListener("change", event => {
         groupCounts[currentClass] = Number(event.target.value);
-        resetGroups(currentClass);
-        saveSettings();
-        renderRoom();
+        createArrangement();
       });
       $("maximizeMixed").addEventListener("change", event => {
         maximizeMixed[currentClass] = event.target.checked;
