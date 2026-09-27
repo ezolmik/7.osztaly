@@ -99,6 +99,9 @@
     .group-name-fields h3{grid-column:1/-1;margin:6px 0 0;font-size:.9rem}
     .group-panel .group-name-fields label{display:grid;gap:4px;font-size:.8rem}
     .group-name-fields input{width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.9rem}
+    .bulk-single{display:flex;align-items:center;gap:9px;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;padding:9px;background:var(--green-soft);font-size:.86rem;font-weight:800;cursor:pointer}
+    .bulk-single[hidden]{display:none}
+    .bulk-single input{width:19px;height:19px;margin:0;accent-color:var(--green)}
     .group-note{flex-basis:100%;margin:0;color:var(--muted);font-size:.82rem;line-height:1.4}
     .group-note.error{border-radius:8px;padding:8px;color:var(--red);background:var(--red-soft);font-weight:800}
     .mosaic-coverage{display:grid;gap:4px;flex-basis:100%;border-radius:9px;padding:8px 10px;background:var(--gold-soft);font-size:.82rem;font-weight:750;line-height:1.45}
@@ -178,7 +181,8 @@
         <div id="absentList" class="student-list"></div>
 
         <div class="section-head"><h2>Ki üljön egyedül?</h2><span id="singleCount" class="count"></span></div>
-        <p class="hint">A kijelölt tanuló teljes padot kap. A többieket párokba rendezzük; páratlan maradék esetén még valaki egyedül ül.</p>
+        <p id="singleHint" class="hint">A kijelölt tanuló teljes padot kap. A többieket párokba rendezzük; páratlan maradék esetén még valaki egyedül ül.</p>
+        <label id="bulkSingleLabel" class="bulk-single" for="bulkSingle"><input id="bulkSingle" type="checkbox">Mindenki egyedül az alapülésrendben</label>
         <div id="studentList" class="student-list"></div>
 
         <div class="section-head"><h2>Rögzített párok</h2><span id="pairCount" class="count"></span></div>
@@ -267,6 +271,7 @@
       ]));
       const absent = Object.fromEntries(Object.keys(rosters).map(classId => [classId, new Set()]));
       const singles = Object.fromEntries(Object.keys(rosters).map(classId => [classId, new Set()]));
+      const basicSingles = Object.fromEntries(Object.keys(rosters).map(classId => [classId, new Set()]));
       const fixedPairs = Object.fromEntries(Object.keys(rosters).map(classId => [classId, []]));
       const avoidPairs = Object.fromEntries(Object.keys(rosters).map(classId => [classId, []]));
       const maximizeMixed = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
@@ -298,6 +303,7 @@
 
       singles["7a_1"].add("7a_1-3");
       singles["7a_1"].add("7a_1-7");
+      basicSingles["7a_1"] = new Set(singles["7a_1"]);
 
       let currentClass = "7a_1";
       let manualMode = false;
@@ -370,6 +376,7 @@
           attendanceDay,
           absent: Object.fromEntries(Object.entries(absent).map(([classId, ids]) => [classId, [...ids]])),
           singles: Object.fromEntries(Object.entries(singles).map(([classId, ids]) => [classId, [...ids]])),
+          basicSingles: Object.fromEntries(Object.entries(basicSingles).map(([classId, ids]) => [classId, [...ids]])),
           fixedPairs,
           avoidPairs,
           maximizeMixed,
@@ -405,6 +412,9 @@
             if (Array.isArray(data.singles?.[classId])) {
               singles[classId] = new Set(data.singles[classId].filter(id => validId(classId, id)));
             }
+            basicSingles[classId] = Array.isArray(data.basicSingles?.[classId])
+              ? new Set(data.basicSingles[classId].filter(id => validId(classId, id)))
+              : new Set(singles[classId]);
             if (Array.isArray(data.fixedPairs?.[classId])) {
               const used = new Set();
               fixedPairs[classId] = data.fixedPairs[classId].filter(pair => {
@@ -439,12 +449,16 @@
               const saved = data.savedArrangements[classId];
               const ids = saved.flat();
               const presentIds = presentStudents(classId).map(student => student.id);
-              if (saved.length <= 9 && saved.every(desk => Array.isArray(desk) && desk.length >= 1 && desk.length <= 2) &&
+              const selectedSolo = data.groupMode ? singles[classId] : basicSingles[classId];
+              if (saved.length <= (data.groupMode ? 9 : students[classId].length) &&
+                  saved.every(desk => Array.isArray(desk) && desk.length >= 1 && desk.length <= 2) &&
+                  saved.every(desk => desk.length === 1 || desk.every(id => !selectedSolo.has(id))) &&
                   ids.length === presentIds.length && new Set(ids).size === ids.length &&
                   ids.every(id => presentIds.includes(id))) {
                 arrangements[classId] = saved.map(desk => ({
                   seats: desk.map(id => studentById(classId, id)),
-                  fixedSingle: desk.length === 1 && singles[classId].has(desk[0]),
+                  fixedSingle: desk.length === 1 &&
+                    (data.groupMode ? singles[classId] : basicSingles[classId]).has(desk[0]),
                   fixedPair: desk.length === 2 && fixedPairs[classId].some(pair => pairKey(...pair) === pairKey(...desk))
                 }));
               }
@@ -509,9 +523,9 @@
           delete mosaicPlans[classId];
           if (arrangements[classId]) {
             if (groupMode) generateArrangementForClass(classId);
-            else arrangements[classId] = manualLayouts[classId]
+            else arrangements[classId] = usableBasicManualLayout(classId)
               ? layoutToArrangement(classId, manualLayouts[classId])
-              : buildRandomArrangement(classId);
+              : buildRandomArrangement(classId, basicSingles[classId]);
           }
         });
         saveSettings();
@@ -581,8 +595,7 @@
         return solve((1 << pool.length) - 1).groups;
       }
 
-      function buildRandomArrangement(classId) {
-        const fixedSingleIds = singles[classId];
+      function buildRandomArrangement(classId, fixedSingleIds = singles[classId]) {
         const activeStudents = presentStudents(classId);
         const assigned = new Set();
         const desks = activeStudents
@@ -1298,8 +1311,8 @@
 
       function generateArrangementForClass(classId) {
         if (!groupMode) {
-          arrangements[classId] = buildRandomArrangement(classId);
-          resetGroups(classId);
+          arrangements[classId] = buildRandomArrangement(classId, basicSingles[classId]);
+          delete groupAssignments[classId];
           delete groupErrors[classId];
           delete deskPositions[classId];
           delete mosaicPlans[classId];
@@ -1380,9 +1393,24 @@
         return result;
       }
 
+      function usableBasicManualLayout(classId) {
+        const layout = manualLayouts[classId];
+        if (!layout) return false;
+        const assigned = layout.filter(id => id && !absent[classId].has(id));
+        const present = presentStudents(classId).map(student => student.id);
+        if (assigned.length !== present.length || new Set(assigned).size !== assigned.length) return false;
+        for (let index = 0; index < layout.length; index += 2) {
+          if (layout[index] && layout[index + 1] &&
+              !absent[classId].has(layout[index]) && !absent[classId].has(layout[index + 1]) &&
+              (basicSingles[classId].has(layout[index]) || basicSingles[classId].has(layout[index + 1]))) return false;
+        }
+        return true;
+      }
+
       function ensureManualLayout() {
         if (!manualLayouts[currentClass]) {
-          manualLayouts[currentClass] = arrangementToLayout(arrangements[currentClass] || buildRandomArrangement(currentClass));
+          manualLayouts[currentClass] = arrangementToLayout(arrangements[currentClass] ||
+            buildRandomArrangement(currentClass, basicSingles[currentClass]));
         }
       }
 
@@ -1397,6 +1425,9 @@
           saveSettings();
           showToast(manualMode ? "Válassz tanulót, majd célhelyet" : "Kézi mozaikülésrend rögzítve");
           return;
+        }
+        if (!groupMode && !manualMode && (arrangements[currentClass] || []).length > 9) {
+          return showToast("A kézi szerkesztő legfeljebb 9 padot kezel; előbb csökkentsd az egyedül ülők számát");
         }
         if (!manualMode) {
           groupMode = false;
@@ -1413,7 +1444,7 @@
           manualMode = false;
           delete deskPositions[currentClass];
           delete mosaicPlans[currentClass];
-          resetGroups(currentClass);
+          delete groupAssignments[currentClass];
           showToast("Kézi ülésrend rögzítve");
         }
         updateManualButton();
@@ -1442,7 +1473,7 @@
             else absent[currentClass].delete(student.id);
             if (manualMode && !groupMode && manualLayouts[currentClass]) {
               arrangements[currentClass] = layoutToArrangement(currentClass, manualLayouts[currentClass]);
-              resetGroups(currentClass);
+              delete groupAssignments[currentClass];
             } else {
               if (manualMode) { manualMode = false; selectedMosaicSlot = null; updateManualButton(); }
               generateArrangementForClass(currentClass);
@@ -1463,8 +1494,18 @@
       function renderStudentList() {
         const box = $("studentList");
         box.innerHTML = "";
-        const selected = singles[currentClass];
+        const selected = groupMode ? singles[currentClass] : basicSingles[currentClass];
         const paired = pairedIds(currentClass);
+        $("bulkSingleLabel").hidden = groupMode;
+        $("singleHint").textContent = groupMode
+          ? "A csoportos és mozaikülésrendben kijelölt tanuló külön padot kap."
+          : "A kijelölt tanuló külön padot kap. A kapcsoló után is módosíthatod a jelöléseket egyenként.";
+        const present = presentStudents(currentClass);
+        const selectedPresent = present.filter(student => selected.has(student.id)).length;
+        const bulk = $("bulkSingle");
+        bulk.checked = present.length > 0 && selectedPresent === present.length;
+        bulk.indeterminate = selectedPresent > 0 && selectedPresent < present.length;
+        bulk.disabled = !present.length;
 
         students[currentClass].forEach(student => {
           const label = document.createElement("label");
@@ -1473,7 +1514,7 @@
           input.type = "checkbox";
           const isAbsent = absent[currentClass].has(student.id);
           input.checked = selected.has(student.id) && !isAbsent;
-          input.disabled = paired.has(student.id) || isAbsent;
+          input.disabled = isAbsent || (groupMode && paired.has(student.id));
           input.setAttribute("aria-label", displayName(student) + " egyedül üljön");
           input.addEventListener("change", () => {
             if (input.checked) selected.add(student.id);
@@ -1507,8 +1548,9 @@
 
       function renderPairs() {
         const paired = pairedIds(currentClass);
+        const selected = groupMode ? singles[currentClass] : basicSingles[currentClass];
         const available = students[currentClass].filter(student =>
-          !absent[currentClass].has(student.id) && !singles[currentClass].has(student.id) && !paired.has(student.id)
+          !absent[currentClass].has(student.id) && !selected.has(student.id) && !paired.has(student.id)
         );
         pairOption($("pairFirst"), "Első tanuló", available);
         pairOption($("pairSecond"), "Második tanuló", available);
@@ -1522,7 +1564,8 @@
           row.className = "pair-item";
           const names = document.createElement("span");
           names.textContent = pair.map(id => displayName(studentById(currentClass, id))).join(" + ") +
-            (pair.some(id => absent[currentClass].has(id)) ? " (hiányzó miatt inaktív)" : "");
+            (pair.some(id => absent[currentClass].has(id)) ? " (hiányzó miatt inaktív)"
+              : pair.some(id => selected.has(id)) ? " (egyedül ülő miatt inaktív)" : "");
           const remove = document.createElement("button");
           remove.type = "button";
           remove.textContent = "Törlés";
@@ -1571,7 +1614,8 @@
         const second = $("pairSecond").value;
         if (!first || !second) return showToast("Válassz ki két tanulót");
         if (first === second) return showToast("Két különböző tanulót válassz");
-        const blocked = new Set([...absent[currentClass], ...singles[currentClass], ...pairedIds(currentClass)]);
+        const selected = groupMode ? singles[currentClass] : basicSingles[currentClass];
+        const blocked = new Set([...absent[currentClass], ...selected, ...pairedIds(currentClass)]);
         if (blocked.has(first) || blocked.has(second)) return showToast("Az egyik tanuló már rögzítve van");
         fixedPairs[currentClass].push([first, second]);
         const conflicts = avoidPairKeys(currentClass).has(pairKey(first, second));
@@ -1782,9 +1826,10 @@
 
       function maximumMixedPairs(classId) {
         let fixedMixed = 0;
-        const excluded = new Set([...absent[classId], ...singles[classId]]);
+        const selected = groupMode ? singles[classId] : basicSingles[classId];
+        const excluded = new Set([...absent[classId], ...selected]);
         fixedPairs[classId].forEach(pair => {
-          if (pair.every(id => !absent[classId].has(id))) {
+          if (pair.every(id => !absent[classId].has(id) && !selected.has(id))) {
             pair.forEach(id => excluded.add(id));
             const pairStudents = pair.map(id => studentById(classId, id));
             if (pairStudents[0].gender !== pairStudents[1].gender) fixedMixed += 1;
@@ -1872,7 +1917,7 @@
         layout[slotIndex] = studentId;
         arrangements[currentClass] = layoutToArrangement(currentClass, layout);
         delete deskPositions[currentClass];
-        resetGroups(currentClass);
+        delete groupAssignments[currentClass];
         saveSettings();
         renderRoom();
       }
@@ -1912,9 +1957,10 @@
         $("classSelect").value = classId;
         $("settingsSummary").textContent = "Beállítások · " + classId;
         if (!groupMode && groupErrors[classId]) generateArrangementForClass(classId);
-        if (!arrangements[classId]) arrangements[classId] = manualLayouts[classId]
+        if (!arrangements[classId]) arrangements[classId] = (groupMode && manualLayouts[classId] ||
+          !groupMode && usableBasicManualLayout(classId))
           ? layoutToArrangement(classId, manualLayouts[classId])
-          : buildRandomArrangement(classId);
+          : buildRandomArrangement(classId, groupMode ? singles[classId] : basicSingles[classId]);
         if (manualMode && !(groupMode && mosaicEnabled[classId])) {
           ensureManualLayout();
           arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
@@ -1943,6 +1989,8 @@
           groupMode,
           mosaic: groupMode && mosaicEnabled[currentClass],
           mosaicView,
+          basicSingleStudentNumbers: [...basicSingles[currentClass]].map(id => studentById(currentClass, id).number),
+          groupSingleStudentNumbers: [...singles[currentClass]].map(id => studentById(currentClass, id).number),
           baseGroupNames: groupNames[currentClass].base.slice(0, groupCount(currentClass)),
           expertGroupNames: groupNames[currentClass].expert.slice(0, expertCount(currentClass)),
           baseById: groupMode && mosaicEnabled[currentClass]
@@ -2023,7 +2071,9 @@
               if (Array.isArray(input.absentStudentNumbers)) {
                 absent[input.classId] = new Set(input.absentStudentNumbers.map(number => input.classId + "-" + number));
               }
-              singles[input.classId] = new Set(input.singleStudentNumbers.map(number => input.classId + "-" + number));
+              const chosenSingles = new Set(input.singleStudentNumbers.map(number => input.classId + "-" + number));
+              if (groupMode) singles[input.classId] = chosenSingles;
+              else basicSingles[input.classId] = chosenSingles;
               fixedPairs[input.classId] = input.fixedPairs.map(pair => pair.map(number => input.classId + "-" + number));
               if (Array.isArray(input.avoidPairs)) {
                 const unique = new Set();
@@ -2052,6 +2102,14 @@
 
       loadSettings();
       $("classSelect").addEventListener("change", event => selectClass(event.target.value));
+      $("bulkSingle").addEventListener("change", event => {
+        if (groupMode) return;
+        if (event.target.checked) students[currentClass].forEach(student => basicSingles[currentClass].add(student.id));
+        else basicSingles[currentClass].clear();
+        saveSettings();
+        renderControls();
+        createArrangement();
+      });
       $("addPairButton").addEventListener("click", addFixedPair);
       $("addAvoidButton").addEventListener("click", addAvoidPair);
       $("groupModeButton").addEventListener("click", () => {
@@ -2059,11 +2117,12 @@
         if (manualMode) toggleManualMode();
         groupMode = !groupMode;
         updateGroupButton();
-        if (!groupMode && groupErrors[currentClass]) generateArrangementForClass(currentClass);
+        if (!groupMode) generateArrangementForClass(currentClass);
         if (groupMode && (mosaicEnabled[currentClass] ? !mosaicPlans[currentClass] : !deskPositions[currentClass]) &&
             !groupErrors[currentClass]) {
           generateArrangementForClass(currentClass);
         }
+        renderControls();
         renderRoom();
         saveSettings();
       });
