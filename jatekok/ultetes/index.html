@@ -284,6 +284,7 @@
       const mosaicEnabled = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
       const expertCounts = {};
       const mosaicPlans = {};
+      const flexibleGroupPlans = {};
       const defaultGroupNames = {
         base: ["Zöld", "Téglavörös", "Indigó", "Arany", "Ibolya", "Kék"],
         expert: ["Alfa", "Béta", "Gamma", "Delta", "Epszilon", "Zéta"]
@@ -392,6 +393,7 @@
           groupNamesVersion: 2,
           mosaicView,
           mosaicPlans,
+          flexibleGroupPlans,
           arrangementDay: attendanceDay,
           savedArrangements: Object.fromEntries(Object.entries(arrangements).map(([classId, desks]) => [
             classId, desks.map(desk => desk.seats.map(student => student.id))
@@ -464,6 +466,10 @@
               }
             }
             if (Number.isInteger(data.groupCounts?.[classId])) groupCounts[classId] = data.groupCounts[classId];
+            if (data.arrangementDay === attendanceDay &&
+                validFlexibleGroupPlan(classId, data.flexibleGroupPlans?.[classId])) {
+              flexibleGroupPlans[classId] = data.flexibleGroupPlans[classId];
+            }
             for (const view of ["base", "expert"]) {
               const savedNames = data.groupNames?.[classId]?.[view];
               if (Array.isArray(savedNames)) savedNames.slice(0, 6).forEach((name, index) => {
@@ -521,6 +527,7 @@
           delete groupErrors[classId];
           delete deskPositions[classId];
           delete mosaicPlans[classId];
+          delete flexibleGroupPlans[classId];
           if (arrangements[classId]) {
             if (groupMode) generateArrangementForClass(classId);
             else arrangements[classId] = usableBasicManualLayout(classId)
@@ -689,6 +696,42 @@
             return first >= 0 && second >= 0 && Math.floor(first / 2) === Math.floor(second / 2);
           });
         });
+      }
+
+      function validFlexibleGroupPlan(classId, plan) {
+        if (!plan || !Array.isArray(plan.baseSlots) || plan.baseSlots.length !== 18 ||
+            !plan.baseById || typeof plan.baseById !== "object") return false;
+        const slots = plan.baseSlots;
+        const byId = plan.baseById;
+        const present = presentStudents(classId).map(student => student.id);
+        const assigned = slots.filter(Boolean);
+        if (assigned.length !== present.length || new Set(assigned).size !== assigned.length ||
+            !assigned.every(id => present.includes(id))) return false;
+        for (let group = 1; group <= groupCount(classId); group += 1) {
+          const cells = slots.map((id, index) => id && byId[id] === group ? index : -1)
+            .filter(index => index >= 0);
+          if (!connectedSlots(cells)) return false;
+        }
+        if (!present.every(id => Number.isInteger(byId[id]) &&
+            byId[id] >= 1 && byId[id] <= groupCount(classId))) return false;
+        return [...singles[classId]].filter(id => !absent[classId].has(id)).every(id => {
+          const slot = slots.indexOf(id);
+          return slot >= 0 && !slots[slot ^ 1];
+        }) && activeFixedPairs(classId).every(pair =>
+          Math.floor(slots.indexOf(pair[0]) / 2) === Math.floor(slots.indexOf(pair[1]) / 2));
+      }
+
+      function buildFlexibleGroupPlan(classId) {
+        for (let attempt = 0; attempt < 24; attempt += 1) {
+          const baseById = assignBaseGroups(classId);
+          if (!baseById) return null;
+          const baseSlots = layoutCohorts(classId, baseById, groupCount(classId));
+          if (baseSlots) {
+            optimizeMosaicSeats(classId, baseSlots, baseById);
+            return { baseById, baseSlots };
+          }
+        }
+        return null;
       }
 
       function assignBaseGroups(classId) {
@@ -1200,7 +1243,8 @@
         $("groupPanel").hidden = !groupMode;
         if (!groupMode) return;
         const mosaic = mosaicEnabled[currentClass];
-        if (!mosaic) ensureGroups(currentClass);
+        const flexible = !mosaic && flexibleGroupPlans[currentClass];
+        if (!mosaic && !flexible) ensureGroups(currentClass);
         $("mosaicToggle").checked = mosaic;
         $("mosaicExpertsLabel").hidden = !mosaic;
         $("mosaicTabs").hidden = !mosaic;
@@ -1230,8 +1274,9 @@
         select.disabled = !count;
         renderGroupNameEditor();
         const sizes = Array(count).fill(0);
-        if (mosaic && mosaicPlans[currentClass]) {
-          Object.values(mosaicPlans[currentClass].baseById).forEach(group => { sizes[group - 1] += 1; });
+        if ((mosaic && mosaicPlans[currentClass]) || flexible) {
+          Object.values((mosaic ? mosaicPlans[currentClass] : flexible).baseById)
+            .forEach(group => { sizes[group - 1] += 1; });
         } else {
           (arrangements[currentClass] || []).forEach((desk, index) => {
             sizes[groupAssignments[currentClass][index] - 1] += desk.seats.length;
@@ -1277,6 +1322,7 @@
         $("groupNote").textContent = groupErrors[currentClass] || (!count ? "Nincs jelenlévő tanuló."
           : mosaic && manualMode ? "Válassz ki egy tanulót, majd kattints a célhelyre. Csak összefüggő, érvényes cserét engedünk."
           : mosaic ? "A nézetváltás nem sorsol újra. A hiányzó szakértők más alapcsoportnak is segíthetnek."
+          : flexible ? "A tanulók színei mutatják a csoportokat; egy padon két különböző csoport tagjai is lehetnek. A színes helyek összefüggő blokkokat alkotnak."
           : sizes.some(size => size < 3 || size > 4)
             ? "A mostani ülésrendben van 3–4 főtől eltérő csoport. Készíts új csoportos ülésrendet, vagy módosítsd a padok csoportját."
             : "A pad csoportját a padon lévő választóval módosíthatod. Csak összefüggő padblokkokat engedünk.");
@@ -1316,9 +1362,11 @@
           delete groupErrors[classId];
           delete deskPositions[classId];
           delete mosaicPlans[classId];
+          delete flexibleGroupPlans[classId];
           return true;
         }
         if (mosaicEnabled[classId]) {
+          delete flexibleGroupPlans[classId];
           const plan = buildMosaicPlan(classId);
           if (!plan) {
             arrangements[classId] = [];
@@ -1337,14 +1385,26 @@
         }
         const result = buildGroupArrangement(classId);
         if (result.error) {
+          const flexible = buildFlexibleGroupPlan(classId);
+          if (flexible) {
+            flexibleGroupPlans[classId] = flexible;
+            arrangements[classId] = mosaicBaseArrangement(classId, flexible.baseSlots);
+            groupAssignments[classId] = [];
+            delete deskPositions[classId];
+            delete mosaicPlans[classId];
+            delete groupErrors[classId];
+            return true;
+          }
           arrangements[classId] = [];
           groupAssignments[classId] = [];
+          delete flexibleGroupPlans[classId];
           groupErrors[classId] = result.error;
           delete deskPositions[classId];
           delete mosaicPlans[classId];
           return false;
         }
         arrangements[classId] = result.desks;
+        delete flexibleGroupPlans[classId];
         groupAssignments[classId] = result.groups;
         deskPositions[classId] = result.positions;
         delete mosaicPlans[classId];
@@ -1677,7 +1737,7 @@
           box.appendChild(message);
           return;
         }
-        if (groupMode && mosaicEnabled[currentClass]) {
+        if (groupMode && (mosaicEnabled[currentClass] || flexibleGroupPlans[currentClass])) {
           renderMosaicRoom();
           return;
         }
@@ -1731,12 +1791,13 @@
       }
 
       function renderMosaicRoom() {
-        const plan = mosaicPlans[currentClass];
+        const flexible = !mosaicEnabled[currentClass];
+        const plan = flexible ? flexibleGroupPlans[currentClass] : mosaicPlans[currentClass];
         if (!plan) return;
-        const view = mosaicView;
+        const view = flexible ? "base" : mosaicView;
         const slots = plan[view + "Slots"];
         const membership = plan[view + "ById"];
-        const secondary = plan[view === "base" ? "expertById" : "baseById"];
+        const secondary = flexible ? null : plan[view === "base" ? "expertById" : "baseById"];
         const box = $("desks");
         for (let deskIndex = 0; deskIndex < 9; deskIndex += 1) {
           const desk = document.createElement("article");
@@ -1747,8 +1808,8 @@
             const slotIndex = deskIndex * 2 + offset;
             if (!id) {
               const vacant = document.createElement("div");
-              vacant.className = "seat vacant" + (manualMode && !printingMosaic ? " editable" : "");
-              if (manualMode && !printingMosaic) {
+              vacant.className = "seat vacant" + (!flexible && manualMode && !printingMosaic ? " editable" : "");
+              if (!flexible && manualMode && !printingMosaic) {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "mosaic-seat-button";
@@ -1769,13 +1830,15 @@
             mark.textContent = groupTitle(currentClass, view, group) +
               (view === "expert" ? " · szakértő" : " csoport");
             seat.appendChild(mark);
-            const other = document.createElement("span");
-            other.className = "student-id";
-            other.textContent = view === "expert"
-              ? groupTitle(currentClass, "base", secondary[id]) + " alapcsoport"
-              : groupTitle(currentClass, "expert", secondary[id]) + " · szakértő";
-            seat.appendChild(other);
-            if (manualMode && !printingMosaic) {
+            if (secondary) {
+              const other = document.createElement("span");
+              other.className = "student-id";
+              other.textContent = view === "expert"
+                ? groupTitle(currentClass, "base", secondary[id]) + " alapcsoport"
+                : groupTitle(currentClass, "expert", secondary[id]) + " · szakértő";
+              seat.appendChild(other);
+            }
+            if (!flexible && manualMode && !printingMosaic) {
               const button = document.createElement("button");
               button.type = "button";
               button.className = "mosaic-seat-button" +
@@ -1965,7 +2028,8 @@
           ensureManualLayout();
           arrangements[classId] = layoutToArrangement(classId, manualLayouts[classId]);
         }
-        if (groupMode && (mosaicEnabled[classId] ? !mosaicPlans[classId] : !deskPositions[classId]) &&
+        if (groupMode && (mosaicEnabled[classId] ? !mosaicPlans[classId] :
+            !deskPositions[classId] && !flexibleGroupPlans[classId]) &&
             !groupErrors[classId]) {
           generateArrangementForClass(classId);
           saveSettings();
@@ -2118,7 +2182,8 @@
         groupMode = !groupMode;
         updateGroupButton();
         if (!groupMode) generateArrangementForClass(currentClass);
-        if (groupMode && (mosaicEnabled[currentClass] ? !mosaicPlans[currentClass] : !deskPositions[currentClass]) &&
+        if (groupMode && (mosaicEnabled[currentClass] ? !mosaicPlans[currentClass] :
+            !deskPositions[currentClass] && !flexibleGroupPlans[currentClass]) &&
             !groupErrors[currentClass]) {
           generateArrangementForClass(currentClass);
         }
