@@ -99,6 +99,16 @@
     .group-name-fields h3{grid-column:1/-1;margin:6px 0 0;font-size:.9rem}
     .group-panel .group-name-fields label{display:grid;gap:4px;font-size:.8rem}
     .group-name-fields input{width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.9rem}
+    .group-assignments{flex-basis:100%;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+    .group-assignments[hidden]{display:none}
+    .group-assignments summary{cursor:pointer;color:var(--green);font-size:.88rem;font-weight:850}
+    .assignment-hint{margin:9px 0;color:var(--muted);font-size:.82rem;line-height:1.4}
+    .assignment-list{display:grid;gap:6px;max-height:330px;overflow:auto}
+    .assignment-row{display:grid;grid-template-columns:minmax(90px,1fr) repeat(2,minmax(130px,1.25fr));gap:8px;align-items:center;border-top:1px solid var(--line);padding:6px 1px}
+    .assignment-row.assignment-heading{position:sticky;top:0;z-index:1;border:0;background:#fff;color:var(--muted);font-size:.75rem;font-weight:850}
+    .assignment-row strong{font-size:.88rem;overflow-wrap:anywhere}
+    .assignment-row select{min-width:0;min-height:40px;font-size:.86rem;font-weight:700}
+    .assignment-row.absent-row{opacity:.75}
     .bulk-single{display:flex;align-items:center;gap:9px;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;padding:9px;background:var(--green-soft);font-size:.86rem;font-weight:800;cursor:pointer}
     .bulk-single[hidden]{display:none}
     .bulk-single input{width:19px;height:19px;margin:0;accent-color:var(--green)}
@@ -152,9 +162,10 @@
     }
     @media(max-width:560px){
       .shell{width:min(100% - 16px,480px);padding-top:14px}.header-actions{width:100%;justify-content:stretch}.header-actions>button,.settings-menu{flex:1 1 44%}.settings-menu summary{justify-content:center}.settings-menu .panel{right:auto;left:0;width:min(340px,calc(100vw - 18px));max-height:calc(100vh - 125px)}.student-list{grid-template-columns:1fr}.board{width:92%}.room{padding:10px}.desks{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 9px}.room.group-layout{overflow-x:auto}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(130px,1fr));min-width:420px}.desk{min-height:96px;padding-inline:5px}.room-meta{align-items:start;flex-direction:column}.teacher{margin-bottom:22px}
+      .assignment-row{grid-template-columns:repeat(2,minmax(0,1fr))}.assignment-row strong,.assignment-heading span:first-child{grid-column:1/-1}
     }
     @media print{
-      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note,.group-name-settings{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
+      body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note,.group-name-settings,.group-assignments{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
     }
   </style>
 </head>
@@ -236,6 +247,11 @@
           </div>
           <div id="mosaicCoverage" class="mosaic-coverage" aria-live="polite" hidden></div>
           <div id="groupSummary" class="group-summary" aria-live="polite"></div>
+          <details id="mosaicAssignments" class="group-assignments" hidden>
+            <summary id="assignmentSummary">Diákok besorolása</summary>
+            <p class="assignment-hint">A megadott besorolás rögzül. Az „Automatikus” választással ismét a generátorra bízhatod.</p>
+            <div id="assignmentList" class="assignment-list"></div>
+          </details>
           <details class="group-name-settings" id="groupNameSettings"><summary>Csoportnevek</summary><div id="groupNameFields" class="group-name-fields"></div></details>
           <p id="groupNote" class="group-note"></p>
         </div>
@@ -284,6 +300,8 @@
       const mosaicEnabled = Object.fromEntries(Object.keys(rosters).map(classId => [classId, false]));
       const expertCounts = {};
       const mosaicPlans = {};
+      const mosaicLocks = Object.fromEntries(Object.keys(rosters).map(classId =>
+        [classId, { base: {}, expert: {} }]));
       const flexibleGroupPlans = {};
       const defaultGroupNames = {
         base: ["Zöld", "Téglavörös", "Indigó", "Arany", "Ibolya", "Kék"],
@@ -393,6 +411,7 @@
           groupNamesVersion: 2,
           mosaicView,
           mosaicPlans,
+          mosaicLocks,
           flexibleGroupPlans,
           arrangementDay: attendanceDay,
           savedArrangements: Object.fromEntries(Object.entries(arrangements).map(([classId, desks]) => [
@@ -481,6 +500,15 @@
             }
             mosaicEnabled[classId] = data.mosaicEnabled?.[classId] === true;
             if (Number.isInteger(data.expertCounts?.[classId])) expertCounts[classId] = data.expertCounts[classId];
+            for (const view of ["base", "expert"]) {
+              const saved = data.mosaicLocks?.[classId]?.[view];
+              if (!saved || typeof saved !== "object" || Array.isArray(saved)) continue;
+              for (const [id, group] of Object.entries(saved)) {
+                if (validId(classId, id) && Number.isInteger(group) && group >= 1 && group <= 6) {
+                  mosaicLocks[classId][view][id] = group;
+                }
+              }
+            }
             if (data.arrangementDay === attendanceDay && typeof data.groupErrors?.[classId] === "string") {
               groupErrors[classId] = data.groupErrors[classId];
             }
@@ -681,7 +709,8 @@
           const seated = slots.filter(Boolean);
           if (seated.length !== present.length || new Set(seated).size !== seated.length ||
               !seated.every(id => present.includes(id))) return false;
-          if (!present.every(id => Number.isInteger(byId[id]) && byId[id] >= 1 && byId[id] <= count)) return false;
+          if (!present.every(id => Number.isInteger(byId[id]) && byId[id] >= 1 && byId[id] <= count &&
+              (!mosaicLocks[classId][view][id] || mosaicLocks[classId][view][id] === byId[id]))) return false;
           for (let group = 1; group <= count; group += 1) {
             const cells = slots.map((id, index) => id && byId[id] === group ? index : -1)
               .filter(index => index >= 0);
@@ -735,48 +764,94 @@
       }
 
       function assignBaseGroups(classId) {
-        const sizes = balancedGroupSizes(classId);
-        const byId = {};
+        const count = groupCount(classId);
         const active = presentStudents(classId);
+        const locks = mosaicLocks[classId].base;
+        if (active.some(student => locks[student.id] && locks[student.id] > count)) return null;
+        const pinnedCounts = Array(count).fill(0);
+        active.forEach(student => { if (locks[student.id]) pinnedCounts[locks[student.id] - 1] += 1; });
+        const minimum = pinnedCounts.map(value => Math.max(1, value));
+        if (minimum.reduce((sum, value) => sum + value, 0) > active.length) return null;
         const paired = new Set();
         const units = [];
         fixedPairs[classId].forEach(pair => {
           if (pair.every(id => active.some(student => student.id === id))) {
-            units.push(pair);
+            const assigned = pair.map(id => locks[id]).filter(Boolean);
+            if (new Set(assigned).size > 1) return;
+            units.push({ ids: pair, pinned: assigned[0] || 0 });
             pair.forEach(id => paired.add(id));
           }
         });
-        shuffled(active.filter(student => !paired.has(student.id))).forEach(student => units.push([student.id]));
-        const remaining = sizes.slice();
-        function place(index) {
-          if (index === units.length) return true;
-          const tried = new Set();
-          for (const group of shuffled(Array.from({ length: sizes.length }, (_, i) => i))
-            .sort((a, b) => remaining[b] - remaining[a])) {
-            if (remaining[group] < units[index].length || tried.has(remaining[group])) continue;
-            tried.add(remaining[group]);
-            remaining[group] -= units[index].length;
-            units[index].forEach(id => { byId[id] = group + 1; });
-            if (place(index + 1)) return true;
-            remaining[group] += units[index].length;
+        if (fixedPairs[classId].some(pair => pair.every(id => active.some(student => student.id === id)) &&
+            locks[pair[0]] && locks[pair[1]] && locks[pair[0]] !== locks[pair[1]])) return null;
+        shuffled(active.filter(student => !paired.has(student.id))).forEach(student =>
+          units.push({ ids: [student.id], pinned: locks[student.id] || 0 }));
+        units.sort((first, second) => Number(Boolean(second.pinned)) - Number(Boolean(first.pinned)) ||
+          second.ids.length - first.ids.length);
+
+        const targets = [];
+        function enumerate(index, left, chosen) {
+          if (index === count) {
+            if (!left) targets.push(chosen);
+            return;
           }
-          return false;
+          const later = minimum.slice(index + 1).reduce((sum, size) => sum + size, 0);
+          for (let size = minimum[index]; size <= left - later; size += 1) {
+            enumerate(index + 1, left - size, [...chosen, size]);
+          }
         }
-        return place(0) ? byId : null;
+        enumerate(0, active.length, []);
+        const ideal = active.length / count;
+        targets.sort((a, b) => a.reduce((sum, size) => sum + (size - ideal) ** 2, 0) -
+          b.reduce((sum, size) => sum + (size - ideal) ** 2, 0));
+        for (const sizes of targets) {
+          const remaining = sizes.slice();
+          const byId = {};
+          function place(index) {
+            if (index === units.length) return true;
+            const unit = units[index];
+            const choices = unit.pinned ? [unit.pinned - 1] :
+              shuffled(Array.from({ length: count }, (_, group) => group))
+                .sort((a, b) => remaining[b] - remaining[a]);
+            const tried = new Set();
+            for (const group of choices) {
+              if (remaining[group] < unit.ids.length || tried.has(remaining[group])) continue;
+              tried.add(remaining[group]);
+              remaining[group] -= unit.ids.length;
+              unit.ids.forEach(id => { byId[id] = group + 1; });
+              if (place(index + 1)) return true;
+              remaining[group] += unit.ids.length;
+            }
+            return false;
+          }
+          if (place(0)) return byId;
+        }
+        return null;
       }
 
       function assignExpertise(classId, baseById, keepPairsTogether = true) {
         const count = expertCount(classId);
+        const pins = mosaicLocks[classId].expert;
         const byId = {};
         const totals = Array(count).fill(0);
+        presentStudents(classId).forEach(student => {
+          const expert = pins[student.id];
+          if (expert && expert <= count) {
+            byId[student.id] = expert;
+            totals[expert - 1] += 1;
+          }
+        });
         for (let group = 1; group <= groupCount(classId); group += 1) {
           const members = presentStudents(classId).filter(student => baseById[student.id] === group);
           const paired = new Set();
           const units = keepPairsTogether
-            ? activeFixedPairs(classId).filter(pair => pair.every(id => baseById[id] === group)) : [];
+            ? activeFixedPairs(classId).filter(pair =>
+              pair.every(id => baseById[id] === group && !byId[id])) : [];
           units.forEach(pair => pair.forEach(id => paired.add(id)));
-          shuffled(members.filter(student => !paired.has(student.id))).forEach(student => units.push([student.id]));
+          shuffled(members.filter(student => !paired.has(student.id) && !byId[student.id]))
+            .forEach(student => units.push([student.id]));
           const local = Array(count).fill(0);
+          members.forEach(student => { if (byId[student.id]) local[byId[student.id] - 1] += 1; });
           for (const unit of units) {
             const choices = shuffled(Array.from({ length: count }, (_, index) => index));
             choices.sort((a, b) => (local[a] > 0) - (local[b] > 0) ||
@@ -960,7 +1035,23 @@
         return false;
       }
 
+      function mosaicLockError(classId) {
+        const active = presentStudents(classId);
+        for (const [view, count] of [["base", groupCount(classId)], ["expert", expertCount(classId)]]) {
+          const outside = active.find(student => mosaicLocks[classId][view][student.id] > count);
+          if (outside) return outside.name + " (" + outside.number + ".) rögzített " +
+            (view === "base" ? "alapcsoportja" : "szakértelme") + " kívül esik a választott csoportszámon. Módosítsd vagy állítsd Automatikusra.";
+        }
+        const base = mosaicLocks[classId].base;
+        const present = new Set(active.map(student => student.id));
+        const conflicting = fixedPairs[classId].find(pair => pair.every(id => present.has(id)) &&
+          base[pair[0]] && base[pair[1]] && base[pair[0]] !== base[pair[1]]);
+        if (conflicting) return "A rögzített pár tagjait két külön alapcsoportba soroltad. Módosítsd az egyik besorolást vagy a párt.";
+        return "";
+      }
+
       function buildMosaicPlan(classId) {
+        if (mosaicLockError(classId)) return null;
         if (!presentStudents(classId).length) return {
           baseById: {}, baseSlots: Array(18).fill(null),
           expertById: {}, expertSlots: Array(18).fill(null)
@@ -1239,6 +1330,70 @@
         }
       }
 
+      function renderMosaicAssignmentEditor() {
+        const editor = $("mosaicAssignments");
+        editor.hidden = !mosaicEnabled[currentClass];
+        if (editor.hidden) return;
+        const locks = mosaicLocks[currentClass];
+        const plan = mosaicPlans[currentClass];
+        const pinned = Object.keys(locks.base).length + Object.keys(locks.expert).length;
+        $("assignmentSummary").textContent = "Diákok besorolása · " + pinned + " rögzített";
+        const list = $("assignmentList");
+        list.innerHTML = "";
+        const heading = document.createElement("div");
+        heading.className = "assignment-row assignment-heading";
+        for (const title of ["Diák", "Alapcsoport", "Szakértelem"]) {
+          const cell = document.createElement("span");
+          cell.textContent = title;
+          heading.appendChild(cell);
+        }
+        list.appendChild(heading);
+        students[currentClass].forEach(student => {
+          const row = document.createElement("div");
+          row.className = "assignment-row";
+          if (absent[currentClass].has(student.id)) row.classList.add("absent-row");
+          const name = document.createElement("strong");
+          name.textContent = student.number + ". " + student.name +
+            (absent[currentClass].has(student.id) ? " (hiányzik)" : "");
+          row.appendChild(name);
+          for (const [view, count, label] of [["base", groupCount(currentClass), "alapcsoport"],
+            ["expert", expertCount(currentClass), "szakértelem"]]) {
+            const select = document.createElement("select");
+            select.setAttribute("aria-label", displayName(student) + " " + label);
+            select.dataset.student = student.id;
+            select.dataset.view = view;
+            const current = plan?.[view + "ById"]?.[student.id];
+            const automatic = document.createElement("option");
+            automatic.value = "";
+            automatic.textContent = "Automatikus" +
+              (current && !locks[view][student.id] ? " · " + groupName(currentClass, view, current) : "");
+            select.appendChild(automatic);
+            for (let group = 1; group <= count; group += 1) {
+              const option = document.createElement("option");
+              option.value = group;
+              option.textContent = groupTitle(currentClass, view, group);
+              select.appendChild(option);
+            }
+            if (locks[view][student.id] > count) {
+              const invalid = document.createElement("option");
+              invalid.value = locks[view][student.id];
+              invalid.textContent = locks[view][student.id] + ". csoport (már nem választható)";
+              select.appendChild(invalid);
+            }
+            select.value = locks[view][student.id] || "";
+            select.addEventListener("change", () => {
+              if (select.value) locks[view][student.id] = Number(select.value);
+              else delete locks[view][student.id];
+              createArrangement();
+              Array.from($("assignmentList").querySelectorAll("select"))
+                .find(input => input.dataset.student === student.id && input.dataset.view === view)?.focus();
+            });
+            row.appendChild(select);
+          }
+          list.appendChild(row);
+        });
+      }
+
       function renderGroupPanel() {
         $("groupPanel").hidden = !groupMode;
         if (!groupMode) return;
@@ -1273,6 +1428,7 @@
         }
         select.disabled = !count;
         renderGroupNameEditor();
+        renderMosaicAssignmentEditor();
         const sizes = Array(count).fill(0);
         if ((mosaic && mosaicPlans[currentClass]) || flexible) {
           Object.values((mosaic ? mosaicPlans[currentClass] : flexible).baseById)
@@ -1373,7 +1529,8 @@
             groupAssignments[classId] = [];
             delete deskPositions[classId];
             delete mosaicPlans[classId];
-            groupErrors[classId] = "A két összefüggő nézet nem alakítható ki a kijelölt egyedül ülőkkel és rögzített párokkal. Módosítsd a kikötéseket.";
+            groupErrors[classId] = mosaicLockError(classId) ||
+              "A két összefüggő nézet nem alakítható ki a rögzített besorolásokkal, külön ülőkkel és párokkal. Módosítsd valamelyik kikötést.";
             return false;
           }
           mosaicPlans[classId] = plan;
@@ -2057,6 +2214,8 @@
           groupSingleStudentNumbers: [...singles[currentClass]].map(id => studentById(currentClass, id).number),
           baseGroupNames: groupNames[currentClass].base.slice(0, groupCount(currentClass)),
           expertGroupNames: groupNames[currentClass].expert.slice(0, expertCount(currentClass)),
+          fixedBaseById: { ...mosaicLocks[currentClass].base },
+          fixedExpertById: { ...mosaicLocks[currentClass].expert },
           baseById: groupMode && mosaicEnabled[currentClass]
             ? { ...mosaicPlans[currentClass]?.baseById } : {},
           baseSlots: groupMode && mosaicEnabled[currentClass]
