@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Számrendszer-műhely • Gyakorlás</title>
+<style>
+:root{--bg:#f6f5ef;--paper:#fff;--ink:#253c42;--muted:#617479;--line:#dde5e2;--teal:#086f65;--pale:#eaf5ef;--orange:#b34d22;--shadow:0 12px 35px #253c4208}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button,select{cursor:pointer}button{border:1px solid var(--line);background:white;color:var(--ink);padding:11px 18px;border-radius:12px;font-weight:650;min-height:46px}button:hover{background:#f0f5f2}button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible{outline:3px solid #d88933;outline-offset:3px}button:disabled{cursor:default;opacity:.5}button.primary{background:var(--teal);color:white;border-color:var(--teal)}button.primary:hover{background:#055c54}h1,h2,p{margin:0}h1{font-size:clamp(26px,4vw,36px);letter-spacing:-1px;line-height:1.15}h2{font-size:22px;line-height:1.3}.wrap{max-width:1050px;margin:auto;padding:32px 24px 24px}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:14px}.mark{background:var(--teal);color:white;display:grid;place-items:center;width:54px;height:54px;border-radius:17px;font-size:24px;font-weight:800}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:1.7px;color:var(--teal);font-weight:800;margin-bottom:7px}.subtitle{color:var(--muted);font-size:15px;margin-top:7px}.grade{font-size:14px;border:1px solid var(--line);padding:8px 13px;border-radius:100px;white-space:nowrap;color:var(--muted)}.controls{background:var(--paper);border:1px solid var(--line);padding:16px;border-radius:20px;display:flex;justify-content:space-between;gap:18px;align-items:center;box-shadow:var(--shadow);margin-bottom:20px}.tabs{display:flex;gap:7px;background:var(--bg);padding:5px;border-radius:14px}.tabs button{background:transparent;border-color:transparent;padding:10px 16px;font-size:15px}.tabs button[aria-pressed=true]{background:var(--teal);color:white}.base{display:flex;align-items:center;gap:12px;font-size:14px;white-space:nowrap}.base select{padding:10px 30px 10px 12px;background:white;border:1px solid var(--line);border-radius:10px;color:var(--ink);min-height:46px}.grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(275px,1fr);gap:20px;align-items:start}.card{background:white;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}.task{padding:26px}.task-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.task-head button{font-size:14px;padding:8px 13px}.number{font-size:clamp(40px,6vw,58px);font-weight:760;letter-spacing:3px;line-height:1.4;margin:12px 0 10px}.number sub{font-size:.4em;letter-spacing:0;margin-left:3px;position:relative;bottom:-.08em}.caption{color:var(--muted);font-size:15px}.table-wrap{margin:25px 0 8px;overflow-x:auto;padding-bottom:5px}table{width:100%;border-collapse:separate;border-spacing:5px;table-layout:fixed;font-variant-numeric:tabular-nums}th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);width:94px;padding:8px 1px}td{text-align:center;height:61px;border:1px solid var(--line);border-radius:11px;font-size:21px;background:#fafbf9;font-weight:600}td.digit{font-size:27px;background:white}td.active{border:2px solid var(--teal);background:var(--pale);color:var(--teal)}td.solved{background:#f1f7f1;color:var(--teal)}td.zero{color:var(--orange)}.legend{font-size:13px;color:var(--muted);margin:8px 0 0}.dot{display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:50%;margin-right:6px}.workspace{padding:25px}.progress-head{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:9px}.track{height:6px;background:#edf0e9;border-radius:8px;overflow:hidden;margin-bottom:23px}.bar{height:100%;background:var(--teal);transition:width .25s}.step-label{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:8px}.question{font-size:21px;font-weight:650;line-height:1.45;min-height:64px}.question sup{font-size:.7em}.prompt-detail{margin-top:10px;font-size:14px;color:var(--muted);min-height:43px}.answer-form{margin-top:20px}.answer-form label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}.answer-form input{width:100%;height:57px;border:1.5px solid #becbc5;border-radius:12px;background:white;font-size:24px;color:var(--ink);padding:8px 14px;outline:none}.answer-form input:focus{border-color:var(--teal);box-shadow:0 0 0 3px #086f6518}.answer-form input[aria-invalid=true]{border-color:var(--orange)}.actions{display:flex;gap:9px;margin-top:12px}.actions button{flex:1;font-size:15px}.feedback{font-size:14px;margin-top:16px;border-radius:11px;padding:12px 14px;min-height:0;line-height:1.5}.feedback:empty{display:none}.feedback.error{background:#fff2e8;color:#943e1c}.feedback.good{background:var(--pale);color:#07574f}.feedback.hint{background:#f4f2e6;color:#6b5b26}.complete{margin-top:20px;border-radius:14px;background:var(--pale);padding:18px}.complete h2{color:var(--teal)}.equation{font-size:19px;font-weight:650;line-height:1.9;overflow-wrap:anywhere;margin:12px 0 8px}.complete p{font-size:14px;color:var(--muted)}[hidden]{display:none!important}.reference{margin-top:20px;background:#eeefe7;border:1px solid var(--line);border-radius:16px;padding:16px 20px}.reference summary{cursor:pointer;font-weight:650;font-size:15px}.reference-content{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px;font-size:14px;color:#40595f}.reference-content p+p{margin-top:10px}.reference strong{color:var(--ink)}footer{font-size:12px;color:var(--muted);text-align:center;margin-top:24px}.success-badge{color:var(--teal);font-weight:700}.result-label{color:var(--teal);font-weight:700;font-size:14px;margin-top:16px}.final-number{font-size:30px;font-weight:750;margin-top:4px}.final-number sub{font-size:.5em}.instructions{font-size:14px;color:var(--muted);margin-top:14px}
+@media(max-width:800px){.wrap{padding:20px 16px}.grid{grid-template-columns:1fr}.controls{align-items:stretch;flex-wrap:wrap}.tabs{flex:1}.tabs button{flex:1}.base{justify-content:space-between;width:100%}.workspace{padding:22px}.question{min-height:0}.prompt-detail{min-height:0}.reference-content{grid-template-columns:1fr;gap:12px}}
+@media(max-width:440px){body{font-size:16px}.wrap{padding:18px 12px}.brand{gap:10px}.mark{width:44px;height:44px;border-radius:13px;font-size:21px;flex-shrink:0}.grade{display:none}.top{margin-bottom:18px}.controls{padding:10px;gap:10px}.tabs button{padding:10px 8px;font-size:13px}.task{padding:18px 12px}th{width:78px;font-size:11px}td{font-size:17px;height:51px}td.digit{font-size:23px}table{border-spacing:3px}.number{margin-left:5px}.task-head{padding:0 5px}.caption{padding:0 5px;font-size:14px}.legend{font-size:12px;padding-left:5px}.task-head h2{font-size:20px}.reference{padding:14px}}
+@media(prefers-reduced-motion:reduce){.bar{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+ <header class="top"><div class="brand"><div class="mark" aria-hidden="true">10</div><div><p class="eyebrow">Gyakorolj lépésről lépésre</p><h1>Számrendszer-műhely</h1><p class="subtitle">A számjegy helye is számít.</p></div></div><span class="grade">7. osztály</span></header>
+ <section class="controls" aria-label="Gyakorlás beállításai"><div class="tabs" role="group" aria-label="Gyakorlási mód"><button id="builder-tab" type="button" aria-pressed="true">Helyiérték-építő</button><button id="convert-tab" type="button" aria-pressed="false">Átváltás tízesbe</button></div><label class="base" for="base">Számrendszer alapja<select id="base"><option value="2">2 • kettes</option><option value="3">3 • hármas</option><option value="5" selected>5 • ötös</option></select></label></section>
+ <div class="grid">
+  <section class="card task" aria-labelledby="task-title"><div class="task-head"><h2 id="task-title">Építsd fel a számot!</h2><button id="new-task" type="button">Új feladat ↻</button></div><div id="number" class="number" aria-label="204 ötös számrendszerben">204<sub>5</sub></div><p class="caption" id="caption">Először a helyiértékeket, majd a valódi értékeket töltsd ki!</p><div class="table-wrap"><table aria-label="Helyiérték-táblázat"><tbody id="table-body"></tbody></table></div><p class="legend" id="legend"><span class="dot"></span>A zöld keret mutatja az aktuális mezőt.</p><div id="result" hidden><p class="result-label">A szám tízes számrendszerben</p><div class="final-number" id="final-number"></div></div></section>
+  <section class="card workspace" aria-labelledby="question"><div class="progress-head"><span id="phase-title">Helyiértékek</span><span id="progress-text">1 / 7 lépés</span></div><div class="track" role="progressbar" id="progress" aria-label="A feladat készültsége" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><div class="bar" id="bar"></div></div><p class="step-label" id="step-label">1. lépés</p><h2 class="question" id="question"></h2><p class="prompt-detail" id="prompt-detail"></p><form class="answer-form" id="answer-form" novalidate><label for="answer" id="answer-label">Helyiérték</label><input id="answer" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false" aria-describedby="prompt-detail feedback"><div class="actions"><button class="primary" type="submit">Ellenőrzés</button><button type="button" id="hint">Segítség</button></div></form><div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div><button id="continue" type="button" class="primary" hidden style="width:100%;margin-top:14px">Következő lépés →</button><div id="complete" class="complete" hidden><h2>Megépítetted! ✓</h2><div class="equation" id="equation"></div><p id="completion-note"></p><button id="next-task" type="button" class="primary" style="width:100%;margin-top:16px">Új feladat →</button></div></section>
+ </div>
+ <details class="reference"><summary>Rövid emlékeztető</summary><div class="reference-content"><div><p><strong>Helyiérték:</strong> jobbról indulva 1, majd minden lépésben az alap szorosát vesszük. Ötös alapban: …, 125, 25, 5, 1.</p><p><strong>Alaki érték:</strong> a számjegy önmagában vett értéke. Ötös alapban csak 0, 1, 2, 3, 4 lehet számjegy.</p></div><div><p><strong>Valódi érték = alaki érték × helyiérték.</strong> A 204<sub>5</sub> bal oldali 2-esének valódi értéke 2 × 25 = 50.</p><p><strong>A teljes szám értéke:</strong> a valódi értékek összege. A közbülső 0 is elfoglal egy helyet!</p></div></div></details>
+ <footer>Számrendszer-műhely · 1. sprint · Offline is használható</footer>
+</main>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+let mode='builder';
+let state;
+const baseNames={2:'kettes',3:'hármas',5:'ötös'};
+function makeTask(base, previous=''){
+ // Két-négy számjegy; rendszeresen szerepel közbülső nulla is.
+ let digits;
+ do {
+  const length=2+Math.floor(Math.random()*3);
+  digits=Array.from({length},(_,i)=>i===0?1+Math.floor(Math.random()*(base-1)):Math.floor(Math.random()*base));
+  if(length>=3&&Math.random()<.45)digits[1+Math.floor(Math.random()*(length-2))]=0;
+ } while(digits.join('')===previous);
+ return digits;
+}
+function startTask(digits,base){
+ const places=digits.map((_,i)=>base**(digits.length-1-i));
+ const values=digits.map((d,i)=>d*places[i]);
+ const steps=[];
+ if(mode==='builder')for(let i=digits.length-1;i>=0;i--)steps.push({kind:'place',index:i,expected:places[i]});
+ for(let i=0;i<digits.length;i++)steps.push({kind:'value',index:i,expected:values[i]});
+ steps.push({kind:'sum',expected:values.reduce((a,b)=>a+b,0)});
+ state={digits,base,places,values,steps,cursor:0,accepted:false,knownPlaces:places.map(()=>mode==='convert'),knownValues:values.map(()=>false)};
+ $('feedback').textContent='';$('result').hidden=true;
+ $('number').innerHTML=digits.join('')+'<sub>'+base+'</sub>';
+ $('number').setAttribute('aria-label',digits.join('')+' '+baseNames[base]+' számrendszerben');
+ $('task-title').textContent=mode==='builder'?'Építsd fel a számot!':'Váltsd át tízesbe!';
+ $('caption').textContent=mode==='builder'?'Először a helyiértékeket, majd a valódi értékeket töltsd ki!':'A helyiértékeket megadtuk. Számítsd ki a valódi értékeket, majd az összegüket!';
+ render();
+}
+function newTask(focus=true){const base=Number($('base').value);startTask(makeTask(base,state?.base===base?state.digits.join(''):''),base);if(focus)$('answer').focus({preventScroll:true});}
+function renderTable(){
+ const step=state.steps[state.cursor];
+ const rows=[['Helyiérték','place',state.places,state.knownPlaces],['Számjegy<br><small>(alaki érték)</small>','digit',state.digits,state.digits.map(()=>true)],['Valódi érték','value',state.values,state.knownValues]];
+ $('table-body').innerHTML=rows.map(([title,kind,values,known])=>'<tr><th scope="row">'+title+'</th>'+values.map((v,i)=>{
+  const active=step?.kind===kind&&step.index===i;
+  const cls=[kind==='digit'?'digit':'',known[i]&&kind!=='digit'?'solved':'',active?'active':'',kind==='digit'&&v===0?'zero':''].filter(Boolean).join(' ');
+  const labels={place:'Helyiérték',digit:'Alaki érték',value:'Valódi érték'};
+  return '<td class="'+cls+'" aria-label="'+labels[kind]+', '+(i+1)+'. oszlop: '+(known[i]?v:'kitöltendő')+'">'+(known[i]?v:'?')+'</td>';
+ }).join('')+'</tr>').join('');
+}
+function render(){
+ const s=state,step=s.steps[s.cursor],done=!step;
+ renderTable();
+ $('bar').style.width=(s.cursor/s.steps.length*100)+'%';
+ $('progress').setAttribute('aria-valuemax',s.steps.length);
+ $('progress').setAttribute('aria-valuenow',s.cursor);
+ $('progress-text').textContent=done?s.steps.length+' / '+s.steps.length+' lépés':(s.cursor+1)+' / '+s.steps.length+' lépés';
+ $('answer-form').hidden=done||s.accepted;
+ $('continue').hidden=done||!s.accepted;
+ $('continue').textContent=s.cursor===s.steps.length-1?'Mutasd az eredményt →':'Következő lépés →';
+ $('complete').hidden=!done;
+ $('step-label').hidden=done;$('prompt-detail').hidden=done;
+ $('legend').innerHTML=done?'<span class="success-badge">✓ Minden mező elkészült.</span>':'<span class="dot"></span>'+(step.kind==='sum'?'Most add össze a valódi értékek sorát.':'A zöld keret mutatja az aktuális mezőt.');
+ if(done){
+  $('phase-title').textContent='Kész';$('question').textContent='Minden lépés a helyére került.';
+  $('feedback').textContent='';$('result').hidden=false;
+  const total=s.values.reduce((a,b)=>a+b,0);
+  $('final-number').innerHTML=total+'<sub>10</sub>';
+  $('equation').innerHTML=s.digits.join('')+'<sub>'+s.base+'</sub> = '+s.digits.map((d,i)=>d+' × '+s.places[i]).join(' + ')+'<br>= '+s.values.join(' + ')+'<br>= '+total+'<sub>10</sub>';
+  $('completion-note').textContent=s.digits.includes(0)?'A 0 számjegy helyiértéke is számít: a valódi értéke ezen a helyen 0.':'A valódi értékek összege adja a szám tízes számrendszerbeli értékét.';
+  return;
+ }
+ $('step-label').textContent=(s.cursor+1)+'. lépés';
+ $('answer').value='';$('answer').setAttribute('aria-invalid','false');
+ if(step.kind==='place'){
+  const power=s.digits.length-1-step.index;
+  $('phase-title').textContent='Helyiértékek';
+  $('question').textContent='Mennyi a jelölt oszlop helyiértéke?';
+  $('prompt-detail').textContent=power===0?'Kezdd a jobb szélső oszloppal!': 'Egy oszloppal balra léptünk. Az alap: '+s.base+'.';
+  $('answer-label').textContent='Helyiérték';
+ }else if(step.kind==='value'){
+  $('phase-title').textContent='Valódi értékek';
+  $('question').textContent='Mennyi a jelölt '+s.digits[step.index]+' számjegy valódi értéke?';
+  $('prompt-detail').textContent='Alaki érték: '+s.digits[step.index]+'. Helyiérték: '+s.places[step.index]+'.';
+  $('answer-label').textContent='Valódi érték';
+ }else{
+  $('phase-title').textContent='Összegzés';
+  $('question').textContent='Mennyi a szám értéke tízes számrendszerben?';
+  $('prompt-detail').textContent='Add össze a valódi értékeket: '+s.values.join(' + ')+'.';
+  $('answer-label').textContent='A szám értéke tízesben';
+ }
+}
+function feedback(message,type){$('feedback').className='feedback '+type;$('feedback').textContent=message;}
+function hintText(){
+ const s=state,step=s.steps[s.cursor];
+ if(step.kind==='place'){
+  const power=s.digits.length-1-step.index;
+  return power===0?'A jobb szélső helyiérték mindig 1, azaz '+s.base+'⁰.':'A jobbra lévő helyiérték '+s.places[step.index+1]+'. Szorozd meg az alappal: '+s.places[step.index+1]+' × '+s.base+'.';
+ }
+ if(step.kind==='value')return 'Valódi érték = alaki érték × helyiérték. Itt: '+s.digits[step.index]+' × '+s.places[step.index]+'.'+(s.digits[step.index]===0?' A nulla szorzata minden számmal nulla.':'');
+ return 'A számjegyek helyett a valódi értékeket add össze: '+s.values.join(' + ')+'.';
+}
+function mistakeText(answer){
+ const s=state,step=s.steps[s.cursor];
+ if(step.kind==='place'){
+  const power=s.digits.length-1-step.index;
+  if(power===0)return 'A jobb szélső oszlop az egyeseké: helyiértéke minden alapban 1.';
+  if(answer===s.places[step.index+1]+s.base)return 'Balra lépve az alappal szorzunk. '+s.places[step.index+1]+' × '+s.base+' értékét keresd!';
+  if(answer===s.digits[step.index])return 'Ez a számjegy alaki értéke. A helyiérték az oszlophoz tartozik. '+hintText();
+  return 'A helyiérték még nem jó. '+hintText();
+ }
+ if(step.kind==='value'){
+  const d=s.digits[step.index],p=s.places[step.index];
+  if(d===0)return 'A számjegy itt 0. A valódi érték 0 × '+p+'; a helyiértéket ettől még megtartjuk.';
+  if(answer===d)return 'Ez az alaki érték. A valódi értékhez szorozd meg a helyiértékkel: '+d+' × '+p+'.';
+  if(answer===p)return 'Ez a helyiérték. A valódi értékhez vedd ennek '+d+'-szorosát!';
+  if(answer===d+p)return 'A valódi értékhez szorzás kell: '+d+' × '+p+'.';
+  return 'Ellenőrizd a szorzást: '+d+' × '+p+'.';
+ }
+ if(answer===Number(s.digits.join('')))return 'A számjegyek leírása ugyanaz maradt. Tízesbe váltáshoz a valódi értékeket kell összeadnod.';
+ if(answer===s.digits.reduce((a,b)=>a+b,0))return 'Most a számjegyeket adtad össze. A valódi értékek összegét keresd!';
+ return 'Nézd át az összeadást! Minden valódi értéket pontosan egyszer számolj: '+s.values.join(' + ')+'.';
+}
+$('answer-form').addEventListener('submit',event=>{
+ event.preventDefault();if(state.accepted||state.cursor>=state.steps.length)return;
+ const raw=$('answer').value.trim();
+ if(!/^\d+$/.test(raw)||!Number.isSafeInteger(Number(raw))){feedback('Írj be egy nemnegatív egész számot!','error');$('answer').setAttribute('aria-invalid','true');$('answer').focus();return;}
+ const answer=Number(raw),step=state.steps[state.cursor];
+ if(answer!==step.expected){feedback(mistakeText(answer),'error');$('answer').setAttribute('aria-invalid','true');$('answer').focus();$('answer').select();return;}
+ state.accepted=true;
+ if(step.kind==='place')state.knownPlaces[step.index]=true;
+ if(step.kind==='value')state.knownValues[step.index]=true;
+ render();
+ $('bar').style.width=((state.cursor+1)/state.steps.length*100)+'%';$('progress').setAttribute('aria-valuenow',state.cursor+1);
+ let message='Helyes! ';
+ if(step.kind==='place')message+=step.expected+' a helyiérték.';
+ else if(step.kind==='value')message+=state.digits[step.index]+' × '+state.places[step.index]+' = '+step.expected+'.';
+ else message+=state.values.join(' + ')+' = '+step.expected+'.';
+ feedback(message,'good');$('continue').focus({preventScroll:true});
+});
+$('answer').addEventListener('input',()=>{$('answer').setAttribute('aria-invalid','false');});
+$('continue').addEventListener('click',()=>{if(!state.accepted)return;state.cursor++;state.accepted=false;$('feedback').textContent='';render();if(state.cursor<state.steps.length)$('answer').focus({preventScroll:true});else $('next-task').focus({preventScroll:true});});
+$('hint').addEventListener('click',()=>{feedback(hintText(),'hint');$('answer').focus({preventScroll:true});});
+$('new-task').addEventListener('click',()=>newTask());$('next-task').addEventListener('click',()=>newTask());
+function setMode(next){if(mode===next)return;mode=next;$('builder-tab').setAttribute('aria-pressed',mode==='builder');$('convert-tab').setAttribute('aria-pressed',mode==='convert');startTask(state.digits,Number($('base').value));}
+$('builder-tab').addEventListener('click',()=>setMode('builder'));
+$('convert-tab').addEventListener('click',()=>setMode('convert'));
+$('base').addEventListener('change',()=>newTask(false));
+startTask([2,0,4],5);
+</script>
+</body>
+</html>
