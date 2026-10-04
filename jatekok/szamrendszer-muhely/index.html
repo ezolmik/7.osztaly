@@ -13,39 +13,44 @@
 .controls{align-items:center}.tabs{display:grid;grid-template-columns:1fr 1fr;flex:1}.tabs button{text-align:left}.custom{margin:0 0 20px;background:white}.custom-form{display:flex;align-items:end;gap:12px;margin-top:14px}.custom-field{flex:1;min-width:0}.custom-field label{display:block;font-size:14px;font-weight:600;margin-bottom:7px}.custom-field input{width:100%;min-width:0;padding:10px 13px;border:1.5px solid #becbc5;border-radius:10px;color:var(--ink);min-height:46px}.custom-field input:focus{outline:3px solid #086f6518;border-color:var(--teal)}.custom-field input[aria-invalid=true]{border-color:var(--orange)}.custom-help{font-size:13px;color:var(--muted);margin-top:10px}.number{overflow-wrap:anywhere;letter-spacing:2px}.table-wrap{max-height:460px;overflow:auto}.table-wrap thead th{text-align:center;width:auto;background:white;position:sticky;top:0;padding:8px 2px;font-size:12px}.given{color:var(--ink);background:#f8f9f5}.reading-guide{background:#f4f2e6;color:#6b5b26;border-radius:12px;font-size:14px;padding:13px 15px;margin-top:14px;line-height:1.65}.final-number{overflow-wrap:anywhere}.equation{font-size:17px}
 @media(max-width:800px){.controls{display:block}.base{margin-top:14px}.tabs button{font-size:14px}.table-wrap{max-height:390px}}
 @media(max-width:440px){.tabs button{font-size:13px}.custom-form{align-items:stretch;flex-direction:column}.custom-form button{width:100%}.task-head h2{font-size:18px}.task-head button{font-size:13px;padding:8px 9px}.table-wrap thead th{font-size:11px}.reading-guide{font-size:13px}}
+.practice-settings{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 18px;padding:0 4px}.practice-settings label{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:8px}.practice-settings select{padding:8px 10px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink)}.settings-note{font-size:12px;color:var(--muted);margin:-6px 4px 18px}.table-answer{width:100%;min-width:0;border:1px solid #b6c8bf;border-radius:8px;background:white;color:var(--ink);text-align:center;padding:10px 2px;font-size:18px}.table-answer:focus{outline:3px solid #086f6520;border-color:var(--teal)}.table-answer[aria-invalid=true]{border-color:var(--orange);background:#fff2e8}.challenge-panel{display:flex;flex-direction:column;gap:10px;margin:22px 0 12px}.number-choice{font-size:25px;text-align:left;letter-spacing:2px}.number-choice sub{font-size:.5em;letter-spacing:0}.selected{border:2px solid var(--teal)!important;background:var(--pale)!important;color:var(--teal)}.guard-row{display:flex;flex-direction:column;gap:7px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.guard-row>div{display:flex;flex-wrap:wrap;align-items:center;gap:4px}.validity{font-size:12px;font-weight:700}.validity.valid{color:var(--teal)}.validity.invalid{color:var(--orange)}.guard-digit{font-size:21px;min-width:39px;padding:5px 10px;border-radius:8px}.guard-digit:disabled,.bug-line:disabled,.number-choice:disabled{opacity:1}.guard-digit:disabled{cursor:default}.bug-line{display:flex;align-items:center;gap:12px;text-align:left;font-size:15px;line-height:1.6;min-height:63px;font-weight:400}.line-index{flex-shrink:0;background:#eef0e9;border-radius:8px;font-size:13px;padding:4px 9px}.challenge-controls{display:flex;gap:8px;margin-top:16px}.challenge-controls button{flex:1;font-size:14px}
+@media(max-width:440px){.practice-settings{gap:8px}.practice-settings label{width:100%;justify-content:space-between}.settings-note{font-size:11px}.guard-digit{padding:4px 8px;min-width:34px}.bug-line{font-size:14px}.table-answer{font-size:16px}}
 </style>
 </head>
 <body>
 <main class="wrap">
  <header class="top"><div class="brand"><div class="mark" aria-hidden="true">10</div><div><p class="eyebrow">Gyakorolj lépésről lépésre</p><h1>Számrendszer-műhely</h1><p class="subtitle">A számjegy helye is számít.</p></div></div><span class="grade">7. osztály</span></header>
- <section class="controls" aria-label="Gyakorlás beállításai"><div class="tabs" role="group" aria-label="Gyakorlási mód"><button id="builder-tab" type="button" aria-pressed="true">Helyiérték-építő</button><button id="convert-tab" type="button" aria-pressed="false">Átváltás tízesbe</button><button id="division-tab" type="button" aria-pressed="false">Tízesből · osztással</button><button id="greedy-tab" type="button" aria-pressed="false">Tízesből · helyiértékekkel</button></div><label class="base" for="base">Számrendszer alapja<select id="base"><option value="2">2 • kettes</option><option value="3">3 • hármas</option><option value="5" selected>5 • ötös</option></select></label></section>
- <details class="reference custom"><summary>Saját szám megadása</summary><form id="custom-form" class="custom-form" novalidate><div class="custom-field"><label for="custom-number" id="custom-label">A saját számod ötös számrendszerben</label><input id="custom-number" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="custom-help custom-feedback"></div><button type="submit" class="primary">Feladat indítása</button></form><p id="custom-help" class="custom-help"></p><div id="custom-feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div></details>
+ <section class="controls" aria-label="Gyakorlás beállításai"><div class="tabs" role="group" aria-label="Gyakorlási mód"><button id="builder-tab" type="button" aria-pressed="true">Helyiérték-építő</button><button id="convert-tab" type="button" aria-pressed="false">Átváltás tízesbe</button><button id="division-tab" type="button" aria-pressed="false">Tízesből · osztással</button><button id="greedy-tab" type="button" aria-pressed="false">Tízesből · helyiértékekkel</button><button id="guard-tab" type="button" aria-pressed="false">Számjegyőr</button><button id="bug-tab" type="button" aria-pressed="false">Hibavadász</button></div><label class="base" for="base">Számrendszer alapja<select id="base"><option value="2">2 • kettes</option><option value="3">3 • hármas</option><option value="5" selected>5 • ötös</option></select></label></section>
+ <div class="practice-settings"><label for="training">Gyakorlás<select id="training"><option value="guided">Vezetett</option><option value="independent">Önálló</option></select></label><label for="difficulty">Nehézség<select id="difficulty"><option value="easy">Alapozó</option><option value="normal" selected>Gyakorló</option><option value="hard">Kihívás</option></select></label></div><p class="settings-note">A nehézség az új, véletlen feladatokat állítja. Önálló módban a táblázatot egyben töltöd ki, vagy a füzetben dolgozol.</p>
+ <details class="reference custom" id="custom-section"><summary>Saját szám megadása</summary><form id="custom-form" class="custom-form" novalidate><div class="custom-field"><label for="custom-number" id="custom-label">A saját számod ötös számrendszerben</label><input id="custom-number" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="custom-help custom-feedback"></div><button type="submit" class="primary">Feladat indítása</button></form><p id="custom-help" class="custom-help"></p><div id="custom-feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div></details>
  <div class="grid">
-  <section class="card task" aria-labelledby="task-title"><div class="task-head"><h2 id="task-title">Építsd fel a számot!</h2><button id="new-task" type="button">Új feladat ↻</button></div><div id="number" class="number" aria-label="204 ötös számrendszerben">204<sub>5</sub></div><p class="caption" id="caption">Először a helyiértékeket, majd a valódi értékeket töltsd ki!</p><div class="table-wrap"><table id="work-table" aria-label="Helyiérték-táblázat"><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div><div id="reading-guide" class="reading-guide" hidden></div><p class="legend" id="legend"><span class="dot"></span>A zöld keret mutatja az aktuális mezőt.</p><div id="result" hidden><p class="result-label" id="result-label">A szám tízes számrendszerben</p><div class="final-number" id="final-number"></div></div></section>
-  <section class="card workspace" aria-labelledby="question"><div class="progress-head"><span id="phase-title">Helyiértékek</span><span id="progress-text">1 / 7 lépés</span></div><div class="track" role="progressbar" id="progress" aria-label="A feladat készültsége" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><div class="bar" id="bar"></div></div><p class="step-label" id="step-label">1. lépés</p><h2 class="question" id="question"></h2><p class="prompt-detail" id="prompt-detail"></p><form class="answer-form" id="answer-form" novalidate><label for="answer" id="answer-label">Helyiérték</label><input id="answer" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false" aria-describedby="prompt-detail feedback"><div class="actions"><button class="primary" type="submit">Ellenőrzés</button><button type="button" id="hint">Segítség</button></div></form><div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div><button id="continue" type="button" class="primary" hidden style="width:100%;margin-top:14px">Következő lépés →</button><div id="complete" class="complete" hidden><h2>Megépítetted! ✓</h2><div class="equation" id="equation"></div><p id="completion-note"></p><button id="next-task" type="button" class="primary" style="width:100%;margin-top:16px">Új feladat →</button></div></section>
+  <section class="card task" aria-labelledby="task-title"><div class="task-head"><h2 id="task-title">Építsd fel a számot!</h2><button id="new-task" type="button">Új feladat ↻</button></div><div id="number" class="number" aria-label="204 ötös számrendszerben">204<sub>5</sub></div><p class="caption" id="caption">Először a helyiértékeket, majd a valódi értékeket töltsd ki!</p><div class="table-wrap" id="table-wrap"><table id="work-table" aria-label="Helyiérték-táblázat"><thead id="table-head"></thead><tbody id="table-body"></tbody></table></div><div id="challenge-panel" class="challenge-panel" hidden></div><div id="reading-guide" class="reading-guide" hidden></div><p class="legend" id="legend"><span class="dot"></span>A zöld keret mutatja az aktuális mezőt.</p><div id="result" hidden><p class="result-label" id="result-label">A szám tízes számrendszerben</p><div class="final-number" id="final-number"></div></div></section>
+  <section class="card workspace" aria-labelledby="question"><div class="progress-head"><span id="phase-title">Helyiértékek</span><span id="progress-text">1 / 7 lépés</span></div><div class="track" role="progressbar" id="progress" aria-label="A feladat készültsége" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><div class="bar" id="bar"></div></div><p class="step-label" id="step-label">1. lépés</p><h2 class="question" id="question"></h2><p class="prompt-detail" id="prompt-detail"></p><form class="answer-form" id="answer-form" novalidate><label for="answer" id="answer-label">Helyiérték</label><input id="answer" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false" aria-describedby="prompt-detail feedback"><div class="actions"><button class="primary" type="submit">Ellenőrzés</button><button type="button" id="hint">Segítség</button></div></form><div class="challenge-controls"><button id="challenge-check" type="button" class="primary" hidden>Kiválasztás ellenőrzése</button><button id="challenge-hint" type="button" hidden>Segítség</button></div><div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div><button id="continue" type="button" class="primary" hidden style="width:100%;margin-top:14px">Következő lépés →</button><div id="complete" class="complete" hidden><h2>Megoldottad! ✓</h2><div class="equation" id="equation"></div><p id="completion-note"></p><button id="next-task" type="button" class="primary" style="width:100%;margin-top:16px">Új feladat →</button></div></section>
  </div>
  <details class="reference"><summary>Rövid emlékeztető</summary><div class="reference-content"><div><p><strong>Helyiérték:</strong> jobbról indulva 1, majd minden lépésben az alap szorosát vesszük. Ötös alapban: …, 125, 25, 5, 1.</p><p><strong>Alaki érték:</strong> a számjegy önmagában vett értéke. Ötös alapban csak 0, 1, 2, 3, 4 lehet számjegy.</p></div><div><p><strong>Valódi érték = alaki érték × helyiérték.</strong> A 204<sub>5</sub> bal oldali 2-esének valódi értéke 2 × 25 = 50.</p><p><strong>A teljes szám értéke:</strong> a valódi értékek összege. A közbülső 0 is elfoglal egy helyet!</p></div><div><p><strong>Maradékos osztás:</strong> mindig az egész hányadost osztjuk tovább az alappal, amíg 0-t kapunk.</p><p>A maradékokat <strong>alulról felfelé</strong> olvassuk. Az első maradék a jobb szélső számjegy.</p></div><div><p><strong>Csökkenő helyiértékek:</strong> a legnagyobb használható helyiértéktől haladunk az egyesekig. Megnézzük, hány egység fér a megmaradt számba.</p><p>A darabszámokat <strong>felülről lefelé</strong> olvassuk. A 0 darab is egy számjegy!</p></div></div></details>
- <footer>Számrendszer-műhely · 2. sprint · Offline is használható</footer>
+ <footer>Számrendszer-műhely · 3. sprint · Offline is használható</footer>
 </main>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
 const baseNames={2:'kettes',3:'hármas',5:'ötös'};
-const modeNames={builder:'Helyiérték-építő',convert:'Átváltás tízesbe',division:'Maradékos osztás',greedy:'Csökkenő helyiértékek'};
+const modeNames={builder:'Helyiérték-építő',convert:'Átváltás tízesbe',division:'Maradékos osztás',greedy:'Csökkenő helyiértékek',guard:'Számjegyőr',bug:'Hibavadász'};
 const MAX_NUMBER=9999;
-let mode='builder',state;
+let mode='builder',state,training='guided',difficulty='normal';
 const reverseMode=()=>mode==='division'||mode==='greedy';
 const key=(kind,index)=>kind+':'+index;
 function makeTask(base,previous=''){
  let digits;
  do{
-  const length=2+Math.floor(Math.random()*3);
+  const ranges={easy:[2,3],normal:[3,4],hard:[4,6]},[min,max]=ranges[difficulty];
+  const length=min+Math.floor(Math.random()*(max-min+1));
   digits=Array.from({length},(_,i)=>i===0?1+Math.floor(Math.random()*(base-1)):Math.floor(Math.random()*base));
-  if(length>=3&&Math.random()<.45)digits[1+Math.floor(Math.random()*(length-2))]=0;
- }while(digits.join('')===previous);
+  if(length>=3&&Math.random()<(difficulty==='hard'?.7:.4))digits[1+Math.floor(Math.random()*(length-2))]=0;
+ }while(digits.join('')===previous||digits.reduce((n,d)=>n*base+d,0)>MAX_NUMBER);
  return digits;
 }
 function startTask(digits,base){
+ if(mode==='guard'||mode==='bug'){startChallenge(digits,base);return;}
  const decimal=digits.reduce((n,d)=>n*base+d,0);
  const places=digits.map((_,i)=>base**(digits.length-1-i));
  const values=digits.map((d,i)=>d*places[i]);
@@ -76,7 +81,13 @@ function startTask(digits,base){
   steps.push({kind:'assemble',expected:digits.join('')});
  }
  state={digits,base,decimal,places,values,steps,rows,known,cursor:0,accepted:false};
- $('feedback').textContent='';$('result').hidden=true;
+ if(training==='independent'){
+  state.guidedSteps=steps;
+  state.steps=[{kind:'independent',expected:reverseMode()?digits.join(''):decimal}];
+  state.independentAnswers={};
+ }
+ $('challenge-panel').hidden=true;$('challenge-check').hidden=true;$('challenge-hint').hidden=true;$('table-wrap').hidden=false;$('hint').hidden=false;
+ $('feedback').textContent='';$('answer').value='';$('answer').setAttribute('aria-invalid','false');$('result').hidden=true;
  $('number').innerHTML=(reverseMode()?decimal:digits.join(''))+'<sub>'+(reverseMode()?10:base)+'</sub>';
  $('number').setAttribute('aria-label',(reverseMode()?decimal+' tízes':digits.join('')+' '+baseNames[base])+' számrendszerben');
  $('task-title').textContent=reverseMode()?'Váltsd át '+baseNames[base]+' alapba!':mode==='builder'?'Építsd fel a számot!':'Váltsd át tízesbe!';
@@ -136,6 +147,8 @@ function renderTable(){
  }
 }
 function render(){
+ if(mode==='guard'||mode==='bug'){renderChallenge();return;}
+ if(training==='independent'){renderIndependent();return;}
  const s=state,step=s.steps[s.cursor],done=!step;
  renderTable();
  const completed=s.cursor+(s.accepted?1:0);
@@ -171,6 +184,7 @@ function render(){
 }
 function feedback(message,type){$('feedback').className='feedback '+type;$('feedback').textContent=message;}
 function hintText(){
+ if(mode==='guard'||mode==='bug')return challengeHint();
  const s=state,step=s.steps[s.cursor],r=s.rows[step.index];
  switch(step.kind){
  case 'place':return step.index===s.digits.length-1?'A jobb szélső helyiérték mindig 1, azaz '+s.base+'⁰.':'A jobbra lévő helyiérték '+s.places[step.index+1]+'. Szorozd meg az alappal: '+s.places[step.index+1]+' × '+s.base+'.';
@@ -216,6 +230,8 @@ function mistakeText(answer){
 }
 $('answer-form').addEventListener('submit',event=>{
  event.preventDefault();if(state.accepted||state.cursor>=state.steps.length)return;
+ if(mode==='bug'){checkBugRepair();return;}
+ if(state.steps[state.cursor].kind==='independent'){checkIndependent();return;}
  const raw=$('answer').value.trim(),step=state.steps[state.cursor];
  if(!/^\d+$/.test(raw)||!Number.isSafeInteger(Number(raw))){feedback('Írj be egy nemnegatív egész számot!','error');$('answer').setAttribute('aria-invalid','true');$('answer').focus();return;}
  const answer=step.kind==='assemble'?raw:Number(raw);
@@ -252,6 +268,7 @@ function setMode(next){
 for(const m of Object.keys(modeNames))$(m+'-tab').addEventListener('click',()=>setMode(m));
 $('base').addEventListener('change',()=>{$('custom-feedback').textContent='';$('custom-number').value='';$('custom-number').setAttribute('aria-invalid','false');newTask(false);});
 function updateCustom(){
+ $('custom-section').hidden=mode==='guard'||mode==='bug';
  const base=Number($('base').value);
  $('custom-label').textContent=reverseMode()?'A saját számod tízes számrendszerben':'A saját számod '+baseNames[base]+' számrendszerben';
  $('custom-number').placeholder=reverseMode()?'Például: 54':base===5?'Például: 204':base===3?'Például: 201':'Például: 1101';
@@ -272,6 +289,178 @@ $('custom-form').addEventListener('submit',event=>{
 });
 $('custom-number').addEventListener('input',()=>{$('custom-number').setAttribute('aria-invalid','false');$('custom-feedback').textContent='';});
 startTask([2,0,4],5);
+function progressUI(done){
+ const s=state,completed=s.cursor+(s.accepted?1:0);
+ $('bar').style.width=completed/s.steps.length*100+'%';
+ $('progress').setAttribute('aria-valuemax',s.steps.length);$('progress').setAttribute('aria-valuenow',completed);
+ $('progress-text').textContent=done?'Kész':(s.cursor+1)+' / '+s.steps.length+' lépés';
+ $('step-label').hidden=done;$('step-label').textContent=(s.cursor+1)+'. lépés';
+ $('complete').hidden=!done;$('continue').hidden=done||!s.accepted;
+ $('continue').textContent=s.cursor===s.steps.length-1?'Mutasd az eredményt →':'Következő lépés →';
+ $('result').hidden=true;$('prompt-detail').hidden=done;
+}
+function renderIndependent(){
+ const s=state,done=s.cursor>=s.steps.length;
+ progressUI(done);$('phase-title').textContent='Önálló megoldás';$('hint').hidden=true;
+ $('answer-form').hidden=done||s.accepted;$('reading-guide').hidden=true;
+ $('table-wrap').hidden=reverseMode()&&!s.accepted&&!done;
+ if(s.accepted||done){renderTable();$('reading-guide').hidden=!reverseMode();}
+ else if(!reverseMode()){
+  $('work-table').style.minWidth=(94+s.digits.length*74)+'px';$('table-head').innerHTML='';
+  const field=(kind,i)=>'<td><input class="table-answer" form="answer-form" type="text" inputmode="numeric" autocomplete="off" data-field="'+key(kind,i)+'" aria-label="'+(kind==='place'?'Helyiérték':'Valódi érték')+', '+(i+1)+'. oszlop" value="'+escapeAttribute(s.independentAnswers[key(kind,i)]||'')+'"></td>';
+  $('table-body').innerHTML='<tr><th scope="row">Helyiérték</th>'+s.places.map((p,i)=>mode==='builder'?field('place',i):'<td class="given">'+p+'</td>').join('')+'</tr><tr><th scope="row">Számjegy</th>'+s.digits.map(d=>'<td class="digit">'+d+'</td>').join('')+'</tr><tr><th scope="row">Valódi érték</th>'+s.values.map((_,i)=>field('value',i)).join('')+'</tr>';
+ }
+ $('caption').textContent=reverseMode()?'Dolgozz a füzetben a kiválasztott módszerrel, majd írd be a végeredményt!':'Töltsd ki önállóan a teljes táblázatot, majd add meg a szám tízesbeli értékét!';
+ $('question').textContent=reverseMode()?'Mi a szám '+baseNames[s.base]+' számrendszerben?':'Mi a szám tízes számrendszerben?';
+ $('prompt-detail').textContent='Az alapjelölést ne írd a válasz mögé. A megoldás után megmutatjuk az ellenőrzést.';
+ $('answer-label').textContent=reverseMode()?'Az átváltott szám számjegyei':'A szám értéke tízesben';
+ $('legend').textContent=done?'✓ A teljes megoldás elkészült.':reverseMode()?'Önálló átváltás: '+modeNames[mode]+'.':'Minden üres mezőt tölts ki!';
+ if(done){
+  $('question').textContent='Önállóan megoldottad!';$('feedback').textContent='';$('result').hidden=false;
+  $('final-number').innerHTML=(reverseMode()?s.digits.join(''):s.decimal)+'<sub>'+(reverseMode()?s.base:10)+'</sub>';
+  $('equation').innerHTML=s.digits.join('')+'<sub>'+s.base+'</sub> = '+s.digits.map((d,i)=>d+' × '+s.places[i]).join(' + ')+'<br>= '+s.decimal+'<sub>10</sub>';
+  $('completion-note').textContent='Az összegalak visszaellenőrzi a megoldásodat.';
+ }
+}
+function checkIndependent(){
+ const s=state,raw=$('answer').value.trim();
+ if(!/^\d+$/.test(raw)||!Number.isSafeInteger(Number(raw))){feedback('Írj be egy nemnegatív egész számot!','error');$('answer').setAttribute('aria-invalid','true');return;}
+ const correctTotal=reverseMode()?raw===s.digits.join(''):Number(raw)===s.decimal;
+ let fieldsOK=true;
+ if(!reverseMode())for(const input of $('work-table').querySelectorAll('[data-field]')){
+  const [kind,index]=input.dataset.field.split(':'),v=input.value.trim();
+  const correct=/^\d+$/.test(v)&&Number(v)===(kind==='place'?s.places[Number(index)]:s.values[Number(index)]);
+  input.setAttribute('aria-invalid',!correct);if(!correct)fieldsOK=false;
+ }
+ $('answer').setAttribute('aria-invalid',!correctTotal);
+ if(!fieldsOK||!correctTotal){feedback(!fieldsOK?'Ellenőrizd a megjelölt táblázatmezőket! A helyiérték és a valódi érték különböző mennyiség.':'Ellenőrizd a végeredményt, a számjegyek sorrendjét és a nullákat!','error');return;}
+ for(const step of s.guidedSteps)s.known.add(key(step.kind,step.index));
+ s.accepted=true;renderIndependent();feedback('Helyes! A teljes megoldásod elkészült.','good');$('continue').focus({preventScroll:true});
+}
+function escapeAttribute(value){return String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+$('work-table').addEventListener('input',event=>{
+ const field=event.target.dataset.field;if(!field||!state.independentAnswers)return;
+ state.independentAnswers[field]=event.target.value;
+ event.target.setAttribute('aria-invalid','false');
+});
+function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];}return array;}
+function makeGuard(base){
+ const entries=[];
+ for(let i=0;i<4;i++){
+  const digits=makeTask(base);if(i>=2){
+   const count=difficulty==='easy'?1:difficulty==='normal'?1+Math.floor(Math.random()*2):Math.min(3,digits.length);
+   const positions=shuffle(digits.map((_,j)=>j)).slice(0,count);
+   for(const p of positions)digits[p]=base+Math.floor(Math.random()*(10-base));
+  }
+  entries.push({digits,valid:i<2,bad:digits.map((d,p)=>d>=base?p:-1).filter(p=>p>=0)});
+ }
+ return shuffle(entries);
+}
+function makeBug(digits,base){
+ const n=digits.reduce((a,d)=>a*base+d,0),repr=digits.join(''),place=base**(digits.length-1),value=digits[0]*place;
+ const families=difficulty==='easy'?['forward']:difficulty==='normal'?['forward','division']:['forward','division','greedy'];
+ const family=families[Math.floor(Math.random()*families.length)];
+ let lines;
+ if(family==='forward')lines=[{label:'A bal szélső számjegy helyiértéke',right:place},{label:'A bal szélső számjegy valódi értéke',right:value},{label:'A jobb szélső számjegy valódi értéke',right:digits.at(-1)},{label:'A szám tízesbeli értéke',right:n}];
+ else if(family==='division')lines=[{label:'Az első osztás egész hányadosa',right:Math.floor(n/base)},{label:'Az első osztás maradéka',right:n%base},{label:'Az utolsó osztás maradéka',right:digits[0]},{label:'Az átváltott szám számjegyei',right:repr,digitString:true}];
+ else lines=[{label:'A legnagyobb használható helyiérték',right:place},{label:'Darabszám ezen a helyiértéken',right:digits[0]},{label:'Az első lépés után megmaradó szám',right:n-value},{label:'Az átváltott szám számjegyei',right:repr,digitString:true}];
+ const badIndex=difficulty==='easy'?(Math.random()<.5?1:3):Math.floor(Math.random()*4);
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i];line.shown=line.right;
+  if(i===badIndex){
+   if(line.digitString){
+    const reversed=repr.split('').reverse().join('');
+    line.shown=difficulty==='hard'&&repr.includes('0')?repr.replace(/0/g,''):reversed!==repr?reversed:repr.slice(0,-1)+((digits.at(-1)+1)%base);
+   }else line.shown=line.right+(difficulty==='easy'?base:1);
+  }
+ }
+ return {family,lines,badIndex};
+}
+function startChallenge(digits,base){
+ const decimal=digits.reduce((n,d)=>n*base+d,0);
+ state={digits,base,decimal,cursor:0,accepted:false,known:new Set(),steps:[{kind:'identify'},{kind:'repair'}],selected:new Set(),badSelected:new Set(),bugSelected:null};
+ if(mode==='guard')state.entries=makeGuard(base);else state.bug=makeBug(digits,base);
+ $('feedback').textContent='';$('answer').value='';$('answer').setAttribute('aria-invalid','false');$('custom-feedback').textContent='';$('result').hidden=true;$('table-wrap').hidden=true;$('reading-guide').hidden=true;$('challenge-panel').hidden=false;
+ $('task-title').textContent=mode==='guard'?'Melyik szám szabályos?':'Találd meg az egyetlen hibát!';
+ if(mode==='guard'){$('number').textContent='Alap: '+base;$('number').setAttribute('aria-label',baseNames[base]+' számrendszer');}
+ else{const forward=state.bug.family==='forward';$('number').innerHTML=(forward?digits.join(''):decimal)+'<sub>'+(forward?base:10)+'</sub>';$('number').setAttribute('aria-label',(forward?digits.join('')+' '+baseNames[base]:decimal+' tízes')+' számrendszerben');}
+ updateCustom();renderChallenge();
+}
+function challengeHint(){
+ if(mode==='guard')return 'A '+baseNames[state.base]+' alapban csak a 0, …, '+(state.base-1)+' értékű számjegyek engedélyezettek. Az alappal egyenlő számjegy is tiltott.';
+ const b=state.bug;
+ if(state.cursor===0)return b.family==='forward'?'A helyiértékek az alap hatványai. Valódi érték = számjegy × helyiérték; a szám értéke ezek összege.':b.family==='division'?'Minden osztásban: osztandó = hányados × alap + maradék. A maradékokat alulról felfelé olvassuk.':'Keresd a legnagyobb használható helyiértéket; vedd le a felhasznált egységeket, és tartsd meg a nullás helyeket is!';
+ return 'Számítsd újra ezt a mennyiséget: '+b.lines[b.badIndex].label+'.';
+}
+function selectGuardNumber(index){if(mode!=='guard'||state.cursor!==0||state.accepted)return;state.selected.has(index)?state.selected.delete(index):state.selected.add(index);renderChallenge();}
+function selectGuardDigit(index,pos){if(mode!=='guard'||state.cursor!==1||state.accepted||state.entries[index].valid)return;const k=index+':'+pos;state.badSelected.has(k)?state.badSelected.delete(k):state.badSelected.add(k);renderChallenge();}
+function selectBugLine(index){if(mode!=='bug'||state.cursor!==0||state.accepted)return;state.bugSelected=index;renderChallenge();}
+function renderChallenge(){
+ const s=state,done=s.cursor>=2;progressUI(done);
+ $('hint').hidden=training==='independent';$('challenge-hint').hidden=done||s.accepted||training==='independent'||(mode==='bug'&&s.cursor===1);$('answer-form').hidden=done||s.accepted||mode==='guard'||s.cursor===0;
+ $('challenge-check').hidden=done||s.accepted||(mode==='bug'&&s.cursor===1);
+ $('challenge-check').textContent=s.cursor===0?'Kiválasztás ellenőrzése':'Számjegyek ellenőrzése';
+ $('phase-title').textContent=modeNames[mode];
+ $('caption').textContent=mode==='guard'?'Először válaszd ki az összes szabályos számot, majd jelöld meg a többi számban a tiltott számjegyeket!':'A négy állítás közül pontosan egy hibás. Keresd meg, majd javítsd a hibás értéket!';
+ if(mode==='guard'){
+  $('question').textContent=s.cursor===0?'Melyik számok írhatók le ebben az alapban?':'Mely számjegyek tiltottak?';
+  $('prompt-detail').textContent=s.cursor===0?'Kattints az összes szabályos számra. A kiválasztottakat zöld keret jelzi.':'A hibás számokban kattints minden tiltott számjegyre!';
+  $('challenge-panel').innerHTML=s.entries.map((e,i)=>{
+   if(s.cursor===0&&!done)return '<button type="button" class="number-choice '+(s.selected.has(i)?'selected':'')+'" data-action="guard-number" data-index="'+i+'" aria-pressed="'+s.selected.has(i)+'" '+(s.accepted?'disabled':'')+'>'+e.digits.join('')+'<sub>'+s.base+'</sub></button>';
+   return '<div class="guard-row"><span class="validity '+(e.valid?'valid':'invalid')+'">'+(e.valid?'Szabályos':'Hibás')+'</span><div>'+e.digits.map((d,p)=>'<button type="button" class="guard-digit '+(s.badSelected.has(i+':'+p)?'selected':'')+'" data-action="guard-digit" data-index="'+i+'" data-pos="'+p+'" aria-label="'+e.digits.join('')+', '+(p+1)+'. számjegy: '+d+'" aria-pressed="'+s.badSelected.has(i+':'+p)+'" '+(e.valid||s.accepted||done?'disabled':'')+'>'+d+'</button>').join('')+'<sub>'+s.base+'</sub></div></div>';
+  }).join('');
+ }else{
+  const bug=s.bug;
+  $('question').textContent=s.cursor===0?'Melyik állítás hibás?':'Mi legyen a hibás érték helyén?';
+  $('prompt-detail').textContent=s.cursor===0?(bug.family==='forward'?'Átváltás tízesbe.':bug.family==='division'?'Tízesből átváltás maradékos osztással.':'Tízesből átváltás csökkenő helyiértékekkel.'):'Csak a javított értéket írd be, alapjelölés nélkül!';
+  $('answer-label').textContent='Javított érték';
+  $('challenge-panel').innerHTML=bug.lines.map((line,i)=>'<button type="button" class="bug-line '+(s.bugSelected===i?'selected':'')+'" data-action="bug-line" data-index="'+i+'" aria-pressed="'+(s.bugSelected===i)+'" '+(s.cursor!==0||s.accepted||done?'disabled':'')+'><span class="line-index">'+(i+1)+'</span><span>'+line.label+': <strong>'+((done&&i===bug.badIndex)?line.right:line.shown)+'</strong>'+(line.digitString?'<sub>'+s.base+'</sub>':'')+'</span></button>').join('');
+ }
+ $('legend').textContent=done?'✓ A feladat elkészült.':mode==='guard'?'A jelölésre újra kattintva visszavonhatod.':'Kattints a hibás állításra!';
+ if(done){
+  $('question').textContent=mode==='guard'?'Minden számjegyet ellenőriztél!':'Megtaláltad és kijavítottad!';$('feedback').textContent='';
+  $('equation').innerHTML=mode==='guard'?'Engedélyezett számjegyek: '+Array.from({length:s.base},(_,i)=>i).join(', '):s.bug.lines[s.bug.badIndex].label+': <del>'+s.bug.lines[s.bug.badIndex].shown+'</del> → '+s.bug.lines[s.bug.badIndex].right;
+  $('completion-note').textContent=mode==='guard'?'Minden számjegynek kisebbnek kell lennie az alapnál.':'A többi három állítás eleve helyes volt.';
+ }
+}
+function acceptChallenge(message){state.accepted=true;renderChallenge();feedback(message,'good');$('continue').focus({preventScroll:true});}
+function checkChallenge(){
+ const s=state;if(s.accepted||s.cursor>=2)return;
+ if(mode==='guard'){
+  const wanted=s.cursor===0?new Set(s.entries.map((e,i)=>e.valid?i:null).filter(i=>i!==null)):new Set(s.entries.flatMap((e,i)=>e.bad.map(p=>i+':'+p)));
+  const selected=s.cursor===0?s.selected:s.badSelected;
+  if(selected.size!==wanted.size||[...wanted].some(v=>!selected.has(v))){feedback(training==='guided'?challengeHint()+' Ellenőrizd újra az összes jelölést!':'A jelölés még nem teljesen helyes. Ellenőrizd a számjegyeket!','error');return;}
+  acceptChallenge(s.cursor===0?'Helyes! Megtaláltad az összes szabályos számot.':'Helyes! Minden tiltott számjegyet megjelöltél.');
+ }else if(s.cursor===0){
+  if(s.bugSelected===null){feedback('Válassz ki egy állítást!','error');return;}
+  if(s.bugSelected!==s.bug.badIndex){feedback(training==='guided'?'Ez az állítás helyes. '+challengeHint():'Ez az állítás helyes. Keress tovább!','error');return;}
+  acceptChallenge('Megtaláltad a hibás állítást. Most javítsd ki!');
+ }
+}
+function checkBugRepair(){
+ const raw=$('answer').value.trim(),line=state.bug.lines[state.bug.badIndex];
+ if(!/^\d+$/.test(raw)||!Number.isSafeInteger(Number(raw))){feedback('Írj be egy nemnegatív egész számot!','error');$('answer').setAttribute('aria-invalid','true');return;}
+ const ok=line.digitString?raw===line.right:Number(raw)===line.right;
+ if(!ok){feedback(training==='guided'?challengeHint():'A javított érték még nem jó. Számítsd újra!','error');$('answer').setAttribute('aria-invalid','true');return;}
+ acceptChallenge('Helyes javítás: '+line.right+'.');
+}
+$('challenge-check').addEventListener('click',checkChallenge);
+$('challenge-panel').addEventListener('click',event=>{
+ const target=event.target.closest('[data-action]');if(!target)return;
+ const index=Number(target.dataset.index);
+ if(target.dataset.action==='guard-number')selectGuardNumber(index);
+ else if(target.dataset.action==='guard-digit')selectGuardDigit(index,Number(target.dataset.pos));
+ else selectBugLine(index);
+});
+$('challenge-hint').addEventListener('click',()=>feedback(challengeHint(),'hint'));
+function restartSettings(){
+ training=$('training').value;difficulty=$('difficulty').value;
+ $('custom-feedback').textContent='';
+ if(mode==='guard'||mode==='bug')newTask(false);else startDecimal(state.decimal,Number($('base').value));
+}
+$('training').addEventListener('change',restartSettings);
+$('difficulty').addEventListener('change',()=>{difficulty=$('difficulty').value;newTask(false);});
+
 </script>
 </body>
 </html>
