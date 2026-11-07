@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Széf 12 mezővel</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+    }
+    canvas {
+      border: 2px solid #3498db;
+      margin: 10px;
+      background-color: #ecf0f1;
+      width: 400px;
+      height: 400px;
+    }
+    @media (max-width: 600px) {
+      canvas {
+        width: 300px;
+        height: 300px;
+      }
+    }
+    .plus-button {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #3498db;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none; /* Ezt adtuk hozzá */
+    }
+      #resetButton {
+      margin-top: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #congratsMessage {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+      white-space: pre-line;
+      text-align: center;
+    }
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h1>Széf 12 mezővel</h1>
+
+<p>A sarkokban nincsen célszám, csak a többi mezőt kell jól beállítani.</p>
+
+<div style="position: relative;">
+  <canvas id="myCanvas" width="400" height="400"></canvas>
+  <div id="plusButtons"></div>
+</div>
+
+<button id="resetButton">⟳</button>
+
+<div id="congratsMessage"></div>
+
+<script>
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+  const plusButtonsDiv = document.getElementById('plusButtons');
+  const resetButton = document.getElementById('resetButton');
+  const congratsMessageDiv = document.getElementById('congratsMessage');
+
+  let cellSize = 100;
+  if (window.innerWidth <= 600) {
+    cellSize = 75; // Kisebb cellaméret mobilon
+  }
+
+  let table = [
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ];
+
+  const targetTable = [
+    [null, 5, 8, null],
+    [4, 9, 10, 5],
+    [8, 12, 7, 3],
+    [null, 8, 5, null]
+  ];
+
+  let checkNumber = 0;
+
+  function drawTable() {
+    const canvasWidth = window.innerWidth <= 600 ? 300 : 400;
+    const canvasHeight = window.innerWidth <= 600 ? 300 : 400;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = cellSize * 0.3 + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'black';
+
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (targetTable[i][j] === null) {
+          ctx.fillStyle = '#f0f0f0'; // Világosszürke a sarokmezőknek
+        } else if (table[i][j] === targetTable[i][j]) {
+          ctx.fillStyle = 'lightgreen';
+        } else if (table[i][j] > targetTable[i][j]) {
+          ctx.fillStyle = 'lightcoral';
+        } else {
+          ctx.fillStyle = 'white';
+        }
+        ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+        ctx.strokeRect(j * cellSize, i * cellSize, cellSize, cellSize);
+
+        ctx.fillStyle = 'black';
+        ctx.fillText(table[i][j], j * cellSize + cellSize / 2, i * cellSize + cellSize / 2);
+
+        if (targetTable[i][j] !== null) {
+          ctx.font = cellSize * 0.15 + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(`(${targetTable[i][j]})`, j * cellSize + cellSize / 2, (i + 1) * cellSize - 5);
+        }
+
+        ctx.font = cellSize * 0.3 + 'px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+      }
+    }
+    checkIfSolved();
+  }
+
+  function highlight2x2(x, y) {
+    ctx.fillStyle = 'rgba(52, 152, 219, 0.3)';
+    ctx.fillRect(x * cellSize, y * cellSize, 2 * cellSize, 2 * cellSize);
+  }
+
+  function increment2x2(x, y) {
+    for (let i = y; i < y + 2; i++) {
+      for (let j = x; j < x + 2; j++) {
+        table[i][j]++;
+      }
+    }
+    if (x === 1 && y === 1) {
+        checkNumber++;
+        console.log(checkNumber);
+    }
+    drawTable();
+  }
+
+  function createPlusButtons() {
+    plusButtonsDiv.innerHTML = ''; // Töröljük a korábbi gombokat
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const button = document.createElement('div');
+        button.classList.add('plus-button');
+        button.textContent = '+';
+        button.style.left = (j + 1) * cellSize - 3 + 'px';
+        button.style.top = (i + 1) * cellSize - 3 + 'px';
+        button.addEventListener('click', () => {
+          increment2x2(j, i);
+        });
+        plusButtonsDiv.appendChild(button);
+      }
+    }
+  }
+
+  function adjustPlusButtonPositions() {
+    const buttons = document.querySelectorAll('.plus-button');
+    buttons.forEach((button, index) => {
+      const row = Math.floor(index / 3);
+      const col = index % 3;
+      button.style.left = (col + 1) * cellSize - 3 + 'px';
+      button.style.top = (row + 1) * cellSize - 3 + 'px';
+    });
+  }
+
+  function resetTable() {
+    table = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+    congratsMessageDiv.textContent = ''; // Üzenet törlése resetkor
+    checkNumber = 0;
+    drawTable();
+  }
+
+  function checkIfSolved() {
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        // Ellenőrizzük, hogy nem a sarokban vagyunk-e
+        if (!((i === 0 && j === 0) || (i === 0 && j === 3) || (i === 3 && j === 0) || (i === 3 && j === 3))) {
+          if (table[i][j] !== targetTable[i][j]) {
+            congratsMessageDiv.textContent = ''; // Ha nem egyezik, töröljük az üzenetet
+            return false;
+          }
+        }
+      }
+    }
+    congratsMessageDiv.textContent = "Megoldottad a feladatot, gratulálunk!";
+    congratsMessageDiv.textContent += "\n";
+    congratsMessageDiv.textContent += `A középső gombot ${checkNumber} alkalommal nyomtad meg.`;
+    return true;
+  }
+
+  resetButton.addEventListener('click', resetTable);
+
+  drawTable();
+  createPlusButtons();
+  adjustPlusButtonPositions();
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 600) {
+      cellSize = 75;
+    } else {
+      cellSize = 100;
+    }
+    drawTable();
+    createPlusButtons();
+    adjustPlusButtonPositions();
+  });
+</script>
+
+</body>
+</html>

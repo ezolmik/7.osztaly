@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raktárautomatizálás</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #e8ecf0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+            touch-action: manipulation;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 16px -2px rgba(0,0,0,0.08);
+        }
+        .interactive-area-wrapper {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            height: 280px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        /* Realistic cardboard box styling */
+        .resizable-box {
+            position: relative;
+            z-index: 10;
+            border: 1.5px solid #92400e;
+            background: #d97706; /* Cardboard brown */
+            border-radius: 2px;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Thick Dark Brown Tape */
+        .box-tape {
+            position: absolute;
+            background: rgba(214, 175, 75, 0.82); 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            z-index: 11;
+        }
+        .tape-h { width: 100%; height: 14px; top: 50%; left: 0; transform: translateY(-50%); opacity: 0.95; }
+        .tape-v { height: 100%; width: 14px; left: 50%; top: 0; transform: translateX(-50%); opacity: 0.8; }
+
+        /* Graphics: Barcode, Do Not Flip, Fragile */
+        .box-graphics {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10; 
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0.7;
+        }
+        
+        .barcode {
+            width: 32px;
+            height: 16px;
+            background: repeating-linear-gradient(90deg, #1e1b4b 0, #1e1b4b 1px, transparent 1px, transparent 3px);
+            background-color: rgba(255, 255, 255, 0);
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .icon-svg {
+            width: 20px;
+            height: 20px;
+            fill: #271001;
+        }
+
+        /* Handles - Enhanced for both mouse and touch */
+        .handle {
+            position: absolute; 
+            z-index: 16; 
+            transition: background 0.2s;
+        }
+        /* Side handles as zones for easier grabbing */
+        .handle-r { top: 0; right: -10px; width: 20px; height: 100%; cursor: ew-resize; }
+        .handle-l { top: 0; left: -10px; width: 20px; height: 100%; cursor: ew-resize; }
+        .handle-t { left: 0; top: -10px; height: 20px; width: 100%; cursor: ns-resize; }
+        .handle-b { left: 0; bottom: -10px; height: 20px; width: 100%; cursor: ns-resize; }
+        
+        /* Visual indicators for mouse hover on sides */
+        .handle:hover { background: rgba(37, 99, 235, 0.1); }
+
+        /* Corner handle remains for mobile/precise drag */
+        .handle-rb { 
+            right: -15px; 
+            bottom: -15px; 
+            width: 30px; 
+            height: 30px; 
+            cursor: nwse-resize; 
+            z-index: 17;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .handle-rb:active { background: rgba(255, 255, 255, 0.4); }
+
+        .dim-label {
+            position: absolute; background: white; border: 1px solid #cbd5e1;
+            border-radius: 4px; padding: 2px 4px; font-size: 0.75rem; font-weight: 700;
+            color: #1e293b; z-index: 15; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 2px;
+        }
+        .dim-input {
+            width: 32px; border: none; background: transparent; text-align: center;
+            font-weight: 800; color: #000000; outline: none; -moz-appearance: textfield;
+        }
+        .dim-input::-webkit-outer-spin-button,
+        .dim-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .label-w { bottom: -32px; left: 50%; transform: translateX(-50%); }
+        .label-h { right: -45px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+
+        .robot-container {
+            position: absolute; bottom: -120px; left: 50%; transform: translateX(-50%);
+            width: 100px; height: 120px; z-index: 20; transition: bottom 0.5s ease-out;
+            pointer-events: none;
+        }
+        .robot-container.active { bottom: 0; }
+        .robot-status-bubble {
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 600; opacity: 0; transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        .robot-status-bubble.show { opacity: 1; }
+
+        .box-lifting { transform: translateY(-40px) scale(1.05); box-shadow: 0 20px 30px rgba(0,0,0,0.15); }
+
+        .control-btn { transition: all 0.2s; touch-action: manipulation; }
+        .control-btn:active:not(:disabled) { transform: scale(0.95); }
+        
+        .log-container {
+            max-height: 120px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            align-content: start;
+        }
+
+        .msg-anim { animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body class="p-2 md:p-6 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-2xl p-4 md:p-8">
+    
+    <div class="flex justify-end mb-2">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag">🇬🇧</span>
+            <span id="lang-switch-label">English</span>
+        </a>
+    </div>
+
+    <header class="text-center mb-4">
+        <h1 id="title" class="text-2xl font-extrabold text-slate-800 mb-1"></h1>
+        <p id="subtitle" class="text-slate-500 text-xs md:text-sm leading-relaxed"></p>
+    </header>
+
+    <div class="flex justify-between items-center mb-3">
+        <div id="usage-pill" class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"></div>
+        <button onclick="resetGame()" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+            ↺ <span id="btn-reset-text"></span>
+        </button>
+    </div>
+
+    <div class="interactive-area-wrapper" id="container">
+        <div class="resizable-box" id="box">
+            <div class="box-tape tape-h"></div>
+            <div class="box-tape tape-v"></div>
+            
+            <div class="box-graphics">
+                <div class="flex justify-between items-start w-full">
+                    <div class="border border-[#271001] p-1 rounded-sm h-[32px] flex items-center justify-center">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M19,2H5V4H7V10C7,12.76 8.79,15.11 11,15.82V18H9V20H15V18H13V15.82C15.21,15.11 17,12.76 17,10V4H19V2M15,10C15,11.65 13.65,13 12,13C10.35,13 9,11.65 9,10V4H15V10Z" />
+                        </svg>
+                    </div>
+                    <div class="border border-[#271001] p-1 rounded-sm h-[32px] flex items-center justify-center">
+                        <svg class="icon-svg" viewBox="0 0 24 24" style="width: auto; height: 100%;">
+                            <path d="M5,15V7H2L6.5,2L11,7H8V15H5M16,15V7H13L17.5,2L22,7H19V15H16M2,18H22V21H2V18Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex justify-start w-full">
+                    <div class="barcode"></div>
+                </div>
+            </div>
+
+            <div class="dim-label label-w">
+                <input type="number" id="input-w" class="dim-input" value="40" min="40" max="80"> cm
+            </div>
+            <div class="dim-label label-h">
+                <input type="number" id="input-h" class="dim-input" value="30" min="30" max="50"> cm
+            </div>
+            
+            <div class="handle handle-r" data-axis="r"></div>
+            <div class="handle handle-l" data-axis="l"></div>
+            <div class="handle handle-t" data-axis="t"></div>
+            <div class="handle handle-b" data-axis="b"></div>
+            <div class="handle handle-rb" data-axis="both">
+                <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="robot-container" id="robot">
+            <div class="robot-status-bubble" id="robot-status"></div>
+            <svg class="w-full h-full fill-slate-500" viewBox="0 0 100 120">
+                <rect x="35" y="100" width="30" height="20" rx="2" />
+                <rect x="45" y="40" width="10" height="65" rx="5" />
+                <circle cx="50" cy="40" r="8" fill="#1e293b" />
+                <path d="M40,30 L60,30 L60,10 L55,10 L55,25 L45,25 L45,10 L40,10 Z" fill="#334155" />
+            </svg>
+        </div>
+    </div>
+
+    <div class="flex justify-center mb-6">
+        <button id="send-btn" onclick="startRobotAnimation()" class="control-btn px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50">
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-stretch">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col min-h-[140px]">
+            <h3 id="guess-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Végső tipp</h3>
+            <div id="guess-controls" class="flex flex-col gap-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex flex-col">
+                        <label id="label-w-guess" class="text-[9px] text-slate-400 mb-1 ml-1"></label>
+                        <select id="guess-w" class="w-full p-2 rounded-lg border border-slate-200 font-bold text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="40">40 cm</option>
+                            <option value="50">50 cm</option>
+                            <option value="60">60 cm</option>
+                            <option value="70">70 cm</option>
+                            <option value="80">80 cm</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col">
+                        <label id="label-h-guess" class="text-[9px] text-slate-400 mb-1 ml-1"></label>
+                        <select id="guess-h" class="w-full p-2 rounded-lg border border-slate-200 font-bold text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="30">30 cm</option>
+                            <option value="40">40 cm</option>
+                            <option value="50">50 cm</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="guess-btn" onclick="submitGuess()" class="control-btn w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-sm mt-1">
+                    OK
+                </button>
+            </div>
+            <div id="guess-out-wrap" class="hidden text-center msg-anim flex-grow flex flex-col justify-center">
+                <p id="guess-out" class="font-bold text-xs mb-3"></p>
+                <button onclick="resetGame()" class="mx-auto px-6 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full hover:bg-blue-700 transition-colors">
+                    Új játék
+                </button>
+            </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col min-h-[140px]">
+            <h3 id="log-title" class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Korábbi eredmények</h3>
+            <div id="log-list" class="log-container text-xs">
+                <p id="log-empty-msg" class="text-slate-400 italic col-span-2 text-center">...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center pt-3 border-t border-slate-100">
+        <p id="footer-text" class="text-slate-400 text-[10px]"></p>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const LANG = params.get('lang') === 'en' ? 'en' : 'hu';
+    document.documentElement.lang = LANG;
+
+    const DICT = {
+        hu: {
+            title: 'Robotok a raktárban',
+            subtitle: 'Állítsd be a doboz méretét (a széleit megfogva vagy a számot átírva), majd ellenőrizd hogy befér-e a rekeszbe. A rekesz szélessége 40, 50, 60, 70 vagy 80 cm, a magassága pedig 30, 40 vagy 50 cm lehet. Minél kevesebb visszajelzés alapján állapítsd meg a rekesz méretét.',
+            usage: n => `Próbálkozások: ${n}`,
+            btnReset: 'Újrakezdés',
+            btnSend: 'Doboz átadása a robotnak',
+            logTitle: 'Korábbi eredmények',
+            logEmpty: '...',
+            guessTitle: 'Tippelés a rekesz méretére',
+            labelW: 'Szélesség',
+            labelH: 'Magasság',
+            btnSubmit: 'Beküldés',
+            robotLoading: 'Betöltés...',
+            robotFits: 'Befér! ✅',
+            robotFail: 'Túl nagy! ❌',
+            win: (w,h,n) => `Gratulálunk! A rekesz mérete valóban ${w}×${h}. (${n} próba)`,
+            lose: (w,h) => `Sajnos nem talált. A rekesz valódi mérete ${w}×${h} volt.`,
+            footer: 'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+            langLabel: 'English', langFlag: '🇬🇧', langHref: '?lang=en'
+        },
+        en: {
+            title: 'Robots in the Warehouse',
+            subtitle: 'Set the size of the box (by dragging its edges or by entering the value), then check whether it fits into the compartment. The compartment can have a width of 40, 50, 60, 70, or 80 cm, and a height of 30, 40, or 50 cm. Determine the size of the compartment using as few attempts as possible.',
+            usage: n => `Attempts: ${n}`,
+            btnReset: 'Restart',
+            btnSend: 'Hand over box to robot',
+            logTitle: 'Previous results',
+            logEmpty: '...',
+            guessTitle: 'Box Dimensions',
+            labelW: 'Width',
+            labelH: 'Height',
+            btnSubmit: 'Submit',
+            robotLoading: 'Loading...',
+            robotFits: 'Fits! ✅',
+            robotFail: 'Fail! ❌',
+            win: (w,h,n) => `Perfect! Size: ${w}×${h}. (${n} tries)`,
+            lose: (w,h) => `Wrong. The actual size was ${w}×${h}.`,
+            footer: 'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+            langLabel: 'Magyar', langFlag: '🇭🇺', langHref: '?lang=hu'
+        }
+    };
+
+    const S = DICT[LANG];
+    const WIDTHS = [40, 50, 60, 70, 80], HEIGHTS = [30, 40, 50];
+    
+    const containerWrapper = document.getElementById('container');
+    const getScale = () => {
+        const availW = containerWrapper.clientWidth - 5; 
+        const availH = containerWrapper.clientHeight - 5; 
+        return Math.max(2, Math.min(4, Math.min(availW / 100, availH / 65)));
+    };
+    let SCALE = getScale();
+
+    const MIN_W = 35, MIN_H = 25; 
+
+    let possiblePairs = [], tries = 0, isAnimating = false, gameOver = false;
+    let currentW = 40, currentH = 30;
+    let logs = [];
+
+    const boxEl = document.getElementById('box');
+    const robotEl = document.getElementById('robot');
+    const robotStatus = document.getElementById('robot-status');
+    const sendBtn = document.getElementById('send-btn');
+    const guessBtn = document.getElementById('guess-btn');
+    const logList = document.getElementById('log-list');
+    const logEmptyMsg = document.getElementById('log-empty-msg');
+    const guessOutWrap = document.getElementById('guess-out-wrap');
+    const inputW = document.getElementById('input-w');
+    const inputH = document.getElementById('input-h');
+
+    function applyStrings() {
+        document.title = S.title;
+        document.getElementById('title').textContent = S.title;
+        document.getElementById('subtitle').innerHTML = S.subtitle;
+        document.getElementById('btn-reset-text').textContent = S.btnReset;
+        sendBtn.textContent = S.btnSend;
+        document.getElementById('log-title').textContent = S.logTitle;
+        document.getElementById('guess-title').textContent = S.guessTitle;
+        document.getElementById('label-w-guess').textContent = S.labelW;
+        document.getElementById('label-h-guess').textContent = S.labelH;
+        guessBtn.textContent = S.btnSubmit;
+        document.getElementById('footer-text').innerHTML = S.footer;
+        document.getElementById('lang-switch-label').textContent = S.langLabel;
+        document.getElementById('lang-switch-flag').textContent = S.langFlag;
+        document.getElementById('lang-switch-link').href = S.langHref;
+    }
+
+    function resetGame() {
+        possiblePairs = [];
+        for (let w of WIDTHS) for (let h of HEIGHTS) possiblePairs.push({ w, h });
+        tries = 0; currentW = 40; currentH = 30;
+        isAnimating = false; gameOver = false; logs = [];
+        
+        document.getElementById('usage-pill').textContent = S.usage(0);
+        sendBtn.disabled = false;
+        guessBtn.disabled = false;
+        document.getElementById('guess-w').disabled = false;
+        document.getElementById('guess-h').disabled = false;
+        document.getElementById('guess-controls').classList.remove('hidden');
+        inputW.disabled = false;
+        inputH.disabled = false;
+        
+        logList.innerHTML = '';
+        logList.appendChild(logEmptyMsg);
+        logEmptyMsg.classList.remove('hidden');
+        
+        guessOutWrap.classList.add('hidden');
+        updateBoxUI();
+    }
+
+    function updateBoxUI(updateInputs = true) {
+        boxEl.style.width = (currentW * SCALE) + 'px';
+        boxEl.style.height = (currentH * SCALE) + 'px';
+        if (updateInputs) {
+            inputW.value = currentW;
+            inputH.value = currentH;
+        }
+    }
+
+    inputW.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val)) return;
+        currentW = Math.max(MIN_W, Math.min(80, val));
+        updateBoxUI(false);
+    });
+
+    inputH.addEventListener('input', (e) => {
+        let val = parseInt(e.target.value);
+        if (isNaN(val)) return;
+        currentH = Math.max(MIN_H, Math.min(50, val));
+        updateBoxUI(false);
+    });
+
+    async function startRobotAnimation() {
+        if (isAnimating || gameOver) return;
+        isAnimating = true;
+        sendBtn.disabled = true;
+        inputW.disabled = true;
+        inputH.disabled = true;
+
+        robotEl.classList.add('active');
+        await wait(400);
+
+        robotStatus.textContent = S.robotLoading;
+        robotStatus.classList.add('show');
+        boxEl.classList.add('box-lifting');
+        await wait(1000);
+
+        const res = processAdversarialLogic();
+        robotStatus.textContent = res.fits ? S.robotFits : S.robotFail;
+        boxEl.classList.remove('box-lifting');
+        
+        boxEl.style.transform = res.fits ? "scale(0.9) translateY(-5px)" : "translateX(10px) rotate(3deg)";
+
+        await wait(1000);
+        robotEl.classList.remove('active');
+        robotStatus.classList.remove('show');
+        
+        tries++;
+        document.getElementById('usage-pill').textContent = S.usage(tries);
+        
+        addLog(res.bw, res.bh, res.fits);
+
+        await wait(400);
+        boxEl.style.transform = "none";
+        isAnimating = false;
+        sendBtn.disabled = false;
+        inputW.disabled = false;
+        inputH.disabled = false;
+    }
+
+    function addLog(w, h, fits) {
+        if (logs.length === 0) logEmptyMsg.classList.add('hidden');
+        const entry = document.createElement('div');
+        entry.className = `flex justify-between p-1 px-2 rounded border text-[10px] ${fits ? 'bg-green-100 border-green-200 text-green-800' : 'bg-red-100 border-red-200 text-red-800'}`;
+        entry.innerHTML = `<span>${w}×${h}</span> <span>${fits ? '✓' : '✗'}</span>`;
+        logList.prepend(entry);
+        logs.push({w, h, fits});
+    }
+
+    function processAdversarialLogic() {
+        const bw = currentW, bh = currentH;
+        const ifFits = possiblePairs.filter(p => p.w >= bw && p.h >= bh);
+        const ifNotFits = possiblePairs.filter(p => p.w < bw || p.h < bh);
+
+        let fits = ifFits.length >= ifNotFits.length && ifFits.length > 0;
+        possiblePairs = fits ? ifFits : ifNotFits;
+        return { bw, bh, fits };
+    }
+
+    function submitGuess() {
+        if (gameOver) return;
+        const gw = parseInt(document.getElementById('guess-w').value);
+        const gh = parseInt(document.getElementById('guess-h').value);
+        if (!gw || !gh) return;
+
+        gameOver = true;
+        sendBtn.disabled = true;
+        inputW.disabled = true;
+        inputH.disabled = true;
+        document.getElementById('guess-controls').classList.add('hidden');
+
+        const alternatives = possiblePairs.filter(p => p.w !== gw || p.h !== gh);
+        const isFound = alternatives.length === 0;
+
+        const real = isFound ? {w: gw, h: gh} : alternatives[Math.floor(Math.random() * alternatives.length)];
+
+        const outEl = document.getElementById('guess-out');
+        if (isFound) {
+            outEl.innerHTML = S.win(gw, gh, tries);
+            outEl.className = "text-green-600 font-bold mb-3 px-2";
+        } else {
+            outEl.innerHTML = S.lose(real.w, real.h);
+            outEl.className = "text-red-600 font-bold mb-3 px-2";
+        }
+        guessOutWrap.classList.remove('hidden');
+    }
+
+    function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    let isResizing = false, currentAxis = null, startX, startY, startW, startH;
+    const startResize = (e) => {
+        if (isAnimating || gameOver) return;
+        isResizing = true;
+        currentAxis = e.currentTarget.getAttribute('data-axis');
+        const touch = e.type.includes('touch');
+        startX = touch ? e.touches[0].clientX : e.clientX;
+        startY = touch ? e.touches[0].clientY : e.clientY;
+        startW = currentW; startH = currentH;
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const doResize = (e) => {
+        if (!isResizing) return;
+        const touch = e.type.includes('touch');
+        const cx = touch ? e.touches[0].clientX : e.clientX;
+        const cy = touch ? e.touches[0].clientY : e.clientY;
+        const dx = Math.round((cx - startX) / SCALE);
+        const dy = Math.round((cy - startY) / SCALE);
+
+        if (currentAxis === 'r' || currentAxis === 'both') currentW = Math.max(MIN_W, Math.min(80, startW + dx));
+        else if (currentAxis === 'l') currentW = Math.max(MIN_W, Math.min(80, startW - dx));
+        
+        if (currentAxis === 'b' || currentAxis === 'both') currentH = Math.max(MIN_H, Math.min(50, startH + dy));
+        else if (currentAxis === 't') currentH = Math.max(MIN_H, Math.min(50, startH - dy));
+        updateBoxUI();
+    };
+
+    const stopResize = () => { isResizing = false; };
+
+    document.querySelectorAll('.handle').forEach(h => {
+        h.addEventListener('mousedown', startResize);
+        h.addEventListener('touchstart', startResize, {passive: false});
+    });
+    window.addEventListener('mousemove', doResize);
+    window.addEventListener('touchmove', doResize, {passive: false});
+    window.addEventListener('mouseup', stopResize);
+    window.addEventListener('touchend', stopResize);
+
+    window.addEventListener('resize', () => {
+        SCALE = getScale();
+        updateBoxUI();
+    });
+
+    applyStrings();
+    resetGame();
+</script>
+</body>
+</html>

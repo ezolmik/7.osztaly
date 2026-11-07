@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tükörterem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #e8ecf0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 16px -2px rgba(0,0,0,0.08);
+        }
+        .game-canvas-wrapper {
+            background: #16192a;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid #252840;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .control-btn {
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .control-btn:active:not(:disabled) { transform: scale(0.95); }
+        .status-pill { transition: all 0.3s; }
+        .size-toggle {
+            display: flex;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .size-toggle button {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            background: white;
+            color: #94a3b8;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .size-toggle button.active {
+            background: #1e293b;
+            color: white;
+        }
+        .size-toggle button:not(.active):hover {
+            background: #f8fafc;
+            color: #475569;
+        }
+        .lang-switch { transition: all 0.2s; }
+        .lang-switch:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-3xl p-6 md:p-10">
+
+    <div class="flex justify-end mb-4">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag"></span>
+            <span id="lang-switch-label"></span>
+        </a>
+    </div>
+
+    <header class="text-center mb-8">
+        <h1 id="title" class="text-3xl font-extrabold text-slate-800 mb-3"></h1>
+        <p id="subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <div class="flex flex-wrap justify-between items-center mb-5 gap-3">
+        <div id="status-pill" class="status-pill px-4 py-1.5 rounded-full text-sm font-medium bg-slate-50 text-slate-500 border border-slate-200"></div>
+        <div class="size-toggle">
+            <button id="btn-2x7" onclick="setGridSize(2)" class="active">2×7</button>
+            <button id="btn-3x7" onclick="setGridSize(3)">3×7</button>
+        </div>
+    </div>
+
+    <div class="game-canvas-wrapper mb-5">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+<!--    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">-->
+        <div class="text-center justify-between gap-4 mb-6">
+            <button id="lightBtn" onclick="toggleLight()"
+                class="control-btn px-6 py-2.5 bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold rounded-lg text-sm">
+            </button>
+            <button id="resetBtn" onclick="reset()"
+                class="control-btn px-6 py-2.5 bg-white hover:bg-slate-50 text-slate-600 font-semibold rounded-lg text-sm border border-slate-200">
+            </button>
+        </div>
+<!--    </div>-->
+
+    <div class="text-center pt-5 border-t border-slate-100">
+        <p id="footer-text" class="text-slate-400 text-xs"></p>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const LANG = params.get('lang') === 'en' ? 'en' : 'hu';
+    document.documentElement.lang = LANG;
+
+    const HU = {
+        title: 'Tükörterem',
+        subtitle: 'Helyezz el tükröket a mezőkre! A fény az alsó sor 6. mezőjébe alulról érkezik, és a felső sor 1. mezőjén kell elhagynia vízszintesen. Maximalizáld az érintett tükrök számát!',
+        mirrorLabel: 'Aktív tükrök',
+        statusIdle0: 'Rakj tükröket a mezőkre',
+        statusIdleN: n => `${n} tükör lerakva.`,
+        statusWin: n => `Siker! ${n} tükrön tört meg a fény.`,
+        statusFail: 'A fény nem ért célba.',
+        btnLight: 'Fény mutatása',
+        btnLightOff: 'Fény kikapcsolása',
+        btnReset: 'Újrakezdés',
+        footerText: 'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+        langFlag: '🇬🇧', langLabel: 'English', langHref: '?lang=en',
+        arrowIn: 'BE', arrowOut: 'KI',
+    };
+
+    const EN = {
+        title: 'Mirror Room',
+        subtitle: 'Place mirrors on the cells! Light enters from below at column 6 of the bottom row, and must exit horizontally from column 1 of the top row. Maximise the number of mirrors the light passes through!',
+        mirrorLabel: 'Active mirrors',
+        statusIdle0: 'Place mirrors on the grid',
+        statusIdleN: n => `${n} mirror${n === 1 ? '' : 's'} placed`,
+        statusWin: n => `Success! Light bounced off ${n} mirror${n === 1 ? '' : 's'}`,
+        statusFail: "Light didn't reach the exit",
+        btnLight: 'Show light',
+        btnLightOff: 'Hide light',
+        btnReset: 'Restart',
+        footerText: 'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+        langFlag: '🇭🇺', langLabel: 'Magyar', langHref: '?lang=hu',
+        arrowIn: 'IN', arrowOut: 'OUT',
+    };
+
+    const S = LANG === 'en' ? EN : HU;
+
+    const canvas     = document.getElementById('gameCanvas');
+    const ctx        = canvas.getContext('2d');
+    const statusPill = document.getElementById('status-pill');
+    const lightBtn   = document.getElementById('lightBtn');
+    const resetBtn   = document.getElementById('resetBtn');
+
+    let ROWS = 2;
+    const COLS = 7;
+    let grid = [];
+    let showLight = false;
+
+    function applyStrings() {
+        document.title = S.title;
+        document.getElementById('title').textContent = S.title;
+        document.getElementById('subtitle').innerHTML = S.subtitle;
+        lightBtn.textContent = S.btnLight;
+        resetBtn.textContent = S.btnReset;
+        document.getElementById('footer-text').innerHTML = S.footerText;
+        document.getElementById('lang-switch-flag').textContent = S.langFlag;
+        document.getElementById('lang-switch-label').textContent = S.langLabel;
+        document.getElementById('lang-switch-link').href = S.langHref;
+    }
+
+    function getSize() {
+        const maxW = Math.min(window.innerWidth - 80, 700);
+        const cellFromW = Math.floor((maxW - 40) / (COLS + 1.5));
+        return Math.min(cellFromW, ROWS === 2 ? 90 : 80, 90);
+    }
+
+    function getOffsets(SIZE) {
+        const totalW = COLS * SIZE + 1.5 * SIZE;
+        const totalH = ROWS * SIZE + 1.5 * SIZE;
+        return { OFFSET_X: Math.round(SIZE * 0.75), OFFSET_Y: Math.round(SIZE * 0.6), canvasW: totalW, canvasH: totalH };
+    }
+
+    function initGrid() {
+        grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+        resizeCanvas();
+    }
+
+    function resizeCanvas() {
+        const SIZE = getSize();
+        const { canvasW, canvasH } = getOffsets(SIZE);
+        canvas.width = canvasW;
+        canvas.height = canvasH;
+    }
+
+    function setGridSize(rows) {
+        ROWS = rows;
+        document.getElementById('btn-2x7').classList.toggle('active', rows === 2);
+        document.getElementById('btn-3x7').classList.toggle('active', rows === 3);
+        showLight = false;
+        lightBtn.textContent = S.btnLight;
+        lightBtn.classList.remove('bg-amber-500');
+        lightBtn.classList.add('bg-amber-400');
+        initGrid();
+        updateStatus();
+    }
+
+    function toggleLight() {
+        showLight = !showLight;
+        lightBtn.textContent = showLight ? S.btnLightOff : S.btnLight;
+        lightBtn.classList.toggle('bg-amber-500', showLight);
+        lightBtn.classList.toggle('bg-amber-400', !showLight);
+        updateStatus();
+    }
+
+    function calculatePath() {
+        if (!showLight) return { path: [], win: false, usedMirrors: new Set() };
+        let currX = 5.5, currY = ROWS, dirX = 0, dirY = -1;
+        let path = [{ x: currX, y: currY }], usedMirrors = new Set(), maxSteps = 400;
+        while (maxSteps-- > 0) {
+            let nextX = currX + dirX * 0.5, nextY = currY + dirY * 0.5;
+            let cellX = Math.floor(nextX), cellY = Math.floor(nextY);
+            if (cellX < 0 || cellX >= COLS || cellY < 0 || cellY >= ROWS) {
+                path.push({ x: nextX, y: nextY });
+                return { path, win: nextX <= 0 && cellY === 0 && dirX === -1, usedMirrors };
+            }
+            path.push({ x: nextX, y: nextY });
+            const mirror = grid[cellY][cellX];
+            if (mirror === 1) { usedMirrors.add(`${cellY}-${cellX}`); [dirX, dirY] = [dirY, dirX]; }
+            else if (mirror === 2) { usedMirrors.add(`${cellY}-${cellX}`); [dirX, dirY] = [-dirY, -dirX]; }
+            currX = nextX + dirX * 0.5; currY = nextY + dirY * 0.5;
+            path.push({ x: currX, y: currY });
+        }
+        return { path, win: false, usedMirrors };
+    }
+
+    function countMirrors() {
+        let n = 0;
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]) n++;
+        return n;
+    }
+
+    function setStatusPill(text, color) {
+        statusPill.textContent = text;
+        const map = {
+            green: 'status-pill px-4 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700 border border-green-200',
+            red:   'status-pill px-4 py-1.5 rounded-full text-sm font-medium bg-red-50 text-red-600 border border-red-200',
+            slate: 'status-pill px-4 py-1.5 rounded-full text-sm font-medium bg-slate-50 text-slate-500 border border-slate-200',
+        };
+        statusPill.className = map[color];
+    }
+
+    function updateStatus() {
+        const result = calculatePath();
+        const total = countMirrors();
+        if (showLight && result.win) {
+            setStatusPill(S.statusWin(result.usedMirrors.size), 'green');
+        } else if (showLight) {
+            setStatusPill(S.statusFail, 'red');
+        } else {
+            setStatusPill(total === 0 ? S.statusIdle0 : S.statusIdleN(total), 'slate');
+        }
+    }
+
+    function draw() {
+        const SIZE = getSize();
+        const { OFFSET_X, OFFSET_Y } = getOffsets(SIZE);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const result = calculatePath();
+
+        ctx.strokeStyle = '#333'; 
+        ctx.lineWidth = 1; 
+        ctx.setLineDash([]);
+        for (let r = 0; r <= ROWS; r++) {
+            ctx.beginPath(); ctx.moveTo(OFFSET_X, OFFSET_Y + r * SIZE); 
+            ctx.lineTo(OFFSET_X + COLS * SIZE, OFFSET_Y + r * SIZE); 
+            ctx.stroke();
+        }
+        for (let c = 0; c <= COLS; c++) {
+            ctx.beginPath(); ctx.moveTo(OFFSET_X + c * SIZE, OFFSET_Y); 
+            ctx.lineTo(OFFSET_X + c * SIZE, OFFSET_Y + ROWS * SIZE); 
+            ctx.stroke();
+        }
+
+        drawArrow(OFFSET_X + 5.5 * SIZE, OFFSET_Y + (ROWS + 0.45) * SIZE, OFFSET_X + 5.5 * SIZE, OFFSET_Y + (ROWS + 0.1) * SIZE, '#d97706', S.arrowIn);
+        drawArrow(OFFSET_X - 0.1 * SIZE, OFFSET_Y + 0.5 * SIZE, OFFSET_X - 0.6 * SIZE, OFFSET_Y + 0.5 * SIZE, '#d97706', S.arrowOut);
+
+        if (showLight && result.path.length > 1) {
+            ctx.beginPath(); 
+            ctx.lineWidth = 3; 
+            ctx.strokeStyle = "#ff3333";
+            ctx.shadowBlur = 9; 
+            ctx.shadowColor = "red";
+            ctx.moveTo(OFFSET_X + result.path[0].x * SIZE, OFFSET_Y + result.path[0].y * SIZE);
+            for (let i = 1; i < result.path.length; i++) ctx.lineTo(OFFSET_X + result.path[i].x * SIZE, OFFSET_Y + result.path[i].y * SIZE);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+            if (!grid[r][c]) continue;
+            const x = OFFSET_X + c * SIZE, y = OFFSET_Y + r * SIZE;
+            const isActive = result.usedMirrors.has(`${r}-${c}`);
+            const pad = Math.round(SIZE * 0.15);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = (showLight && !isActive) ? "#334440" : "#00ffcc";
+            ctx.beginPath();
+            if (grid[r][c] === 1) { ctx.moveTo(x + pad, y + pad); ctx.lineTo(x + SIZE - pad, y + SIZE - pad); }
+            else                  { ctx.moveTo(x + SIZE - pad, y + pad); ctx.lineTo(x + pad, y + SIZE - pad); }
+            ctx.stroke();
+        }
+
+        for (let r = 0; r <= ROWS; r++) for (let c = 0; c <= COLS; c++) {
+            ctx.beginPath(); ctx.arc(OFFSET_X + c * SIZE, OFFSET_Y + r * SIZE, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff'; ctx.fill();
+            
+        }
+        requestAnimationFrame(draw);
+    }
+
+    function drawArrow(fx, fy, tx, ty, color, label) {
+        const head = 10, angle = Math.atan2(ty - fy, tx - fx);
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(fx, fy); ctx.lineTo(tx, ty);
+        ctx.lineTo(tx - head * Math.cos(angle - Math.PI / 6), ty - head * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx - head * Math.cos(angle + Math.PI / 6), ty - head * Math.sin(angle + Math.PI / 6));
+        ctx.stroke();
+        ctx.fillStyle = color; ctx.font = 'bold 11px Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, fx, fy + (fy > ty ? 20 : -12));
+        ctx.textAlign = 'left';
+    }
+
+    function handleTap(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const SIZE = getSize();
+        const { OFFSET_X, OFFSET_Y } = getOffsets(SIZE);
+        const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+        const c = Math.floor((clientX - rect.left) * scaleX / SIZE - OFFSET_X / SIZE);
+        const r = Math.floor((clientY - rect.top)  * scaleY / SIZE - OFFSET_Y / SIZE);
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+            grid[r][c] = (grid[r][c] + 1) % 3;
+            showLight = false;
+            lightBtn.textContent = S.btnLight;
+            lightBtn.classList.remove('bg-amber-500');
+            lightBtn.classList.add('bg-amber-400');
+            updateStatus();
+        }
+    }
+
+    canvas.addEventListener('mousedown', e => handleTap(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); handleTap(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+
+    function reset() {
+        grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+        showLight = false;
+        lightBtn.textContent = S.btnLight;
+        lightBtn.classList.remove('bg-amber-500');
+        lightBtn.classList.add('bg-amber-400');
+        updateStatus();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    applyStrings();
+    initGrid();
+    updateStatus();
+    draw();
+</script>
+</body>
+</html>

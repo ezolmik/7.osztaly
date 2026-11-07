@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="hu">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mindenki jön – Matematikai játékok</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f292d;
+      --muted: #68747a;
+      --paper: #fff;
+      --line: #e4e2db;
+      --accent: #16695f;
+      --accent-soft: #e5f2ef;
+      --icon: #f5e9df;
+      --focus: #f4c95d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #f7f5ef;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(920px, calc(100% - 32px));
+      margin: auto;
+      padding: clamp(44px, 8vw, 90px) 0 56px;
+    }
+
+    header {
+      max-width: 680px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font: 800 clamp(2.2rem, 7vw, 4.5rem) / .98 Georgia, serif;
+      letter-spacing: -.045em;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.5vw, 1.16rem);
+      line-height: 1.55;
+    }
+
+    /* --- SZŰRŐSÁV STÍLUSOK --- */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      padding: 14px 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 4px 12px rgba(30, 39, 42, .03);
+    }
+
+    .filter-label {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .filter-chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fdfbf7;
+      color: var(--ink);
+      padding: 7px 14px;
+      border-radius: 12px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .15s ease;
+    }
+
+    .filter-chip:hover {
+      background: var(--accent-soft);
+      border-color: #b8d0cc;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* Kategória blokkok */
+    .category-section {
+      margin-bottom: 48px;
+      transition: opacity .2s ease;
+    }
+
+    .category-section.is-hidden {
+      display: none;
+    }
+
+    .category-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 20px;
+      font: 800 1.6rem / 1.2 Georgia, serif;
+      color: var(--ink);
+    }
+
+    .category-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .games {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      display: flex;
+      min-height: 245px;
+      flex-direction: column;
+      padding: 25px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--paper);
+      box-shadow: 0 7px 24px rgba(30, 39, 42, .06);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .card.is-hidden {
+      display: none !important;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: #b8d0cc;
+      box-shadow: 0 16px 34px rgba(30, 39, 42, .11);
+    }
+
+    .card:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 4px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      font-size: 2.15rem;
+      background: var(--icon);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .tag {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 5px 9px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    h3 {
+      margin: auto 0 8px;
+      font: 800 1.45rem / 1.15 Georgia, serif;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .go {
+      margin-top: 18px;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    footer {
+      max-width: 690px;
+      margin-top: 50px;
+      color: #818a8e;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+
+    footer strong {
+      color: #697378;
+    }
+
+    @media (max-width: 620px) {
+      main {
+        width: min(100% - 22px, 460px);
+        padding-top: 34px;
+      }
+
+      .games {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .card {
+        min-height: 190px;
+        padding: 20px;
+      }
+
+      .icon {
+        width: 52px;
+        height: 52px;
+        font-size: 1.75rem;
+      }
+    }
+
+    a {
+      color: var(--accent)
+    }
+
+    .back {
+      display: inline-block;
+      margin-bottom: 28px;
+      font-weight: 700
+    }
+
+    .source {
+      background: var(--accent-soft);
+      padding: 18px 22px;
+      border-radius: 18px;
+      margin: 24px 0;
+      line-height: 1.6
+    }
+
+    .source p {
+      margin: 0
+    }
+
+    .filter-bar {
+      margin: 24px 0
+    }
+
+    input {
+      font: inherit;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      max-width: 100%;
+      flex: 1;
+      min-width: 160px
+    }
+
+    .game-link {
+      color: inherit;
+      text-decoration: none
+    }
+
+    .game-link:hover {
+      text-decoration: underline
+    }
+
+    .card {
+      min-height: 260px
+    }
+
+    .card h3 {
+      margin: 0 0 10px
+    }
+
+    .card .go {
+      margin-top: auto;
+      padding-top: 20px
+    }
+
+    .secondary {
+      font-size: .85rem;
+      margin-left: 14px
+    }
+
+    .tag {
+      font-size: .65rem
+    }
+
+    .card-top {
+      gap: 12px
+    }
+
+    details {
+      font-size: .85rem;
+      font-weight: 500;
+      margin-top: 16px
+    }
+
+    summary {
+      cursor: pointer
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 4px
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    .count {
+      color: var(--muted);
+      margin-bottom: 22px
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      * {
+        transition: none !important
+      }
+
+      .card:hover {
+        transform: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <a class="back" href="../../index.html">← Vissza a 7.-es játékokhoz</a>
+    <header>
+      <p class="eyebrow">7. osztály · Vendéggyűjtemény</p>
+      <h1>Minden kijön</h1>
+      <p class="lead">Játssz, kérdezz, keress összefüggéseket! Logikai fejtörők, szimmetriák és stratégiai játékok.</p>
+    </header>
+    <aside class="source" aria-label="Források és feladatgyűjtemény">
+      <p>
+        A játékok forrása:
+        <a href="https://agondolkodasorome.hu/">A Gondolkodás Öröme Alapítvány</a>
+        · <a href="https://www.mindenkijon.hu/">minden·ki·jön</a>
+        · <a href="https://github.com/a-gondolkodas-orome/mindenkijon">Eredeti forráskód</a>
+      </p>
+
+      <p style="margin-top: 16px;">
+        <strong>Geometriai transzformációk – feladatgyűjtemény</strong><br>
+        HUN-REN Rényi Alfréd Matematikai Kutatóintézet,
+        Szakmódszertan Osztály<br>
+        <a href="geometriai-transzformációk-feladatgyűjtemény.pdf">
+          Feladatgyűjtemény megnyitása (PDF) →
+        </a>
+      </p>
+    </aside>
+    <div class="filter-bar" role="group" aria-label="Témakör"><button class="filter-chip active" type="button"
+        data-category="all" aria-pressed="true">Mind</button><button class="filter-chip" type="button"
+        data-category="geometria" aria-pressed="false">Geometria és szimmetria</button><button class="filter-chip"
+        type="button" data-category="logika" aria-pressed="false">Logika és jó kérdések</button><button
+        class="filter-chip" type="button" data-category="szamok" aria-pressed="false">Számok és
+        rejtvények</button><button class="filter-chip" type="button" data-category="strategia"
+        aria-pressed="false">Stratégiai játékok</button><label for="search">Keresés:</label><input id="search"
+        type="search" placeholder="Játék neve vagy témája"></div>
+    <p id="count" class="count" role="status"></p>
+    <p id="empty" hidden>Nincs találat. Válassz másik témakört vagy keresőkifejezést!</p>
+    <section class="category-section" aria-labelledby="cat-geometria">
+      <h2 id="cat-geometria" class="category-title">Geometria és szimmetria</h2>
+      <div class="games">
+        <article class="card" data-category="geometria"
+          data-search="Középpontos tükrözés Keresd meg P tükörképét a háromszög és képe alapján!">
+          <div class="card-top"><span class="icon" aria-hidden="true">📍</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="kozeppontos-tukrozes.html">Középpontos tükrözés</a></h3>
+          <p>Keresd meg P tükörképét a háromszög és képe alapján!</p>
+          <div class="go"><a href="kozeppontos-tukrozes.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Színkitalálás A szimmetria-középpontok és az ismert színek alapján következtesd ki a hiányzó színeket!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🎨</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="szinkitalalas.html">Színkitalálás</a></h3>
+          <p>A szimmetria-középpontok és az ismert színek alapján következtesd ki a hiányzó színeket!</p>
+          <div class="go"><a href="szinkitalalas.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Hatszög egy tengellyel Növeld a számokat úgy, hogy pontosan egy szimmetriatengely keletkezzen!">
+          <div class="card-top"><span class="icon" aria-hidden="true">⬡</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="hatszog-egy-tengellyel.html">Hatszög egy tengellyel</a></h3>
+          <p>Növeld a számokat úgy, hogy pontosan egy szimmetriatengely keletkezzen!</p>
+          <div class="go"><a href="hatszog-egy-tengellyel.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Tükörterem Vezesd a fényt tükrökkel a kijárathoz, minél több tükröt érintve!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🪞</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="tukorterem.html">Tükörterem</a></h3>
+          <p>Vezesd a fényt tükrökkel a kijárathoz, minél több tükröt érintve!</p>
+          <div class="go"><a href="tukorterem.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Tükrözések Állítsd be a tükörtengelyeket, és keress különböző megoldásokat! Desmos-feladatok.">
+          <div class="card-top"><span class="icon" aria-hidden="true">↔</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="transformations.html">Tükrözések</a></h3>
+          <p>Állítsd be a tükörtengelyeket, és keress különböző megoldásokat! Desmos-feladatok.</p>
+          <div class="go"><a href="transformations.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Focipálya Vizsgáld meg az ábrát, és mentsd le a képet a közös gondolkodáshoz!">
+          <div class="card-top"><span class="icon" aria-hidden="true">⚽</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="focipalya.html">Focipálya</a></h3>
+          <p>Vizsgáld meg az ábrát, és mentsd le a képet a közös gondolkodáshoz!</p>
+          <div class="go"><a href="focipalya.html">Megnyitás →</a> <a class="secondary" href="soccer-field.html"
+              lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="geometria"
+          data-search="Billegő asztal Figyeld meg a billegő asztal térbeli modelljét!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🪑</span><span class="tag">Geometria és
+              szimmetria</span></div>
+          <h3><a class="game-link" href="billego-asztal.html">Billegő asztal</a></h3>
+          <p>Figyeld meg a billegő asztal térbeli modelljét!</p>
+          <div class="go"><a href="billego-asztal.html">Megnyitás →</a>
+            <details>
+              <summary>Megoldás megtekintése</summary><a href="billego-asztal-megoldas.html">A megoldás modellje →</a>
+            </details>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section class="category-section" aria-labelledby="cat-logika">
+      <h2 id="cat-logika" class="category-title">Logika és jó kérdések</h2>
+      <div class="games">
+        <article class="card" data-category="logika"
+          data-search="Mire gondoltam? Találd ki a számot a közelségére adott visszajelzésekből!">
+          <div class="card-top"><span class="icon" aria-hidden="true">💭</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="mire-gondoltam.html">Mire gondoltam?</a></h3>
+          <p>Találd ki a számot a közelségére adott visszajelzésekből!</p>
+          <div class="go"><a href="mire-gondoltam.html">Megnyitás →</a> <a class="secondary"
+              href="what-is-my-number.html" lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Egyre jobb kérdések Közelebb kerültél a gondolt számhoz? Használd fel minden válasz információját!">
+          <div class="card-top"><span class="icon" aria-hidden="true">❓</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="egyre-jobb-kerdesek.html">Egyre jobb kérdések</a></h3>
+          <p>Közelebb kerültél a gondolt számhoz? Használd fel minden válasz információját!</p>
+          <div class="go"><a href="egyre-jobb-kerdesek.html">Megnyitás →</a> <a class="secondary"
+              href="better-and-better-questions.html" lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Mérlegelj okosan! Határozd meg az aranytömb tömegét minél kisebb mérési költséggel!">
+          <div class="card-top"><span class="icon" aria-hidden="true">⚖</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="merlegelj-okosan.html">Mérlegelj okosan!</a></h3>
+          <p>Határozd meg az aranytömb tömegét minél kisebb mérési költséggel!</p>
+          <div class="go"><a href="merlegelj-okosan.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Robotok a raktárban Dobozokkal tesztelve derítsd ki a rekesz szélességét és magasságát!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🤖</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="robotok-a-raktarban.html">Robotok a raktárban</a></h3>
+          <p>Dobozokkal tesztelve derítsd ki a rekesz szélességét és magasságát!</p>
+          <div class="go"><a href="robotok-a-raktarban.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Szennyeződés Keresd meg a szennyezés forrását minél kevesebb tesztből!">
+          <div class="card-top"><span class="icon" aria-hidden="true">💧</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="szennyezodes.html">Szennyeződés</a></h3>
+          <p>Keresd meg a szennyezés forrását minél kevesebb tesztből!</p>
+          <div class="go"><a href="szennyezodes.html">Megnyitás →</a> <a class="secondary" href="contamination.html"
+              lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Szennyezett medencék – 8×8 Keresd a szennyezés forrását a nagyobb medencehálózaton!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🧪</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="szennyezett-medencek-8x8.html">Szennyezett medencék – 8×8</a></h3>
+          <p>Keresd a szennyezés forrását a nagyobb medencehálózaton!</p>
+          <div class="go"><a href="szennyezett-medencek-8x8.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Halak a tóban Kösd össze a horgászokat a halakkal: minden damil 9 mezőn haladjon át!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🐟</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="halak-a-toban.html">Halak a tóban</a></h3>
+          <p>Kösd össze a horgászokat a halakkal: minden damil 9 mezőn haladjon át!</p>
+          <div class="go"><a href="halak-a-toban.html">Megnyitás →</a> <a class="secondary" href="fish-in-a-lake.html"
+              lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="Bogozd ki! Színezz mezőket, és rajzolj a megadott feltételeknek megfelelő hurkot!">
+          <div class="card-top"><span class="icon" aria-hidden="true">➰</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="bogozd-ki.html">Bogozd ki!</a></h3>
+          <p>Színezz mezőket, és rajzolj a megadott feltételeknek megfelelő hurkot!</p>
+          <div class="go"><a href="bogozd-ki.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="logika"
+          data-search="A π-raktár dobozai Cseréld meg a zöld és barna dobozokat a raktár folyosóin tologatva!">
+          <div class="card-top"><span class="icon" aria-hidden="true">📦</span><span class="tag">Logika és jó
+              kérdések</span></div>
+          <h3><a class="game-link" href="pi-raktar-dobozai.html">A π-raktár dobozai</a></h3>
+          <p>Cseréld meg a zöld és barna dobozokat a raktár folyosóin tologatva!</p>
+          <div class="go"><a href="pi-raktar-dobozai.html">Megnyitás →</a> <a class="secondary" href="storage-room.html"
+              lang="en">English</a></div>
+        </article>
+      </div>
+    </section>
+    <section class="category-section" aria-labelledby="cat-szamok">
+      <h2 id="cat-szamok" class="category-title">Számok és rejtvények</h2>
+      <div class="games">
+        <article class="card" data-category="szamok"
+          data-search="Széf Állítsd be a széf mezőit a célszámoknak megfelelően!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🔐</span><span class="tag">Számok és
+              rejtvények</span></div>
+          <h3><a class="game-link" href="szef.html">Széf</a></h3>
+          <p>Állítsd be a széf mezőit a célszámoknak megfelelően!</p>
+          <div class="go"><a href="szef.html">Megnyitás →</a> <a class="secondary" href="vault.html"
+              lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="szamok"
+          data-search="Széf 12 mezővel A sarkok helyett csak a többi 12 mező célszámát kell elérned.">
+          <div class="card-top"><span class="icon" aria-hidden="true">🔒</span><span class="tag">Számok és
+              rejtvények</span></div>
+          <h3><a class="game-link" href="szef-12-mezovel.html">Széf 12 mezővel</a></h3>
+          <p>A sarkok helyett csak a többi 12 mező célszámát kell elérned.</p>
+          <div class="go"><a href="szef-12-mezovel.html">Megnyitás →</a> <a class="secondary"
+              href="vault-with-12-cells.html" lang="en">English</a></div>
+        </article>
+        <article class="card" data-category="szamok"
+          data-search="Húsvét Léptesd a szomszédos mezők betűit, és fejtsd meg a két kifejezést!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🥚</span><span class="tag">Számok és
+              rejtvények</span></div>
+          <h3><a class="game-link" href="husvet.html">Húsvét</a></h3>
+          <p>Léptesd a szomszédos mezők betűit, és fejtsd meg a két kifejezést!</p>
+          <div class="go"><a href="husvet.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="szamok"
+          data-search="Áthajtós bűvös négyzet Hajtsd át a zsanéros lapkákat, és készíts bűvös négyzetet!">
+          <div class="card-top"><span class="icon" aria-hidden="true">🔢</span><span class="tag">Számok és
+              rejtvények</span></div>
+          <h3><a class="game-link" href="athajtos-buvos-negyzet.html">Áthajtós bűvös négyzet</a></h3>
+          <p>Hajtsd át a zsanéros lapkákat, és készíts bűvös négyzetet!</p>
+          <div class="go"><a href="athajtos-buvos-negyzet.html">Megnyitás →</a></div>
+        </article>
+      </div>
+    </section>
+    <section class="category-section" aria-labelledby="cat-strategia">
+      <h2 id="cat-strategia" class="category-title">Stratégiai játékok</h2>
+      <div class="games">
+        <article class="card" data-category="strategia"
+          data-search="Cél a 100! Válassz 3 és 10 közötti számokat: érd el pontosan a 100-at!">
+          <div class="card-top"><span class="icon" aria-hidden="true">💯</span><span class="tag">Stratégiai
+              játékok</span></div>
+          <h3><a class="game-link" href="cel-a-100.html">Cél a 100!</a></h3>
+          <p>Válassz 3 és 10 közötti számokat: érd el pontosan a 100-at!</p>
+          <div class="go"><a href="cel-a-100.html">Megnyitás →</a></div>
+        </article>
+        <article class="card" data-category="strategia"
+          data-search="Játék római számokkal Bővítsd a római számot! Az veszít, aki már nem tud szabályosan lépni.">
+          <div class="card-top"><span class="icon" aria-hidden="true">Ⅹ</span><span class="tag">Stratégiai
+              játékok</span></div>
+          <h3><a class="game-link" href="jatek-romai-szamokkal.html">Játék római számokkal</a></h3>
+          <p>Bővítsd a római számot! Az veszít, aki már nem tud szabályosan lépni.</p>
+          <div class="go"><a href="jatek-romai-szamokkal.html">Megnyitás →</a></div>
+        </article>
+      </div>
+    </section>
+    <footer><strong>Próbáld ki, hibázz, javíts!</strong>
+      <p>A magyar–angol változatok egy kártyán találhatók. Egyes játékokhoz internetkapcsolat szükséges.</p>
+    </footer>
+  </main>
+  <script>const buttons = [...document.querySelectorAll('button[data-category]')], cards = [...document.querySelectorAll('.card')], search = document.querySelector('#search'); let category = 'all';
+    const norm = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    function filter() {
+      let n = 0; for (const card of cards) { card.hidden = !((category === 'all' || card.dataset.category === category) && norm(card.dataset.search).includes(norm(search.value.trim()))); if (!card.hidden) n++; }
+      for (const section of document.querySelectorAll('.category-section')) section.hidden = ![...section.querySelectorAll('.card')].some(c => !c.hidden);
+      document.querySelector('#count').textContent = n + ' / ' + cards.length + ' játék és szemléltető'; document.querySelector('#empty').hidden = n !== 0;
+    }
+    buttons.forEach(b => b.addEventListener('click', () => { category = b.dataset.category; buttons.forEach(x => { const on = x === b; x.classList.toggle('active', on); x.setAttribute('aria-pressed', on); }); filter(); })); search.addEventListener('input', filter); filter();</script>
+</body>
+
+</html>

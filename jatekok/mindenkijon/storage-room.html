@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The π-shaped storage room</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .counter {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(60px, 1fr));
+            grid-template-rows: repeat(3, minmax(60px, 1fr));
+            gap: 5px;
+            width: 90vmin;
+            height: 54vmin;
+            max-width: 500px;
+            max-height: 300px;
+            background: white;
+            padding: 10px;
+            border: 2px solid #333;
+        }
+        .cell {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .cell.error-flash {
+           transition: background-color 0.4s ease-in-out; /* Átmenet a háttérszínre, 0.3 másodperc alatt, sima sebesség görbével */
+            background-color: #FF6666;
+        }        
+        .yellow {
+            background-color: #fde992;
+        }
+        .dot { /* A .dot class stílusai */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 13px; /* Pötty mérete */
+            height: 13px; /* Pötty mérete */
+            /*background-color: black; /* Pötty színe */
+            border-radius: 50%; /* Kerek pötty */
+            z-index: 0; /* Fontos, hogy a doboz mögött legyen alapértelmezetten */
+        }
+
+        .cell.yellow:has(.box) > .dot { /* Ha a sárga cellában van .box, akkor rejtse el a pöttyöt */
+            display: none; /* Eltünteti a pöttyöt, ha van doboz a cellában */
+        }
+        .box {
+            width: 80%;
+            height: 80%;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border: 2px solid #333;
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.3);
+        }
+        .green {
+            background-color: #4CAF50;
+        }
+        .brown {
+            background-color: #B55E1F;
+        }
+        .empty {
+            background-color: transparent;
+            border: none;
+        }
+        .selected {
+            outline: 3px solid blue;
+        }
+        .reset-button {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 32px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .reset-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="counter">Moves: <span id="moveCount">0</span></div>
+    <button class="reset-button" onclick="location.reload()">⟳</button>
+    <div class="container" id="gameBoard">
+        <div class="cell yellow"></div>
+        <div class="cell yellow"></div>
+        <div class="cell yellow"></div>
+        <div class="cell yellow"></div>
+        <div class="cell yellow"></div>
+        <div class="cell yellow empty"></div>
+        <div class="cell yellow"><div class="dot brown"></div><div class="box green"></div></div>
+        <div class="cell yellow empty"></div>
+        <div class="cell yellow"><div class="dot green"></div><div class="box brown"></div></div>
+        <div class="cell yellow empty"></div>
+        <div class="cell yellow"><div class="dot brown"></div><div class="box green"></div></div>
+        <div class="cell yellow"><div class="dot brown"></div><div class="box green"></div></div>
+        <div class="cell yellow empty"></div>
+        <div class="cell yellow"><div class="dot green"></div><div class="box brown"></div></div>
+        <div class="cell yellow"><div class="dot green"></div><div class="box brown"></div></div>
+    </div>
+    <script>
+        let selectedBox = null;
+        let moveCount = 0;
+        const moveCounter = document.getElementById('moveCount');
+
+        function getCellIndex(cell) {
+            return Array.from(cell.parentNode.children).indexOf(cell);
+        }
+
+        function getAdjacentYellowCells(cell) {
+            const cellIndex = getCellIndex(cell);
+            const container = cell.parentNode;
+            const cols = 5;
+            const row = Math.floor(cellIndex / cols);
+            const col = cellIndex % cols;
+            const adjacentCells = [];
+
+            const possibleNeighbors = [
+                { dr: -1, dc: 0 }, { dr: 1, dc: 0 }, { dr: 0, dc: -1 }, { dr: 0, dc: 1 } // fel, le, balra, jobbra
+            ];
+
+            possibleNeighbors.forEach(offset => {
+                const newRow = row + offset.dr;
+                const newCol = col + offset.dc;
+
+                if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < cols) {
+                    const neighborIndex = newRow * cols + newCol;
+                    const neighborCell = container.children[neighborIndex];
+                    if (neighborCell && neighborCell.classList.contains('yellow')) {
+                        // Új ellenőrzés: nézzük meg, hogy van-e doboz a szomszédos cellában
+                        const invalidCell = neighborCell.classList.contains('empty') || neighborCell.querySelector('.box.green') || neighborCell.querySelector('.box.brown');
+                        if (!invalidCell) { // Ha nincs doboz a szomszédos cellában, akkor elérhető
+                            adjacentCells.push(neighborCell);
+                        }
+                    }
+                }
+            });
+            return adjacentCells;
+        }
+
+        function getReachableYellowCells(startCell) {
+            const reachableCells = [];
+            const visitedCells = new Set();
+            const queue = [startCell];
+            visitedCells.add(startCell);
+            reachableCells.push(startCell);
+
+            while (queue.length > 0) {
+                const currentCell = queue.shift();
+                const adjacentYellowCells = getAdjacentYellowCells(currentCell);
+
+                adjacentYellowCells.forEach(nextCell => {
+                    if (!visitedCells.has(nextCell)) {
+                        visitedCells.add(nextCell);
+                        queue.push(nextCell);
+                        reachableCells.push(nextCell);
+                    }
+                });
+            }
+            return reachableCells;
+        }
+
+
+        document.querySelectorAll('.box').forEach(box => {
+            box.addEventListener('click', function () {
+                if (selectedBox) {
+                    selectedBox.classList.remove('selected');
+                }
+                selectedBox = this;
+                selectedBox.classList.add('selected');
+            });
+        });
+
+        document.querySelectorAll('.cell.yellow').forEach(cell => {
+            cell.addEventListener('click', function () {
+                //if ((selectedBox && this.children.length === 0)) {
+                if ((selectedBox && this.children.length === 0) || (selectedBox && this.children.length === 1 && this.children[0].classList.contains('dot'))) {                        
+                    let selectedCell = selectedBox.parentNode;
+                    let selectedIndex = getCellIndex(selectedCell);
+                    let targetIndex = getCellIndex(this);
+                    let container = selectedCell.parentNode;
+                    let cols = 5;
+
+                    const startCell = selectedCell; // Kiinduló pont a kiválasztott doboz cellája
+                    const reachable = getReachableYellowCells(startCell); // Elérhető cellák lekérdezése
+
+                    // Ellenőrizzük, hogy a kattintott cella benne van-e az elérhető cellák listájában
+                    const isReachableTarget = reachable.includes(this);
+
+
+                    let validMove = (this.className === "cell yellow") && isReachableTarget;
+
+                    if (validMove) {
+                        this.appendChild(selectedBox);
+                        selectedBox.classList.remove('selected');
+                        selectedBox = null;
+                        moveCount++;
+                        moveCounter.textContent = moveCount;
+                    } else if (!isReachableTarget && this.className === "cell yellow") {
+                        // Vizuális visszajelzés: piros felvillanás transition-nel
+                        this.classList.add('error-flash'); // Hozzáadjuk az error-flash osztályt
+                        setTimeout(() => {
+                            this.classList.remove('error-flash'); // Eltávolítjuk az error-flash osztályt rövid késleltetés után
+                        }, 400); // 300 milliszekundumos késleltetés, megegyezik a CSS transition időtartamával                    
+                    }
+                }
+            });
+        });
+    </script>
+    </body>
+</html>

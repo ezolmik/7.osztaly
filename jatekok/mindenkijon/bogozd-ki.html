@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Bogozd ki!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0;
+            position: relative;
+            border: 2px solid #e2e8f0;
+            background-color: #e2e8f0;
+        }
+        .cell {
+            aspect-ratio: 1;
+            background-color: white;
+            border: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+        .cell.fixed-grey {
+            background-color: #94a3b8 !important;
+            cursor: default;
+        }
+        .cell.user-grey {
+            background-color: #94a3b8;
+        }
+        .cell.selected-start {
+            background-color: #a5d8ff !important; 
+            color: white;
+        }
+        .btn-mode {
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .btn-mode.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+        line {
+            stroke: #3b82f6;
+            stroke-width: 7;
+            stroke-linecap: round;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        line.fixed-line {
+            stroke: #475569;
+            stroke-width: 8;
+            cursor: default;
+        }
+        line.user-line:hover {
+            stroke: #ef4444;
+        }
+        .mode-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .mode-bar .mode-label-text {
+            font-weight: 600;
+            color: #475569;
+        }
+        .mode-chip {
+            cursor: pointer;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.15s;
+        }
+        .mode-chip:hover {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+        .mode-chip.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+        .rules-link {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+        .rules-link:hover {
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            background: #eff6ff;
+        }
+        .rules-link .rules-arrow {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+        .success-pill {
+            background-color: #dcfce7 !important;
+            color: #166534 !important;
+            border-color: #bbf7d0 !important;
+            font-size: 1.1rem;
+            padding: 0.5rem 1.5rem !important;
+            font-weight: 700;
+        }
+
+        /* Modal */
+        #rules-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,0.35);
+            align-items: center;
+            justify-content: center;
+        }
+        #rules-modal.open {
+            display: flex;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.2);
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: #94a3b8;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+        .modal-close:hover {
+            color: #334155;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<!-- Rules Modal -->
+<div id="rules-modal" onclick="closeRulesModal(event)">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeRulesModalBtn()">&times;</button>
+        <h2 id="rules-title" class="text-xl font-bold text-slate-800 mb-4 border-b pb-2"></h2>
+        <div id="rules-content" class="text-slate-600 text-sm leading-relaxed space-y-4"></div>
+    </div>
+</div>
+
+<div class="flex flex-col max-w-xl w-full">
+    
+    <div class="canvas-card flex-1 p-6 md:p-10">
+        <div class="flex justify-end items-center mb-4">
+            <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5" style="transition:all 0.2s;">
+                <span id="lang-switch-flag"></span>
+                <span id="lang-switch-label"></span>
+            </a>
+        </div>
+
+        <header class="text-center mb-6">
+            <h1 id="main-title" class="text-3xl font-extrabold text-slate-800 mb-3"></h1>
+            <div id="status-pill" class="hidden inline-block px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200 transition-all duration-300">
+                <span id="status-content"></span>
+            </div>
+        </header>
+
+        <!-- Mode bar above grid -->
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+            <button onclick="openRulesModal()" class="rules-link">
+                <span id="rules-btn-label"></span>
+                <span class="rules-arrow">&#9654;</span>
+            </button>
+            <div class="mode-bar ml-auto">
+                <span class="mode-label-text" id="mode-label-bar"></span>
+                <button id="btn-hurok" onclick="setMode('hurok')" class="mode-chip active"></button>
+                <button id="btn-mezo" onclick="setMode('mezo')" class="mode-chip"></button>
+            </div>
+        </div>
+
+        <div class="relative mb-8">
+            <div id="grid" class="grid-container"></div>
+            <svg id="svg-canvas"></svg>
+        </div>
+
+        <div class="flex justify-center border-t border-slate-100 pt-8">
+            <button id="reset-btn" onclick="resetGame()" class="px-8 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition shadow-sm"></button>
+        </div>
+
+        <div class="text-center pt-4 border-t border-slate-100 mt-8">
+            <p id="footer-text" class="text-slate-400 text-xs"></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const LANG = (params.get('lang') === 'en') ? 'en' : 'hu';
+    document.documentElement.lang = LANG;
+
+    const STRINGS_HU = {
+        title: "Bogozd ki!",
+        modeLabel: "Mód",
+        modeHurok: "Hurok rajzolása",
+        modeMezo: "Mező színezése",
+        resetBtn: "Újrakezdés",
+        rulesBtnLabel: "Szabályok",
+        rulesTitle: "Szabályok",
+        rulesHtml: `<p>Színezd ki az alábbi 7 × 8-as táblázat néhány mezőjét szürkére, valamint rajzolj bele egy hurkot úgy, hogy a következők teljesüljenek:
+            <ul class="list-disc ml-4">
+                <li>ne legyen az összes mező szürke,</li>
+                <li>a hurok csak oldalszomszédos mezőket köthet össze, nem keresztezheti önmagát és minden mezőn pontosan egyszer megy át,</li>
+                <li>a hurok mentén körbehaladva a szürke mezők azonos lépésközönként kövessék egymást.</li>
+            </ul>
+            </p>
+            <p><strong>Hurok rajzolása:</strong> Kattints két szomszédos mezőre a szakasz meghúzásához. Ha ki szeretnél törölni egy szakaszt, állj fölé az egérrel és kattints rá akkor, amikor piros.</p>
+            <p><strong>Mező színezése:</strong> Kattints a fehér mezőkre a szürkítéshez. Szürkített mezőt ugyanígy vissza is tudsz fehéríteni.</p>`,
+        footerText: 'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+        langSwitchFlag: "🇬🇧",
+        langSwitchLabel: "English",
+        langSwitchHref: "?lang=en",
+        success: "Gratulálok, helyes megoldás!"
+    };
+
+    const STRINGS_EN = {
+        title: "Untangle it!",
+        modeLabel: "Mode",
+        modeHurok: "Drawing a loop",
+        modeMezo: "Coloring a field",
+        resetBtn: "Restart",
+        rulesBtnLabel: "Rules",
+        rulesTitle: "Rules",
+        rulesHtml: `<p>Color some cells of the 7×8 grid grey and draw a loop such that:
+            <ul class="list-disc ml-4">
+                <li>not all fields are gray,</li>
+                <li>the loop connects fields that are adjacent through a side, it does not intersect itself, and it goes through each field exactly once,</li>
+                <li>as we traverse the loop, the number of steps between consecutive gray fields is the same in each case.</li>
+            </ul>
+            </p>
+            <p><strong>Drawing a loop:</strong> Click two adjacent fields to draw a segment.</p>
+            <p><strong>Coloring a field:</strong> Click white fields to turn them gray.</p>`,
+        footerText:     'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+        langSwitchFlag: "🇭🇺",
+        langSwitchLabel: "Magyar",
+        langSwitchHref: "?lang=hu",
+        success: "Congratulations, correct solution!"
+    };
+
+    const STRINGS = (LANG === 'en') ? STRINGS_EN : STRINGS_HU;
+
+    const ROWS = 7;
+    const COLS = 8;
+    const fixedGreyCells = ["1-5", "4-1", "4-5", "6-1", "7-6"];
+    const fixedLines = [
+        { a: "5-1", b: "6-1" },
+        { a: "5-1", b: "5-2" }
+    ];
+    
+    let currentMode = 'hurok';
+    let lastClickedId = null; 
+    let userGreyCells = new Set();
+    let userConnections = []; 
+    let isWon = false;
+
+    function openRulesModal() {
+        document.getElementById('rules-modal').classList.add('open');
+    }
+
+    function closeRulesModalBtn() {
+        document.getElementById('rules-modal').classList.remove('open');
+    }
+
+    function closeRulesModal(e) {
+        if (e.target === document.getElementById('rules-modal')) {
+            document.getElementById('rules-modal').classList.remove('open');
+        }
+    }
+
+    function applyStrings() {
+        document.title = STRINGS.title;
+        document.getElementById('main-title').innerText = STRINGS.title;
+        document.getElementById('mode-label-bar').innerText = STRINGS.modeLabel + ':';
+        document.getElementById('btn-hurok').innerText = STRINGS.modeHurok;
+        document.getElementById('btn-mezo').innerText = STRINGS.modeMezo;
+        document.getElementById('reset-btn').innerText = STRINGS.resetBtn;
+        document.getElementById('rules-btn-label').innerText = STRINGS.rulesBtnLabel;
+        document.getElementById('rules-title').innerText = STRINGS.rulesTitle;
+        document.getElementById('rules-content').innerHTML = STRINGS.rulesHtml;
+        document.getElementById('footer-text').innerHTML = STRINGS.footerText;
+        document.getElementById('lang-switch-flag').innerText = STRINGS.langSwitchFlag;
+        document.getElementById('lang-switch-label').innerText = STRINGS.langSwitchLabel;
+        document.getElementById('lang-switch-link').href = STRINGS.langSwitchHref;
+        updateModeText();
+    }
+
+    function updateModeText() {
+        const pill = document.getElementById('status-pill');
+        const content = document.getElementById('status-content');
+        
+        if (isWon) {
+            pill.classList.remove('hidden');
+            pill.classList.add('success-pill');
+            content.innerText = STRINGS.success;
+        } else {
+            pill.classList.add('hidden');
+            pill.classList.remove('success-pill');
+            content.innerText = '';
+        }
+    }
+
+    function checkSolution() {
+        const total = ROWS * COLS;
+        const adj = new Map();
+        for(let r=1; r<=ROWS; r++) for(let c=1; c<=COLS; c++) adj.set(`${r}-${c}`, []);
+        
+        [...fixedLines, ...userConnections].forEach(conn => {
+            adj.get(conn.a).push(conn.b);
+            adj.get(conn.b).push(conn.a);
+        });
+
+        for (let conns of adj.values()) if (conns.length !== 2) return false;
+
+        const visited = new Set();
+        let path = [];
+        let curr = "1-1", prev = adj.get("1-1")[1];
+        for(let i=0; i<total; i++) {
+            path.push(curr);
+            visited.add(curr);
+            let nArr = adj.get(curr);
+            if (!nArr) return false;
+            let next = nArr.find(n => n !== prev);
+            prev = curr; curr = next;
+        }
+        if (visited.size !== total) return false;
+
+        const greys = [];
+        path.forEach((id, idx) => {
+            if (fixedGreyCells.includes(id) || userGreyCells.has(id)) greys.push(idx);
+        });
+
+        if (greys.length < 2 || greys.length === total) return false;
+        const dist = greys[1] - greys[0];
+        for(let i=0; i<greys.length; i++) {
+            const nextIdx = (i + 1) % greys.length;
+            const d = (greys[nextIdx] - greys[i] + total) % total;
+            if (d !== dist) return false;
+        }
+        return true;
+    }
+
+    function init() {
+        applyStrings();
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        for (let r = 1; r <= ROWS; r++) {
+            for (let c = 1; c <= COLS; c++) {
+                const id = `${r}-${c}`;
+                const cell = document.createElement('div');
+                cell.id = id;
+                cell.className = 'cell';
+                if (fixedGreyCells.includes(id)) cell.classList.add('fixed-grey');
+                cell.onclick = () => handleCellClick(r, c);
+                grid.appendChild(cell);
+            }
+        }
+        window.addEventListener('resize', drawLines);
+        drawLines();
+    }
+
+    function setMode(mode) {
+        if (isWon) return;
+        currentMode = mode;
+        clearSelection();
+        document.getElementById('btn-hurok').classList.toggle('active', mode === 'hurok');
+        document.getElementById('btn-mezo').classList.toggle('active', mode === 'mezo');
+    }
+
+    function clearSelection() {
+        if (lastClickedId) {
+            document.getElementById(lastClickedId).classList.remove('selected-start');
+            lastClickedId = null;
+        }
+    }
+
+    function handleCellClick(r, c) {
+        if (isWon) return;
+        const id = `${r}-${c}`;
+
+        if (currentMode === 'mezo') {
+            if (fixedGreyCells.includes(id)) return;
+            const cell = document.getElementById(id);
+            if (userGreyCells.has(id)) {
+                userGreyCells.delete(id);
+                cell.classList.remove('user-grey');
+            } else {
+                userGreyCells.add(id);
+                cell.classList.add('user-grey');
+            }
+        } else {
+            if (lastClickedId === id) {
+                clearSelection();
+                return;
+            }
+            if (!lastClickedId) {
+                lastClickedId = id;
+                document.getElementById(id).classList.add('selected-start');
+                return;
+            }
+            const [lr, lc] = lastClickedId.split('-').map(Number);
+            const isNeighbor = Math.abs(lr - r) + Math.abs(lc - c) === 1;
+
+            if (isNeighbor) {
+                addConnectionOnly(lastClickedId, id); 
+                document.getElementById(lastClickedId).classList.remove('selected-start');
+                lastClickedId = id;
+                document.getElementById(id).classList.add('selected-start');
+            } else {
+                clearSelection();
+                lastClickedId = id;
+                document.getElementById(id).classList.add('selected-start');
+            }
+        }
+        if (checkSolution()) { isWon = true; updateModeText(); clearSelection(); }
+    }
+
+    function isFixedLine(id1, id2) {
+        return fixedLines.some(l => (l.a === id1 && l.b === id2) || (l.a === id2 && l.b === id1));
+    }
+
+    function addConnectionOnly(id1, id2) {
+        if (isFixedLine(id1, id2)) return;
+        const exists = userConnections.some(conn => (conn.a === id1 && conn.b === id2) || (conn.a === id2 && conn.b === id1));
+        
+        if (!exists) {
+            if (countTotalConnections(id1) < 2 && countTotalConnections(id2) < 2) {
+                userConnections.push({ a: id1, b: id2 });
+                drawLines();
+            }
+        }
+    }
+
+    function toggleConnection(id1, id2) {
+        if (isWon || isFixedLine(id1, id2)) return; 
+        const index = userConnections.findIndex(conn => (conn.a === id1 && conn.b === id2) || (conn.a === id2 && conn.b === id1));
+        if (index > -1) {
+            userConnections.splice(index, 1);
+            drawLines();
+        }
+    }
+
+    function countTotalConnections(id) {
+        return userConnections.filter(c => c.a === id || c.b === id).length + fixedLines.filter(c => c.a === id || c.b === id).length;
+    }
+
+    function drawLines() {
+        const svg = document.getElementById('svg-canvas');
+        svg.innerHTML = '';
+        const gridRect = document.getElementById('grid').getBoundingClientRect();
+        
+        [...fixedLines.map(l => ({...l, type: 'fixed'})), ...userConnections.map(l => ({...l, type: 'user'}))].forEach(conn => {
+            const el1 = document.getElementById(conn.a);
+            const el2 = document.getElementById(conn.b);
+            const r1 = el1.getBoundingClientRect();
+            const r2 = el2.getBoundingClientRect();
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", r1.left - gridRect.left + r1.width / 2);
+            line.setAttribute("y1", r1.top - gridRect.top + r1.height / 2);
+            line.setAttribute("x2", r2.left - gridRect.left + r2.width / 2);
+            line.setAttribute("y2", r2.top - gridRect.top + r2.height / 2);
+            
+            if (conn.type === 'fixed') {
+                line.setAttribute("class", "fixed-line");
+            } else {
+                line.setAttribute("class", "user-line");
+                line.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleConnection(conn.a, conn.b);
+                };
+            }
+            svg.appendChild(line);
+        });
+    }
+
+    function resetGame() {
+        isWon = false;
+        userGreyCells.clear();
+        userConnections = [];
+        clearSelection();
+        document.querySelectorAll('.cell').forEach(cell => {
+            if (!fixedGreyCells.includes(cell.id)) cell.classList.remove('user-grey');
+        });
+        setMode('hurok');
+        drawLines();
+    }
+
+    init();
+</script>
+</body>
+</html>

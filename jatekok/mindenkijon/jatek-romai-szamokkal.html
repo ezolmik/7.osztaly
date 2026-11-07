@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Római Szám Építő Játék</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .roman-display {
+            font-family: 'Georgia', serif;
+            letter-spacing: 0.2em;
+        }
+        .btn-roman {
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .btn-roman:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .btn-start {
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .btn-start:active {
+            transform: scale(0.95);
+        }
+        .btn-start.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        .win-gradient {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+        }
+        .loss-gradient {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid #fecaca;
+        }
+        .lang-switch {
+            transition: all 0.2s;
+        }
+        .lang-switch:hover {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-2xl p-6 md:p-10">
+
+    <!-- Language switcher -->
+    <div class="flex justify-end mb-4">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag"></span>
+            <span id="lang-switch-label"></span>
+        </a>
+    </div>
+
+    <header class="text-center mb-10">
+        <h1 id="title" class="text-3xl font-extrabold text-slate-800 mb-3"></h1>
+        <p id="subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <!-- Status pill + current roman numeral -->
+    <div class="flex justify-between items-end mb-8 gap-4">
+        <div id="status-pill" class="px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200"></div>
+        <div class="text-right">
+            <span id="score-label" class="text-slate-400 text-xs uppercase tracking-wider font-bold"></span>
+        </div>
+    </div>
+
+    <!-- Current roman numeral – centered -->
+    <div class="mb-8 text-center">
+        <div id="roman-display" class="roman-display text-5xl font-black text-slate-700 min-h-[3.5rem] flex items-center justify-center">—</div>
+    </div>
+
+    <!-- Who starts? selector -->
+    <div id="starter-area" class="mb-6">
+        <p id="starter-label" class="text-center text-slate-500 text-sm font-medium mb-3"></p>
+        <div class="grid grid-cols-2 gap-3">
+            <button id="btn-player-start" onclick="selectStarter(true)"
+                class="btn-start py-3 px-4 bg-white border-2 border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:border-blue-300">
+            </button>
+            <button id="btn-cpu-start" onclick="selectStarter(false)"
+                class="btn-start py-3 px-4 bg-white border-2 border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:border-blue-300">
+            </button>
+        </div>
+    </div>
+
+    <div id="button-grid" class="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-8">
+    </div>
+
+    <div id="alert" class="hidden p-8 rounded-2xl text-center mb-8">
+        <p id="alert-text" class="font-bold text-lg mb-4"></p>
+        <button onclick="resetGame()" id="new-game-btn"
+            class="px-8 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition shadow-sm">
+        </button>
+    </div>
+
+    <div class="flex justify-center border-t border-slate-100 pt-8 mb-2">
+        <button id="reset-link" onclick="resetGame()"
+            class="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors invisible">
+        </button>
+    </div>
+
+    <!-- Footer info link -->
+    <div class="text-center pt-4 border-t border-slate-100 mt-2">
+        <p id="footer-text" class="text-slate-400 text-xs"></p>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const langParam = params.get('lang');
+    const LANG = (langParam === 'en') ? 'en' : 'hu';
+
+    document.documentElement.lang = LANG;
+
+    const STRINGS_HU = {
+        pageTitle:      "Játék római számokkal",
+        subtitle:       'Egészítsd ki a számot úgy, hogy római szám maradjon (max. <span class="font-bold text-slate-700">2999</span>).<br class="hidden sm:block"> Az veszít, aki nem tud lépni!',
+        scoreLabel:     "Aktuális szám",
+        starterLabel:   "Ki kezdjen?",
+        btnPlayerStart: "Kezdeni szeretnék",
+        btnCpuStart:    "Átadom a kezdés jogát",
+        statusPlayer:   "Te jössz!",
+        statusCpu:      "Gondolkodunk...",
+        statusGameOver: "Játék vége",
+        statusWaiting:  "Válaszd ki, ki kezdjen!",
+        endWin:         "Gratulálunk, győztél! 🎉",
+        endLoss:        "Mi nyertünk.",
+        newGame:        "Új játék",
+        resetLink:      "Újrakezdés",
+        langSwitchFlag: "🇬🇧",
+        langSwitchLabel:"English",
+        langSwitchHref: "?lang=en",
+        footerText:     'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+    };
+
+    const STRINGS_EN = {
+        pageTitle:      "Roman Numeral Builder Game",
+        subtitle:       'Extend the number so it stays a valid Roman numeral (max. <span class="font-bold text-slate-700">2999</span>).<br class="hidden sm:block"> The player who cannot move loses!',
+        scoreLabel:     "Current number",
+        starterLabel:   "Who goes first?",
+        btnPlayerStart: "I'll go first",
+        btnCpuStart:    "Let you start",
+        statusPlayer:   "Your turn!",
+        statusCpu:      "Thinking...",
+        statusGameOver: "Game over",
+        statusWaiting:  "Choose who goes first!",
+        endWin:         "Congratulations, you won! 🎉",
+        endLoss:        "We win.",
+        newGame:        "New game",
+        resetLink:      "Restart",
+        langSwitchFlag: "🇭🇺",
+        langSwitchLabel:"Magyar",
+        langSwitchHref: "?lang=hu",
+        footerText:     'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+    };
+
+    const STRINGS = LANG === 'en' ? STRINGS_EN : STRINGS_HU;
+
+    const ROMAN_CHARS = ['I', 'V', 'X', 'L', 'C', 'D', 'M'];
+    let currentString = "";
+    let isPlayerTurn = true;
+    let gameActive = false;
+    const memo = new Map();
+
+    function applyStaticStrings() {
+        document.title = STRINGS.pageTitle;
+        document.getElementById('title').innerHTML            = STRINGS.pageTitle;
+        document.getElementById('subtitle').innerHTML         = STRINGS.subtitle;
+        document.getElementById('score-label').innerText      = STRINGS.scoreLabel;
+        document.getElementById('starter-label').innerText    = STRINGS.starterLabel;
+        document.getElementById('btn-player-start').innerText = STRINGS.btnPlayerStart;
+        document.getElementById('btn-cpu-start').innerText    = STRINGS.btnCpuStart;
+        document.getElementById('new-game-btn').innerText     = STRINGS.newGame;
+        document.getElementById('reset-link').innerText       = STRINGS.resetLink;
+        document.getElementById('status-pill').innerText      = STRINGS.statusWaiting;
+        document.getElementById('footer-text').innerHTML      = STRINGS.footerText;
+
+        document.getElementById('lang-switch-flag').innerText  = STRINGS.langSwitchFlag;
+        document.getElementById('lang-switch-label').innerText = STRINGS.langSwitchLabel;
+        document.getElementById('lang-switch-link').href       = STRINGS.langSwitchHref;
+    }
+
+    function romanToDecimal(str) {
+        if (!str) return 0;
+        const romanRegex = /^(M{0,2})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+        if (!romanRegex.test(str)) return null;
+        const values = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+        let total = 0;
+        for (let i = 0; i < str.length; i++) {
+            const current = values[str[i]];
+            const next = values[str[i + 1]];
+            if (next > current) { total += (next - current); i++; }
+            else total += current;
+        }
+        return total > 0 && total < 3000 ? total : null;
+    }
+
+    function isWinning(s) {
+        if (memo.has(s)) return memo.get(s);
+        let canMoveToLosingState = false;
+        let possibleMoves = 0;
+        for (const char of ROMAN_CHARS) {
+            const nextS = s + char;
+            if (romanToDecimal(nextS) !== null) {
+                possibleMoves++;
+                if (!isWinning(nextS)) { canMoveToLosingState = true; break; }
+            }
+        }
+        const result = possibleMoves > 0 && canMoveToLosingState;
+        memo.set(s, result);
+        return result;
+    }
+
+    function buildButtons() {
+        const grid = document.getElementById('button-grid');
+        grid.innerHTML = '';
+        for (const char of ROMAN_CHARS) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-' + char;
+            btn.className = 'btn-roman py-3 px-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:border-blue-400 hover:text-blue-600 disabled:opacity-20 font-bold text-xl';
+            btn.textContent = char;
+            btn.onclick = () => makeMove(char);
+            btn.disabled = true;
+            grid.appendChild(btn);
+        }
+    }
+
+    function selectStarter(playerStarts) {
+        document.getElementById('btn-player-start').classList.toggle('selected', playerStarts === true);
+        document.getElementById('btn-cpu-start').classList.toggle('selected', playerStarts === false);
+        startGame(playerStarts);
+    }
+
+    function startGame(playerStarts) {
+        currentString = "";
+        isPlayerTurn = playerStarts;
+        gameActive = true;
+        memo.clear();
+
+        document.getElementById('starter-area').classList.add('hidden');
+        document.getElementById('alert').classList.add('hidden');
+        document.getElementById('button-grid').classList.remove('hidden');
+        document.getElementById('reset-link').classList.remove('invisible');
+        document.getElementById('roman-display').textContent = '—';
+        const lsl = document.getElementById('lang-switch-link');
+        lsl.style.pointerEvents = 'none';
+        lsl.style.opacity = '0.35';
+
+        updateUI();
+        if (!isPlayerTurn) setTimeout(aiMove, 600);
+    }
+
+    function updateUI() {
+        document.getElementById('roman-display').textContent = currentString || '—';
+
+        for (const char of ROMAN_CHARS) {
+            const btn = document.getElementById('btn-' + char);
+            if (!btn) continue;
+            btn.disabled = !romanToDecimal(currentString + char) || !gameActive || !isPlayerTurn;
+        }
+
+        if (gameActive) {
+            const pill = document.getElementById('status-pill');
+            if (isPlayerTurn) {
+                pill.innerText = STRINGS.statusPlayer;
+                pill.className = 'px-4 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-600 border border-blue-100';
+            } else {
+                pill.innerText = STRINGS.statusCpu;
+                pill.className = 'px-4 py-1.5 rounded-full text-sm font-medium bg-amber-50 text-amber-600 border border-amber-100 animate-pulse';
+            }
+        }
+    }
+
+    function makeMove(char) {
+        if (!gameActive || !isPlayerTurn) return;
+        if (romanToDecimal(currentString + char) !== null) {
+            currentString += char;
+            isPlayerTurn = false;
+            updateUI();
+            checkGameOver();
+            if (gameActive) setTimeout(aiMove, 800);
+        }
+    }
+
+    function aiMove() {
+        if (!gameActive) return;
+        let winningMoves = [], losingMoves = [];
+        for (const char of ROMAN_CHARS) {
+            const nextS = currentString + char;
+            if (romanToDecimal(nextS) !== null)
+                (!isWinning(nextS) ? winningMoves : losingMoves).push(char);
+        }
+        const pool = winningMoves.length > 0 ? winningMoves : losingMoves;
+        if (pool.length > 0) {
+            currentString += pool[Math.floor(Math.random() * pool.length)];
+            isPlayerTurn = true;
+            updateUI();
+            checkGameOver();
+        } else {
+            checkGameOver();
+        }
+    }
+
+    function checkGameOver() {
+        const canMove = ROMAN_CHARS.some(c => romanToDecimal(currentString + c) !== null);
+        if (!canMove) {
+            gameActive = false;
+            updateUI();
+
+            const pill = document.getElementById('status-pill');
+            pill.innerText = STRINGS.statusGameOver;
+            pill.className = 'px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200';
+
+            const alertEl = document.getElementById('alert');
+            const alertText = document.getElementById('alert-text');
+            if (isPlayerTurn) {
+                alertText.innerText = STRINGS.endLoss;
+                alertEl.className = 'p-8 rounded-2xl text-center mb-8 loss-gradient';
+            } else {
+                alertText.innerText = STRINGS.endWin;
+                alertEl.className = 'p-8 rounded-2xl text-center mb-8 win-gradient';
+            }
+            alertEl.classList.remove('hidden');
+            document.getElementById('button-grid').classList.add('hidden');
+        }
+    }
+
+    function resetGame() {
+        currentString = "";
+        gameActive = false;
+
+        document.getElementById('starter-area').classList.remove('hidden');
+        document.getElementById('btn-player-start').classList.remove('selected');
+        document.getElementById('btn-cpu-start').classList.remove('selected');
+        const lsl = document.getElementById('lang-switch-link');
+        lsl.style.pointerEvents = '';
+        lsl.style.opacity = '';
+
+        for (const char of ROMAN_CHARS) {
+            const btn = document.getElementById('btn-' + char);
+            if (btn) btn.disabled = true;
+        }
+
+        document.getElementById('alert').classList.add('hidden');
+        document.getElementById('button-grid').classList.remove('hidden');
+        document.getElementById('reset-link').classList.add('invisible');
+        document.getElementById('roman-display').textContent = '—';
+        document.getElementById('status-pill').innerText = STRINGS.statusWaiting;
+        document.getElementById('status-pill').className = 'px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200';
+    }
+
+    applyStaticStrings();
+    buildButtons();
+</script>
+</body>
+</html>

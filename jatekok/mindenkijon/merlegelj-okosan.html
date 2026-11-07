@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #334155; }
+        .canvas-card { background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        #balance-canvas { width: 100%; height: auto; display: block; touch-action: manipulation; }
+        input:focus { outline: none; border-color: #eab308; box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15); }
+        .step-button { transition: all 0.2s; touch-action: manipulation; }
+        .step-button:active:not(:disabled) { transform: scale(0.95); }
+        .weight-btn { transition: all 0.2s; }
+        .weight-btn:hover:not(:disabled) { background-color: #fefce8; border-color: #eab308; }
+        .lang-switch { transition: all 0.2s; }
+        .lang-switch:hover { background-color: #f1f5f9; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-2xl p-6 md:p-10 border border-slate-100">
+
+    <div class="flex justify-end mb-4">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag"></span>
+            <span id="lang-switch-label"></span>
+        </a>
+    </div>
+
+    <header class="text-center mb-8">
+        <h1 id="ui-title" class="text-3xl font-extrabold text-slate-800 mb-3 tracking-tight"></h1>
+        <p id="ui-subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 relative overflow-hidden">
+        <canvas id="balance-canvas"></canvas>
+    </div>
+
+    <div id="weight-selector" class="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-6"></div>
+
+    <div id="message-wrap" class="mb-5 min-h-[44px] flex items-center justify-center">
+        <p id="message" class="text-sm font-semibold px-5 py-2.5 rounded-full bg-slate-100 border border-slate-200 hidden shadow-sm"></p>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <div id="cost-count-pill" class="px-4 py-1.5 rounded-full text-sm font-bold bg-amber-50 text-amber-700 border border-amber-200"></div>
+        <button onclick="resetGame()" id="ui-restart-btn" class="step-button px-4 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:border-amber-400 hover:text-amber-600 shadow-sm"></button>
+    </div>
+
+    <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-6 mb-6">
+        <label for="guess" id="ui-guess-label" class="block text-sm font-bold text-amber-800 mb-3 text-center uppercase tracking-wider"></label>
+        <div class="flex gap-3 justify-center items-center">
+            <input type="number" id="guess" min="1" max="8" inputmode="numeric" placeholder="1–8" class="w-24 text-center px-4 py-3 border border-amber-200 rounded-xl text-lg font-black text-amber-900 bg-white shadow-inner">
+            <button onclick="checkGuess()" id="ui-submit-btn" class="step-button px-8 py-3 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 shadow-md shadow-amber-200 uppercase tracking-wide"></button>
+            <button onclick="resetGame()" id="ui-newgame-btn" class="step-button px-8 py-3 bg-slate-700 text-white rounded-xl text-sm font-bold hover:bg-slate-800 shadow-md hidden uppercase tracking-wide">Új játék</button>
+        </div>
+    </div>
+
+    <div class="text-center border-t border-slate-100 pt-5">
+        <p id="ui-footer" class="text-slate-400 text-xs font-medium"></p>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const LANG = (params.get('lang') === 'en') ? 'en' : 'hu';
+    
+    const STRINGS_HU = {
+        pageTitle: "Mérlegelj okosan!",
+        subtitle: 'Határozd meg az aranytömb tömegét. Egy mérés költsége megegyzik a feltett mérősúly tömegével.',
+        costLabel: "Költség:",
+        restartBtn: "↺ Újrakezdés",
+        guessLabel: "Mekkora az aranytömb tömege?",
+        submitBtn: "Tippelés",
+        newGameBtn: "Új játék",
+        lighter: "Az aranytömb könnyebb, mint {weight} kg.",
+        heavier: "Az aranytömb nehezebb, mint {weight} kg.",
+        equal: "A mérleg egyensúlyban van, pontosan {weight} kg.",
+        invalidInput: "Kérlek 1 és 8 közötti számot adj meg!",
+        successMsg: "Gratulálok! Az aranytömb valóban {weight} kg volt. Költséged: {cost} $.",
+        failureMsg: "Sajnos, nem talált. Az aranytömb tömege {weight} kg volt.",
+        goldLabel: "Arany",
+        unknownLabel: "?",
+        langSwitchFlag: "🇬🇧",
+        langSwitchLabel: "English",
+        langSwitchHref: "?lang=en",
+        footer: 'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+    };
+
+    const STRINGS_EN = {
+        pageTitle: "Measure wisely!",
+        subtitle: 'Determine the mass of the gold bar. The cost of each measurement is equal to the mass of the weight used.',
+        costLabel: "Cost:",
+        restartBtn: "↺ Restart",
+        guessLabel: "What is the weight of the golden bar?",
+        submitBtn: "Submit",
+        newGameBtn: "New Game",
+        lighter: "The golden bar is lighter than {weight} kg.",
+        heavier: "The golden bar is heavier than {weight} kg.",
+        equal: "The scale is balanced, exactly {weight} kg.",
+        invalidInput: "Please enter a number between 1 and 8!",
+        successMsg: "Congratulations! The bar was {weight} kg. Cost: {cost} $.",
+        failureMsg: "Incorrect. The actual mass was {weight} kg.",
+        goldLabel: "Gold",
+        unknownLabel: "?",
+        langSwitchFlag: "🇭🇺",
+        langSwitchLabel: "Magyar",
+        langSwitchHref: "?lang=hu",
+        footer:     'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.'
+    };
+
+    const STRINGS = LANG === 'en' ? STRINGS_EN : STRINGS_HU;
+    const MIN_WEIGHT = 1;
+    const MAX_WEIGHT = 8;
+    const TARGET_OPTIMUM = 12;
+
+    let state = {
+        potentialWeights: Array.from({ length: MAX_WEIGHT }, (_, i) => i + 1),
+        totalCost: 0,
+        lastMeasurement: null,
+        isGameOver: false,
+        isAnimating: false,
+        currentAngle: 0
+    };
+
+    const costCache = new Map();
+
+    function calculateMinRemainingCost(possibilities) {
+        if (possibilities.length <= 1) return 0;
+        const key = possibilities.slice().sort((a,b) => a-b).join(',');
+        if (costCache.has(key)) return costCache.get(key);
+
+        let minWorstCaseCost = Infinity;
+        for (let m = 1; m <= 8; m++) {
+            const lighter = possibilities.filter(p => p < m);
+            const heavier = possibilities.filter(p => p > m);
+            const equal = possibilities.filter(p => p === m);
+            if (lighter.length === possibilities.length || heavier.length === possibilities.length || (equal.length === possibilities.length && possibilities.length > 0)) continue;
+
+            let maxSubCost = 0;
+            if (lighter.length > 0) maxSubCost = Math.max(maxSubCost, calculateMinRemainingCost(lighter));
+            if (heavier.length > 0) maxSubCost = Math.max(maxSubCost, calculateMinRemainingCost(heavier));
+            if (equal.length > 0) maxSubCost = Math.max(maxSubCost, calculateMinRemainingCost(equal));
+
+            const currentWorstCase = m + maxSubCost;
+            if (currentWorstCase < minWorstCaseCost) minWorstCaseCost = currentWorstCase;
+        }
+        const result = (minWorstCaseCost === Infinity) ? 0 : minWorstCaseCost;
+        costCache.set(key, result);
+        return result;
+    }
+
+    let canvas, ctx;
+
+    window.addEventListener('load', () => {
+        applyStaticStrings();
+        initUI();
+        initCanvas();
+        resetGame();
+    });
+
+    function applyStaticStrings() {
+        document.title = STRINGS.pageTitle;
+        document.getElementById('ui-title').innerText = STRINGS.pageTitle;
+        document.getElementById('ui-subtitle').innerHTML = STRINGS.subtitle;
+        document.getElementById('ui-restart-btn').innerText = STRINGS.restartBtn;
+        document.getElementById('ui-guess-label').innerText = STRINGS.guessLabel;
+        document.getElementById('ui-submit-btn').innerText = STRINGS.submitBtn;
+        document.getElementById('ui-newgame-btn').innerText = STRINGS.newGameBtn;
+        document.getElementById('ui-footer').innerHTML = STRINGS.footer;
+        document.getElementById('lang-switch-flag').innerText = STRINGS.langSwitchFlag;
+        document.getElementById('lang-switch-label').innerText = STRINGS.langSwitchLabel;
+        document.getElementById('lang-switch-link').href = STRINGS.langSwitchHref;
+    }
+
+    function initUI() {
+        const selector = document.getElementById('weight-selector');
+        selector.innerHTML = '';
+        for (let i = MIN_WEIGHT; i <= MAX_WEIGHT; i++) {
+            const btn = document.createElement('button');
+            btn.className = "weight-btn h-12 bg-white border-2 border-slate-200 rounded-xl font-bold text-slate-700 shadow-sm disabled:opacity-50";
+            btn.textContent = i;
+            btn.onclick = () => handleMeasurement(i);
+            btn.id = `btn-weight-${i}`;
+            selector.appendChild(btn);
+        }
+    }
+
+    function initCanvas() {
+        canvas = document.getElementById('balance-canvas');
+        ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 220;
+        drawScene();
+    }
+
+    function resetGame() {
+        state.potentialWeights = Array.from({ length: MAX_WEIGHT }, (_, i) => i + 1);
+        state.totalCost = 0;
+        state.lastMeasurement = null;
+        state.isGameOver = false;
+        state.isAnimating = false;
+        state.currentAngle = 0;
+        document.getElementById('cost-count-pill').textContent = `${STRINGS.costLabel} 0 $`;
+        document.getElementById('message').classList.add('hidden');
+        document.getElementById('guess').disabled = false;
+        document.getElementById('guess').value = '';
+        document.getElementById('ui-submit-btn').classList.remove('hidden');
+        document.getElementById('ui-newgame-btn').classList.add('hidden');
+        setButtonsDisabled(false);
+        drawScene();
+    }
+
+    function handleMeasurement(weight) {
+        if (state.isGameOver || state.isAnimating) return;
+        state.isAnimating = true;
+        setButtonsDisabled(true);
+        state.currentAngle = 0;
+        drawScene();
+        setTimeout(() => performActualMeasurement(weight), 400);
+    }
+
+    function performActualMeasurement(weight) {
+        const lighterPoss = state.potentialWeights.filter(w => w < weight);
+        const heavierPoss = state.potentialWeights.filter(w => w > weight);
+        const equalPoss = state.potentialWeights.includes(weight) ? [weight] : [];
+
+        const branches = [];
+        if (lighterPoss.length > 0) branches.push({ type: 'lighter', list: lighterPoss });
+        if (heavierPoss.length > 0) branches.push({ type: 'heavier', list: heavierPoss });
+        if (equalPoss.length > 0) branches.push({ type: 'equal', list: equalPoss });
+
+        branches.forEach(b => {
+            b.minRemaining = calculateMinRemainingCost(b.list);
+            b.expectedTotal = state.totalCost + weight + b.minRemaining;
+        });
+
+        const canStillReachOptimum = branches.some(b => b.expectedTotal <= TARGET_OPTIMUM);
+        let chosenBranch;
+        if (!canStillReachOptimum) {
+            chosenBranch = branches[Math.floor(Math.random() * branches.length)];
+        } else {
+            chosenBranch = branches.reduce((prev, curr) => (prev.expectedTotal > curr.expectedTotal) ? prev : curr);
+        }
+
+        state.potentialWeights = chosenBranch.list;
+        state.totalCost += weight;
+        state.lastMeasurement = { weight, result: chosenBranch.type };
+        state.currentAngle = (chosenBranch.type === 'lighter') ? 0.15 : (chosenBranch.type === 'heavier' ? -0.15 : 0);
+
+        updateUI(weight, chosenBranch.type);
+        drawScene();
+        state.isAnimating = false;
+        if (!state.isGameOver) setButtonsDisabled(false);
+    }
+
+    function updateUI(weight, result) {
+        document.getElementById('cost-count-pill').textContent = `${STRINGS.costLabel} ${state.totalCost} $`;
+        const msg = document.getElementById('message');
+        msg.className = "text-sm font-semibold px-5 py-2.5 rounded-full border shadow-sm";
+        let text = result === 'lighter' ? STRINGS.lighter : (result === 'heavier' ? STRINGS.heavier : STRINGS.equal);
+        msg.textContent = text.replace('{weight}', weight);
+        msg.classList.add(result === 'lighter' ? 'text-blue-700' : (result === 'heavier' ? 'text-amber-700' : 'text-green-700'));
+        msg.classList.add(result === 'lighter' ? 'bg-blue-50' : (result === 'heavier' ? 'bg-amber-50' : 'bg-green-50'));
+        msg.classList.remove('hidden');
+    }
+
+    function checkGuess() {
+        const val = parseInt(document.getElementById('guess').value);
+        if (isNaN(val) || val < MIN_WEIGHT || val > MAX_WEIGHT) {
+            alert(STRINGS.invalidInput);
+            return;
+        }
+
+        state.isGameOver = true;
+        setButtonsDisabled(true);
+        document.getElementById('guess').disabled = true;
+        document.getElementById('ui-submit-btn').classList.add('hidden');
+        document.getElementById('ui-newgame-btn').classList.remove('hidden');
+
+        // Ha eltalálta és csak 1 lehetőség maradt (vagy az AI kénytelen elfogadni)
+        if (state.potentialWeights.includes(val) && state.potentialWeights.length === 1) {
+            const msg = STRINGS.successMsg.replace('{weight}', val).replace('{cost}', state.totalCost);
+            showMessage(msg, "success");
+        } else {
+            // Ha nem talált: keressünk egy olyan súlyt, ami NEM a tippelt, de jó lett volna
+            let alternative = state.potentialWeights.find(w => w !== val);
+            
+            // Ha véletlenül pont a tippelt volt az egyetlen a listában, de az AI "csalni" akar, 
+            // akkor is elbukja, mert az AI kimozoghatott volna belőle korábban.
+            // Ebben a logikában az alternative biztosan létezik, ha length > 1.
+            
+            const msg = STRINGS.failureMsg.replace('{weight}', alternative || val);
+            showMessage(msg, "error");
+        }
+    }
+
+    function showMessage(txt, type) {
+        const msg = document.getElementById('message');
+        msg.className = "text-sm font-semibold px-5 py-2.5 rounded-full border shadow-sm";
+        if (type === 'success') msg.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
+        else if (type === 'error') msg.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
+        else msg.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-200');
+        msg.textContent = txt;
+        msg.classList.remove('hidden');
+    }
+
+    function setButtonsDisabled(disabled) {
+        document.querySelectorAll('.weight-btn').forEach(btn => btn.disabled = disabled);
+    }
+
+    function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const centerX = canvas.width / 2, beamY = 80, beamWidth = 350;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 20, 180); ctx.lineTo(centerX + 20, 180); ctx.lineTo(centerX, beamY);
+        ctx.fillStyle = "#cbd5e1"; ctx.fill();
+        ctx.save();
+        ctx.translate(centerX, beamY);
+        ctx.rotate(state.currentAngle);
+        ctx.beginPath();
+        ctx.moveTo(-beamWidth/2, 0); ctx.lineTo(beamWidth/2, 0);
+        ctx.strokeStyle = "#64748b"; ctx.lineWidth = 6; ctx.stroke();
+        drawPan(-beamWidth/2, 0, state.currentAngle, STRINGS.goldLabel, true);
+        drawPan(beamWidth/2, 0, state.currentAngle, state.lastMeasurement ? `${state.lastMeasurement.weight}kg` : STRINGS.unknownLabel, false);
+        ctx.restore();
+    }
+
+    function drawPan(x, y, angle, label, isGold) {
+        const drop = 60;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(-30, drop); ctx.moveTo(0, 0); ctx.lineTo(30, drop);
+        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(0, drop, 30, 8, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = "#e2e8f0"; ctx.fill(); ctx.stroke();
+        if (isGold) {
+            ctx.fillStyle = "#fbbf24"; ctx.fillRect(-15, drop - 20, 30, 15);
+            ctx.strokeStyle = "#d97706"; ctx.strokeRect(-15, drop - 20, 30, 15);
+        } else if (state.lastMeasurement) {
+            ctx.fillStyle = "#475569"; ctx.beginPath();
+            ctx.moveTo(-12, drop - 5); ctx.lineTo(12, drop - 5); ctx.lineTo(8, drop - 25); ctx.lineTo(-8, drop - 25);
+            ctx.closePath(); ctx.fill();
+        }
+        ctx.fillStyle = "#1e293b"; ctx.font = "bold 12px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(label, 0, drop + 25);
+        ctx.restore();
+    }
+</script>
+</body>
+</html>

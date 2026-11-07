@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Áthajtós bűvös négyzet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Egyedi CSS a jobb vizuális élményért, különösen a zsanérokhoz */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Cella stílusok */
+        .cell {
+            /* FONTOS JAVÍTÁS: A box-sizing biztosítja a pontos méretezést a border és padding ellenére is. */
+            box-sizing: border-box;
+            width: 100px; /* Alapértelmezett, JS felülírhatja */
+            height: 100px; /* Alapértelmezett, JS felülírhatja */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f2937; /* Sötétszürke szöveg */
+            transition: all 0.3s ease;
+            cursor: pointer;
+            
+            /* FRISSÍTVE: Minden lapkán egységesen 4px vastag fekete szegély */
+            border: 4px solid #000;
+            
+            position: relative; /* A zsanérok pozícionálásához */
+            border-radius: 8px;
+            overflow: hidden;
+            
+            /* Eltávolítva az alap árnyékot */
+            box-shadow: none;
+        }
+        /* Mozgatható lapkák (amik nincsenek fedve) könnyű kiemelése hoverre */
+        .cell:not(.color-covered):hover {
+            /* Árnyék csak hoverre, hogy kiemelkedjen */
+            box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Állapot színek */
+        .color-normal { background-color: #ef4444; /* Élénk Piros - eredeti (red-500) */ }
+        
+        /* FEHÉR: Duplázott érték (alul lévő lap) */
+        .color-doubled { 
+            background-color: #ffffff; /* Fehér - duplázott alatta */ 
+            /* ENYHE ÁRNYÉK: Vastagságot érzékeltet */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .color-covered { 
+            background-color: #fca5a5; /* Világos Piros - hátlap */ 
+            cursor: default !important;
+            box-shadow: none; /* Laposnak kell tűnnie */
+            transform: none;
+        }
+        /* Zsanér jelölés (Vastagabb szürke lekerekített véggel) */
+        .hinge {
+            position: absolute;
+            background-color: #6b7280; /* Vastag szürke */
+            border-radius: 9999px; /* Lekerekített végek */
+            z-index: 10;
+        }
+        
+        /* Zsanér elhelyezések (vastagabb vonal) - 8px */
+        .hinge.top { top: 0; left: 5%; width: 90%; height: 8px; }
+        .hinge.bottom { bottom: 0; left: 5%; width: 90%; height: 8px; }
+        .hinge.left { top: 5%; left: 0; width: 8px; height: 90%; }
+        .hinge.right { top: 5%; right: 0; width: 8px; height: 90%; }
+        /* ÚJ STÍLUSOK AZ ÖSSZEGEKHEZ */
+        .sum-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 9999px; /* Lekerekített */
+            transition: background-color 0.3s;
+            font-size: 1.25rem;
+        }
+        /* Fix szélesség a rácsnak (4x100px) az oszlop összegekhez való igazodáshoz */
+        #grid {
+            width: 400px; 
+            height: 400px;
+            perspective: 1000px; /* 3D térhatás a lapozáshoz */
+            position: relative;
+        }
+        
+        /* Kis képernyőn a 70x70px-hez igazítás (JS-ben is kezelve van) */
+        @media (max-width: 600px) {
+            .cell {
+                width: 70px;
+                height: 70px;
+                font-size: 1.5rem;
+            }
+            #grid {
+                width: 280px; /* 4 * 70px */
+                height: 280px;
+            }
+        }
+
+        /* 3D KÖNYVLAP ÁTHAJTÁSI ANIMÁCIÓ STÍLUSOK */
+        .flip-overlay {
+            position: absolute;
+            transform-style: preserve-3d;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .flip-overlay .cell {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transition: none !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div id="game-container" class="bg-white p-6 rounded-xl shadow-2xl flex flex-col items-center">
+        
+        <h1 class="text-3xl font-extrabold text-gray-800 text-center mb-4">Áthajtós bűvös négyzet</h1>
+        
+        <p class="text-center text-lg font-semibold text-gray-800 mb-6">
+            Készíts bűvös négyzetet, kattints a zsanéros lapkákra a hajtogatáshoz!
+        </p>
+
+        <!-- ÚJ RÁCS ÉS ÖSSZEG ELRENDEZÉS -->
+        <div class="flex items-start">
+            
+            <!-- BAL OLDAL: Rács és Oszlop Összegek (Bal szélhez igazítva) -->
+            <div class="flex flex-col items-start">
+                
+                <!-- Rács -->
+                <div id="grid" class="grid grid-cols-4">
+                    <!-- Rács elemek ide kerülnek beillesztésre JS-ből -->
+                </div>
+                
+                <!-- Oszlop Összegek (Alul) -->
+                <div id="col-sums-display" class="mt-4 flex space-x-0">
+                    <!-- Oszlop összegek elemei (100px széles div-ek) -->
+                </div>
+
+                <!-- ÚJ SIKER ÜZENET -->
+                <p id="success-message" class="mt-4 text-center w-full text-green-600 font-bold text-lg hidden">
+                    Sikerült bűvös négyzetet hajtogatnod :)
+                </p>
+            </div>
+            
+            <!-- JOBB OLDAL: Sor Összegek -->
+            <div id="row-sums-display" class="ml-4 flex flex-col space-y-0">
+                <!-- Sor összegek elemei (100px magas div-ek) -->
+            </div>
+        </div>
+
+        <!-- Átló összegek kiemelten, az állapot ellenőrzés cím nélkül -->
+        <div id="diag-sums-display" class="mt-6 flex justify-center text-xl p-4 bg-gray-50 rounded-lg shadow-inner w-full max-w-lg">
+            <!-- Átló összegek SVG-vel és számmal -->
+        </div>
+
+        <div class="mt-6 w-full max-w-lg space-y-3">
+            <button id="reset-button" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-md transition duration-150">
+                Visszaállítás az eredeti állapotba
+            </button>
+        </div>
+        
+        <!-- Eltávolítottuk a message-box (pop-up) elemet is -->
+    </div>
+
+    <script type="module">
+        const TARGET_SUM = 34; // Ezt a számot nem mutatjuk a felhasználónak a szabályokban
+        const GRID_SIZE = 4;
+        
+        // Eredeti rács: [Row, Col, Eredeti Érték]
+        const initialData = [
+            [8, 3, 2, 13],
+            [9, 5, 11, 8],
+            [18, 6, 14, 12],
+            [4, 15, 7, 1]
+        ];
+
+        // Zsanér konfiguráció: [Ajtó R, Ajtó C, Cél R, Cél C, Irány]
+        const hingeConfig = [
+            // R0
+            [0, 0, 1, 0, 'BOTTOM'], // 8 alja -> 9
+            [0, 1, 0, 0, 'LEFT'],   // 3 bal széle -> 8
+            [0, 2, 1, 2, 'BOTTOM'], // 2 alja -> 11
+            [0, 3, 0, 2, 'LEFT'],   // 13 bal széle -> 2
+            // R1
+            [1, 0, 2, 0, 'BOTTOM'], // 9 alja -> 18
+            [1, 1, 1, 0, 'LEFT'],   // 5 bal széle -> 9
+            [1, 2, 1, 1, 'LEFT'],   // 11 bal széle -> 5
+            [1, 3, 2, 3, 'BOTTOM'], // 8 alja -> 12
+            // R2
+            [2, 0, 2, 1, 'RIGHT'],  // 18 jobb széle -> 6
+            [2, 1, 3, 1, 'BOTTOM'], // 6 alja -> 15
+            [2, 2, 2, 1, 'LEFT'],   // 14 bal széle -> 6
+            [2, 3, 2, 2, 'LEFT'],   // 12 bal széle -> 14
+            // R3
+            [3, 0, 3, 1, 'RIGHT'],  // 4 jobb széle -> 15
+            [3, 1, 3, 2, 'RIGHT'],  // 15 jobb széle -> 7
+            [3, 2, 2, 2, 'TOP'],    // 7 teteje -> 14
+            [3, 3, 2, 3, 'TOP'],    // 1 teteje -> 12
+        ];
+        
+        let gridState = [];
+        let isMagicSquare = false;
+        let cellWidth = 100; // Alapértelmezett cella szélesség/magasság
+        let isAnimating = false; // Animáció állapotjelző a gyors kattintások megelőzésére
+
+        // Rács állapotának inicializálása
+        function initGrid() {
+            // Ellenőrizze a képernyő szélességét a mobil nézet megállapításához
+            cellWidth = window.innerWidth <= 600 ? 70 : 100;
+                
+            // Igazítsa a rács méretét a CSS-ben definiált módon a mobil/desktop nézet alapján
+            const gridEl = document.getElementById('grid');
+            const rowSumsEl = document.getElementById('row-sums-display');
+            const gridPixelSize = GRID_SIZE * cellWidth;
+            gridEl.style.width = `${gridPixelSize}px`;
+            gridEl.style.height = `${gridPixelSize}px`;
+            
+            // JAVÍTÁS: A sorösszegek tárolójának magasságát pontosan a rács magasságához igazítjuk
+            rowSumsEl.style.height = `${gridPixelSize}px`;
+
+            gridState = initialData.map((row, r) => row.map((val, c) => {
+                const hinge = hingeConfig.find(h => h[0] === r && h[1] === c);
+                
+                return {
+                    value: val,
+                    originalValue: val,
+                    isFoldedOver: false, 
+                    valueStack: [], 
+                    hinge: hinge ? { tr: hinge[2], tc: hinge[3], direction: hinge[4] } : null
+                };
+            }));
+
+            renderGrid();
+            updateResults();
+        }
+
+        /**
+         * Kezeli a lapka áthajtását vagy visszahajtását.
+         * @param {number} r - Sor index.
+         * @param {number} c - Oszlop index.
+         * @returns {boolean} Igaz, ha a hajtás végrehajtható volt, különben hamis.
+         */
+        function handleFold(r, c) {
+            const doorCell = gridState[r][c];
+            if (!doorCell.hinge) return false;
+
+            // Csak azokat a lapkákat lehet tovább hajtani, amelyek nincsenek fedve (és ajtók).
+            if (doorCell.valueStack.length > 0) { 
+                return false; 
+            }
+
+            const { tr, tc } = doorCell.hinge;
+            const targetCell = gridState[tr][tc];
+
+            if (doorCell.isFoldedOver) {
+                // VISSZAHÁJTÁS (UNFOLD)
+                doorCell.value = doorCell.originalValue;
+                doorCell.isFoldedOver = false;
+                
+                // A cél lapka (B) visszaáll a verem legfelső elemére
+                if (targetCell.valueStack.length > 0) {
+                    // Kiveszi a verem legfelső elemét
+                    targetCell.value = targetCell.valueStack.pop(); 
+                } else {
+                    // Ha a verem üres, visszaáll az eredeti értékre
+                    targetCell.value = targetCell.originalValue;
+                }
+                return true;
+            } else {
+                // ÁTHAJTÁS (FOLD)
+                
+                // Elmentjük a cél lapka (B) jelenlegi látható értékét a verembe
+                targetCell.valueStack.push(targetCell.value); 
+
+                // Az ajtó lapka duplázódik (fehér)
+                doorCell.value = doorCell.originalValue * 2;
+                doorCell.isFoldedOver = true;
+                
+                // A cél lapka látható értéke az ajtó lapka eredeti értéke lesz (világos piros hátlap)
+                targetCell.value = doorCell.originalValue;
+                
+                return true;
+            }
+        }
+
+        /**
+         * 3D Könyvlap hajtogatási animáció végrehajtása
+         */
+        function animateAndFold(r, c) {
+            const doorCell = gridState[r][c];
+            if (!doorCell.hinge || doorCell.valueStack.length > 0 || isAnimating) return;
+
+            isAnimating = true;
+            const { tr, tc, direction } = doorCell.hinge;
+            const isUnfolding = doorCell.isFoldedOver;
+            const gridEl = document.getElementById('grid');
+
+            // Overlay konténer létrehozása
+            const overlay = document.createElement('div');
+            overlay.className = 'flip-overlay';
+            overlay.style.width = `${cellWidth}px`;
+            overlay.style.height = `${cellWidth}px`;
+            overlay.style.top = `${r * cellWidth}px`;
+            overlay.style.left = `${c * cellWidth}px`;
+
+            // Zsanér iránynak megfelelő 3D elforgatási tengelyek és szögek
+            let origin = '50% 50%';
+            let foldRotation = '';
+            let backRotation = 'rotateX(180deg)';
+
+            if (direction === 'BOTTOM') {
+                origin = '50% 100%';
+                foldRotation = 'rotateX(-180deg)';
+                backRotation = 'rotateX(180deg)';
+            } else if (direction === 'TOP') {
+                origin = '50% 0%';
+                foldRotation = 'rotateX(180deg)';
+                backRotation = 'rotateX(180deg)';
+            } else if (direction === 'LEFT') {
+                origin = '0% 50%';
+                foldRotation = 'rotateY(-180deg)';
+                backRotation = 'rotateY(180deg)';
+            } else if (direction === 'RIGHT') {
+                origin = '100% 50%';
+                foldRotation = 'rotateY(180deg)';
+                backRotation = 'rotateY(180deg)';
+            }
+
+            overlay.style.transformOrigin = origin;
+
+            // Előlap (az elhajtható lapka száma + zsanérja)
+            const front = document.createElement('div');
+            front.className = 'cell color-normal select-none';
+            front.textContent = doorCell.originalValue;
+
+            const hingeDiv = document.createElement('div');
+            hingeDiv.className = `hinge ${direction.toLowerCase()}`;
+            front.appendChild(hingeDiv);
+
+            // Hátlap (a lefedő piros lapka száma)
+            const back = document.createElement('div');
+            back.className = 'cell color-covered select-none';
+            back.textContent = doorCell.originalValue;
+            back.style.transform = backRotation;
+
+            overlay.appendChild(front);
+            overlay.appendChild(back);
+
+            // Meglévő elemek előkészítése az animáció alatti zökkenőmentes átmenethez
+            const cellElements = gridEl.querySelectorAll('.cell');
+            const doorElement = cellElements[r * GRID_SIZE + c];
+            const targetElement = cellElements[tr * GRID_SIZE + tc];
+
+            if (!isUnfolding) {
+                // ÁTHAJTÁS ANIMÁCIÓ (0 deg -> 180 deg)
+                // Az ajtó alatti cella felveszi a fehér duplázott állapotot
+                doorElement.className = 'cell color-doubled select-none';
+                doorElement.textContent = doorCell.originalValue * 2;
+                const existingHinge = doorElement.querySelector('.hinge');
+                if (existingHinge) existingHinge.remove();
+
+                overlay.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                gridEl.appendChild(overlay);
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        overlay.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                        overlay.style.transform = foldRotation;
+                    });
+                });
+            } else {
+                // VISSZAHÁJTÁS ANIMÁCIÓ (180 deg -> 0 deg)
+                doorElement.className = 'cell color-normal select-none';
+                doorElement.textContent = doorCell.originalValue;
+
+                const targetCell = gridState[tr][tc];
+                const prevTargetVal = targetCell.valueStack.length > 0 
+                    ? targetCell.valueStack[targetCell.valueStack.length - 1] 
+                    : targetCell.originalValue;
+                
+                let targetBgClass = 'color-normal';
+                if (targetCell.valueStack.length > 1) {
+                    targetBgClass = 'color-covered';
+                } else if (targetCell.isFoldedOver) {
+                    targetBgClass = 'color-doubled';
+                }
+
+                targetElement.className = `cell ${targetBgClass} select-none`;
+                targetElement.textContent = prevTargetVal;
+
+                overlay.style.transform = foldRotation;
+                gridEl.appendChild(overlay);
+
+                const endRotation = (direction === 'BOTTOM' || direction === 'TOP') ? 'rotateX(0deg)' : 'rotateY(0deg)';
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        overlay.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                        overlay.style.transform = endRotation;
+                    });
+                });
+            }
+
+            // Animáció befejezése
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                handleFold(r, c);
+                renderGrid();
+                updateResults();
+                isAnimating = false;
+            }, 410);
+        }
+
+        // Rács DOM-jának újrarenderelése
+        function renderGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cellData = gridState[r][c];
+                    const cell = document.createElement('div');
+                    
+                    let bgColorClass = 'color-normal';
+                    // ÚJ SZÍN LOGIKA: A fedett állapotnak (valueStack > 0) elsőbbséget kell élveznie
+                    if (cellData.valueStack.length > 0) { 
+                        // valueStack.length > 0: Ez a lapka FOGADÓ oldalon van és le van fedve (világos piros hátlap)
+                        bgColorClass = 'color-covered'; 
+                    } else if (cellData.isFoldedOver) {
+                        // isFoldedOver: A fehér, duplázott értékű ajtó (csak akkor, ha nincs fedve)
+                        bgColorClass = 'color-doubled'; 
+                    } else { // (!cellData.isFoldedOver && cellData.valueStack.length === 0)
+                        // Normál, alap állapotú lapka
+                        bgColorClass = 'color-normal';
+                    }
+                    
+                    cell.className = `cell ${bgColorClass} select-none`;
+                    cell.textContent = cellData.value;
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    
+                    // Frissítjük a cella méretét a JavaScript-ben a mobil nézet miatt
+                    cell.style.width = `${cellWidth}px`;
+                    cell.style.height = `${cellWidth}px`;
+
+                    if (cellData.hinge) {
+                        const hingeDiv = document.createElement('div');
+                        hingeDiv.className = `hinge ${cellData.hinge.direction.toLowerCase()}`;
+                        cell.appendChild(hingeDiv);
+                        
+                        // Csak akkor adjunk click eseményt, ha van zsanér
+                        cell.addEventListener('click', () => {
+                            animateAndFold(r, c);
+                        });
+                        
+                        // JAVÍTVA: Ha a lapka fedve van (valueStack > 0), akkor nem kattintható (cursor default)
+                        if (cellData.valueStack.length > 0) {
+                            cell.style.cursor = 'default';
+                        }
+                    }
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Összegek számítása és eredmények frissítése
+        function updateResults() {
+            const sums = {
+                rows: Array(GRID_SIZE).fill(0),
+                cols: Array(GRID_SIZE).fill(0),
+                diag1: 0, 
+                diag2: 0  
+            };
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const val = gridState[r][c].value;
+                    
+                    sums.rows[r] += val;
+                    sums.cols[c] += val;
+
+                    if (r === c) {
+                        sums.diag1 += val;
+                    }
+                    if (r + c === GRID_SIZE - 1) {
+                        sums.diag2 += val;
+                    }
+                }
+            }
+            
+            // Eredmények ellenőrzése
+            const isRowMagic = sums.rows.every(sum => sum === TARGET_SUM);
+            const isColMagic = sums.cols.every(sum => sum === TARGET_SUM);
+            const isDiagMagic = sums.diag1 === TARGET_SUM && sums.diag2 === TARGET_SUM;
+
+            const isCompletelyMagic = isRowMagic && isColMagic && isDiagMagic;
+            
+            // DOM frissítése az új elrendezés szerint
+            const rowSumsEl = document.getElementById('row-sums-display');
+            const colSumsEl = document.getElementById('col-sums-display');
+            const diagSumsEl = document.getElementById('diag-sums-display');
+            const successMessageEl = document.getElementById('success-message');
+
+            const solvedBadgeClass = 'bg-green-300 text-green-900';
+            const defaultBadgeClass = 'bg-gray-300 text-gray-900'; 
+            const currentBadgeClass = isCompletelyMagic ? solvedBadgeClass : defaultBadgeClass;
+
+            // 1. Sorok összegei (a rács jobb oldalán)
+            rowSumsEl.innerHTML = sums.rows.map(sum => `
+                <div class="flex items-center justify-center" style="height: ${cellWidth}px; width: ${cellWidth > 70 ? 70 : 50}px;">
+                    <span class="sum-badge px-3 py-1 ${currentBadgeClass}">${sum}</span>
+                </div>
+            `).join('');
+
+            // 2. Oszlopok összegei (a rács alatt)
+            colSumsEl.innerHTML = sums.cols.map(sum => `
+                <div class="flex items-center justify-center" style="width: ${cellWidth}px; height: ${cellWidth > 70 ? 50 : 40}px;">
+                    <span class="sum-badge px-3 py-1 ${currentBadgeClass}">${sum}</span>
+                </div>
+            `).join('');
+            
+            // 3. Átlók összegei (szimbólumokkal)
+            const diag1Svg = `<svg class="w-6 h-6 inline-block mx-1" viewBox="0 0 100 100"><line x1="0" y1="0" x2="100" y2="100" stroke="#1f2937" stroke-width="8" stroke-linecap="round"/></svg>`;
+            const diag2Svg = `<svg class="w-6 h-6 inline-block mx-1" viewBox="0 0 100 100"><line x1="0" y1="100" x2="100" y2="0" stroke="#1f2937" stroke-width="8" stroke-linecap="round"/></svg>`;
+
+            diagSumsEl.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-8 text-xl">
+                    <p class="flex items-center font-semibold text-gray-700">
+                        Átló ${diag1Svg}
+                        <span class="sum-badge px-3 py-1 ml-2 ${currentBadgeClass}">${sums.diag1}</span>
+                    </p>
+                    <p class="flex items-center font-semibold text-gray-700">
+                        Átló ${diag2Svg}
+                        <span class="sum-badge px-3 py-1 ml-2 ${currentBadgeClass}">${sums.diag2}</span>
+                    </p>
+                </div>
+            `;
+
+            // Siker üzenet kezelése
+            if (isCompletelyMagic) {
+                isMagicSquare = true;
+                successMessageEl.classList.remove('hidden');
+            } else { 
+                isMagicSquare = false; 
+                successMessageEl.classList.add('hidden');
+            }
+        }
+        
+        // Eseménykezelő a visszaállításhoz
+        document.getElementById('reset-button').addEventListener('click', () => {
+            initGrid();
+        });
+
+        // Játék indítása és ablak átméretezés kezelése
+        window.onload = initGrid;
+        window.addEventListener('resize', initGrid);
+    </script>
+</body>
+</html>

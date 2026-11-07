@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billegő asztal</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("webgl-canvas"), antialias: true }); // Antialias engedélyezése
+        
+        renderer.setSize(window.innerWidth, window.innerHeight, false); // Reszponzív méretezés
+        document.body.appendChild(renderer.domElement);
+        
+        // Háttérszín beállítása
+        renderer.setClearColor(0x87ceeb); // Élénkebb kék háttér
+        
+        // Talaj létrehozása
+        const groundGeometry = new THREE.PlaneGeometry(10, 10, 10, 10); // Négyzetrácsos talaj
+        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xdaa520 }); // Élénkebb okker talaj
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -1;
+        scene.add(ground);
+        
+        // Rácsvonalak hozzáadása a talajhoz
+        const wireframeGeometry = new THREE.WireframeGeometry(groundGeometry);
+        const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }); // Fekete rácsvonalak
+        const wireframe = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+        ground.add(wireframe);
+        
+        // Asztal csoport létrehozása
+        const tableGroup = new THREE.Group();
+        
+        // Lábak paraméterei
+        const legHeight = 1;
+        const shortLegHeight = 1; // Rövid láb is elér az asztallapig
+        const legRadius = 0.05;
+        
+        // Lábak pozíciói (Közelebb a sarokhoz)
+        const legOffset = 0.9; // Lábat közelebb hozza a sarokhoz
+        const baseLegPositions = [
+            new THREE.Vector3(-legOffset, 0, -legOffset/2),
+            new THREE.Vector3(legOffset, 0, legOffset/2),
+            new THREE.Vector3(-legOffset, 0, legOffset/2)
+        ];
+        const shortLegPosition = new THREE.Vector3(legOffset, shortLegHeight, -legOffset/2);
+        
+        // Lábak létrehozása
+        const legGeometry = new THREE.CylinderGeometry(legRadius, legRadius, legHeight, 16);
+        const shortLegGeometry = new THREE.CylinderGeometry(legRadius, legRadius, shortLegHeight, 16);
+        const legMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Sötétszürke lábak
+        
+        const legs = baseLegPositions.map(pos => {
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.copy(pos);
+            leg.position.y = legHeight / 2;
+            tableGroup.add(leg);
+            return leg;
+        });
+        
+        const shortLeg = new THREE.Mesh(shortLegGeometry, legMaterial);
+        shortLeg.position.copy(shortLegPosition);
+        shortLeg.position.y = shortLegHeight / 2;
+        tableGroup.add(shortLeg);
+        
+        // Asztallap létrehozása
+        const tableGeometry = new THREE.BoxGeometry(2, 0.1, 1);
+        const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Barna asztallap
+        const table = new THREE.Mesh(tableGeometry, tableMaterial);
+        table.position.y = legHeight + 0.05;
+        tableGroup.add(table);
+        
+        scene.add(tableGroup);
+        
+        // Fények hozzáadása
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(3, 5, 3);
+        scene.add(light);
+        
+        // Kamera elhelyezése
+        camera.position.set(2, 2, 2); // Közelebb a nézőhöz
+        camera.lookAt(0, 0, 0);
+        
+        let tiltDirection = 1;
+        let tiltAmount = 0;
+        let isTilting = false;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            if (isTilting) {
+                tiltAmount += 0.05 * tiltDirection;
+                if (Math.abs(tiltAmount) >= 0.1) { // Csökkentett billegési mérték
+                    isTilting = false;
+                }
+                
+                // Forgatási tengely meghatározása (két átlós láb közötti egyenes)
+                const axis = new THREE.Vector3().subVectors(baseLegPositions[1], baseLegPositions[0]).normalize();
+                
+                // Forgatás a tengely körül
+                tableGroup.quaternion.setFromAxisAngle(axis, tiltAmount);
+            }
+            renderer.render(scene, camera);
+        }
+        
+        function onTouchStart() {
+            if (!isTilting) {
+                tiltDirection *= -1;
+                isTilting = true;
+            }
+        }
+        
+        window.addEventListener("click", onTouchStart);
+        window.addEventListener("touchstart", onTouchStart); // Érintésvezérlés
+        
+        animate();
+    </script>
+</body>
+</html>

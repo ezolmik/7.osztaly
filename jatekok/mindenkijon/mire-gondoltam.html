@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mire gondoltam?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            width: 95%;
+            max-width: 800px;
+        }
+
+        .game-area,
+        .game-info {
+            width: 100%;
+            margin-right: 0;
+        }
+
+        .game-area {
+            margin-bottom: 20px;
+        }
+
+        .section {
+            width: 90%;
+            margin: 10px auto;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .number-strip {
+            display: block ruby;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .number {
+            border: 1px solid #4CAF50;
+            background-color: #e8f5e9;
+            padding: 6px; /* Csökkentett padding */
+            margin: 2px; /* Csökkentett margin */
+            cursor: pointer;
+            border-radius: 5px;
+            width: 30px; /* Csökkentett szélesség */
+            height: 30px; /* Csökkentett magasság */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px; /* Csökkentett betűméret */
+            user-select: none;
+        }
+        
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #guessInput {
+            margin-bottom: 10px;
+            width: 90%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #guessButton,
+        #restartButton {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .near-numbers {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .explanation {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        #result-message {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .game-container {
+                flex-direction: row;
+            }
+
+            .game-area,
+            .game-info {
+                width: 50%;
+            }
+
+            .game-area {
+                margin-right: 20px;
+            }
+
+            .section {
+                width: 100%;
+                margin: 0 0 20px 0;
+            }
+
+            .number {
+                width: 35px;
+                height: 35px;
+                padding: 10px;
+                margin: 5px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Mire gondoltam?</h1>
+    <div class="game-container">
+        <div class="game-area">
+            <div class="section">
+                <h2>Válassz egy számot!</h2>
+                <div class="explanation" id="explanation">Ha a választott szám maximum 1 távolságra van a gondolt
+                    számtól, akkor közel van hozzá.</div>
+                <div class="number-strip">
+                    <div class="number" data-number="1">1</div>
+                    <div class="number" data-number="2">2</div>
+                    <div class="number" data-number="3">3</div>
+                    <div class="number" data-number="4">4</div>
+                    <div class="number" data-number="5">5</div>
+                </div>
+                <div class="number-strip">
+                    <div class="number" data-number="6">6</div>
+                    <div class="number" data-number="7">7</div>
+                    <div class="number" data-number="8">8</div>
+                    <div class="number" data-number="9">9</div>
+                    <div class="number" data-number="10">10</div>
+                </div>
+                <div class="near-numbers" id="nearNumbers"></div>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="section">
+                <h2>Tippelés</h2>
+                <div class="input-area">
+                    <label id="guessInputLabel" for="guessInput">Gondolt szám:</label>
+                    <input type="number" id="guessInput" placeholder="Írd be a gondolt számot (1-10)" min="1" max="10">
+                    <button id="guessButton">Rákérdezek</button>
+                    <div id="result-message"></div>
+                </div>
+            </div>
+            <div class="section">
+                <div id="questionCount">Kérdések száma: 0</div>
+                <button id="restartButton">⟳ Újrakezdem</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let guessed = false;
+            let guessCount = 0;
+            const numbers = document.querySelectorAll(".number");
+            const guessInput = document.getElementById("guessInput");
+            const guessButton = document.getElementById("guessButton");
+            const restartButton = document.getElementById("restartButton");
+            const questionCountDiv = document.getElementById("questionCount");
+            const nearNumbersDiv = document.getElementById("nearNumbers");
+            const resultMessageDiv = document.getElementById("result-message");
+            let possibleNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let guesses = [];
+
+            function resetGame() {
+                guessed = false;
+                guessCount = 0;
+                nearNumbersDiv.innerHTML = "";
+                questionCountDiv.textContent = "Kérdések száma: 0";
+                possibleNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                guesses = [];
+                guessInput.style.display = "block";
+                guessButton.style.display = "block";
+                guessInputLabel.style.display = "block";
+                guessInput.value = "";
+                resultMessageDiv.innerHTML = "";
+            }
+
+
+            numbers.forEach(number => {
+
+                number.addEventListener("click", function () {
+                    const clickedNumber = parseInt(this.dataset.number);
+                    guessCount++;
+                    questionCountDiv.textContent = `Kérdések száma: ${guessCount}`;
+                    guesses.push(clickedNumber);
+
+                    const possibleIfNear = possibleNumbers.filter(potentialTarget => Math.abs(potentialTarget - clickedNumber) <= 1);
+                    const possibleIfNotNear = possibleNumbers.filter(potentialTarget => Math.abs(potentialTarget - clickedNumber) > 1);
+
+
+                    let resultText = "";
+                    if (possibleIfNear.length >= possibleIfNotNear.length) {
+                        resultText = `A ${clickedNumber} közel van.`;
+                        possibleNumbers = possibleIfNear;
+                    } else {
+                        resultText = `A ${clickedNumber} nincs közel.`;
+                        possibleNumbers = possibleIfNotNear;
+                    }
+
+                    nearNumbersDiv.innerHTML += resultText + "<br>";
+                });
+            });
+
+
+            guessButton.addEventListener("click", function () {
+                if (!guessed) {
+                    const userGuess = parseInt(guessInput.value);
+                    if (userGuess >= 1 && userGuess <= 10) {
+                        let message = "";
+                        if (possibleNumbers.length === 1 && possibleNumbers[0] === userGuess) {
+                            message = `Talált! A gondolt szám a(z) ${userGuess} volt.<br> Gratulálunk, összesen ${guessCount} kérdésből találtad ki.`;
+                            guessInput.style.display = "none";
+                            guessInputLabel.style.display = "none";
+                            guessButton.style.display = "none";
+                        } else {
+                            message = `Sajnos, nem talált!<br>A gondolt szám a(z) ` + possibleNumbers.filter(number => number !== userGuess)[0] + ` volt.`;
+                            guessInput.style.display = "none";
+                            guessInputLabel.style.display = "none";
+                            guessButton.style.display = "none";
+                        }
+
+                        resultMessageDiv.innerHTML = message;
+                        guessed = true;
+                    } else {
+                        guessInput.value = "Kérlek, írj be egy számot 1 és 10 között.";
+                    }
+                }
+            });
+            restartButton.addEventListener("click", resetGame);
+        });
+
+    </script>
+</body>
+
+</html>

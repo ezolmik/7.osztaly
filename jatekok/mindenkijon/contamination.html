@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Contamination</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        #pools-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            touch-action: manipulation;
+        }
+        #guess {
+            -webkit-appearance: none;
+        }
+        #guess:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .step-button {
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .step-button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-2xl p-6 md:p-10">
+
+    <header class="text-center mb-8">
+        <h1 id="ui-title" class="text-3xl font-extrabold text-slate-800 mb-3"></h1>
+        <p id="ui-subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <!-- Canvas -->
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-6">
+        <canvas id="pools-canvas"></canvas>
+    </div>
+
+    <!-- Message -->
+    <div id="message-wrap" class="mb-5 min-h-[36px] flex items-center justify-center">
+        <p id="message" class="text-sm font-semibold text-slate-600 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 hidden"></p>
+    </div>
+
+    <!-- Question count pill -->
+    <div class="flex justify-between items-center mb-6">
+        <div id="question-count-pill" class="px-4 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-600 border border-blue-100"></div>
+        <button
+            onclick="resetGame()"
+            id="ui-restart-btn"
+            class="step-button px-4 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm">
+        </button>
+    </div>
+
+    <!-- Guess input -->
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+        <label for="guess" id="ui-guess-label" class="block text-sm font-semibold text-slate-600 mb-3 text-center"></label>
+        <div class="flex gap-3 justify-center items-center">
+            <input
+                type="number"
+                id="guess"
+                min="1"
+                max="15"
+                inputmode="numeric"
+                class="w-32 text-center px-3 py-2.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-700 bg-white transition-all"
+            >
+            <button
+                onclick="checkGuess()"
+                id="ui-submit-btn"
+                class="step-button px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200">
+            </button>
+        </div>
+    </div>
+
+    <div class="text-center border-t border-slate-100 pt-5">
+        <p id="ui-footer" class="text-slate-400 text-xs"></p>
+    </div>
+
+</div>
+
+<script>
+    const STRINGS = {
+        title: 'Contamination',
+        subtitle: 'Click a pool to test it. Find the <span class="font-bold text-slate-700">source</span> of the contamination<br class="hidden sm:block"> using as <span class="font-bold text-blue-600">few</span> tests as possible.',
+        restartButton: '↺ Restart',
+        guessLabel: 'Guess the source of the contamination',
+        guessPlaceholder: 'Pool (1–15)',
+        submitButton: 'Submit',
+        testsUsed: (n) => `Tests used: ${n}`,
+        footer: 'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+
+        alreadyTested: (n) => `Pool ${n} has already been tested.`,
+        resultContaminated: (n) => `Pool ${n} is contaminated.`,
+        resultClean: (n) => `Pool ${n} is clean.`,
+        guessOutOfRange: 'Pool number must be between 1 and 15.',
+        guessCorrect: (n) => `🎉 Correct! Pool ${n} was the source of the contamination.`,
+        guessIncorrect: (n) => `Incorrect — the source was pool ${n}.`,
+    };
+
+    function applyStrings() {
+        document.title                              = STRINGS.title;
+        document.getElementById('ui-title').textContent         = STRINGS.title;
+        document.getElementById('ui-subtitle').innerHTML        = STRINGS.subtitle;
+        document.getElementById('ui-restart-btn').textContent   = STRINGS.restartButton;
+        document.getElementById('ui-guess-label').textContent   = STRINGS.guessLabel;
+        document.getElementById('guess').placeholder            = STRINGS.guessPlaceholder;
+        document.getElementById('ui-submit-btn').textContent    = STRINGS.submitButton;
+        document.getElementById('ui-footer').innerHTML          = STRINGS.footer;
+        document.getElementById('question-count-pill').textContent = STRINGS.testsUsed(0);
+    }
+
+    // -------------------------------------------------------------------------
+
+    const numRows = 3;
+    const numCols = 5;
+    const numPools = numRows * numCols;
+    let canvas;
+    let ctx;
+    let poolsData = [];
+    let potentialSources = Array.from({ length: numPools }, (_, i) => i);
+    let questionCount = 0;
+    let checkedPools = new Array(numPools).fill(null);
+    let poolRadius;
+    let canvasWidth;
+    let canvasHeight;
+    let initialTouchY;
+    let isMobile = window.innerWidth <= 650;
+
+    function initCanvas() {
+        canvas = document.getElementById('pools-canvas');
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+
+        canvas.addEventListener('click', handleCanvasInteraction);
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: true });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: true });
+        canvas.addEventListener('touchmove', function(e) {
+            if (Math.abs(e.touches[0].clientY - initialTouchY) < 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+
+    function handleTouchStart(event) {
+        initialTouchY = event.touches[0].clientY;
+    }
+
+    function handleTouchEnd(event) {
+        if (event.changedTouches.length === 0) return;
+        const touch = event.changedTouches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+    }
+
+    function resizeCanvas() {
+        const screenWidth = window.innerWidth;
+        isMobile = screenWidth <= 650;
+        canvasWidth = isMobile ? Math.min(screenWidth - 40, 650) : Math.min(650, screenWidth - 80);
+        poolRadius = isMobile ? (screenWidth < 400 ? 20 : 22) : 25;
+        const gapSize = isMobile ? Math.max(15, 30 * (screenWidth / 650)) : 30;
+        const poolDiameterWithGap = (poolRadius * 2) + gapSize;
+        canvasHeight = (numRows * poolDiameterWithGap) + 30;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        createPoolsData();
+        drawPools();
+    }
+
+    function createPoolsData() {
+        poolsData = [];
+        const gapSize = isMobile ? Math.max(15, 30 * (canvasWidth / 650)) : 30;
+        const poolDiameterWithGap = (poolRadius * 2) + gapSize;
+        const startX = (canvasWidth - (numCols * poolDiameterWithGap - gapSize)) / 2 + poolRadius;
+        const startY = 25 + poolRadius;
+        for (let i = 0; i < numPools; i++) {
+            const row = Math.floor(i / numCols);
+            const col = i % numCols;
+            const x = startX + col * poolDiameterWithGap;
+            const y = startY + row * poolDiameterWithGap;
+            poolsData.push({ x, y, number: i + 1, contaminated: false, clean: false });
+        }
+    }
+
+    function drawPools() {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        poolsData.forEach((pool, index) => {
+            const row = Math.floor(index / numCols);
+            const col = index % numCols;
+            if (col < numCols - 1) {
+                const nextPool = poolsData[index + 1];
+                const fromX = pool.x + poolRadius + 2;
+                const toX = nextPool.x - poolRadius - 2;
+                if (toX > fromX + 5) drawArrow(fromX, pool.y, toX, pool.y);
+            }
+            if (row < numRows - 1) {
+                const nextPool = poolsData[index + numCols];
+                const fromY = pool.y + poolRadius + 2;
+                const toY = nextPool.y - poolRadius - 2;
+                if (toY > fromY + 5) drawArrow(pool.x, fromY, pool.x, toY);
+            }
+        });
+
+        poolsData.forEach((pool) => {
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.08)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 2;
+
+            ctx.beginPath();
+            ctx.arc(pool.x, pool.y, poolRadius, 0, 2 * Math.PI);
+
+            if (pool.contaminated) {
+                ctx.fillStyle = '#f44336';
+            } else if (pool.clean) {
+                ctx.fillStyle = '#4caf50';
+            } else {
+                ctx.fillStyle = '#add8e6';
+            }
+            ctx.fill();
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(pool.x, pool.y, poolRadius, 0, 2 * Math.PI);
+            ctx.lineWidth = 1.5;
+            if (pool.contaminated) ctx.strokeStyle = '#dc2626';
+            else if (pool.clean) ctx.strokeStyle = '#16a34a';
+            else ctx.strokeStyle = '#3b82f6';
+            ctx.stroke();
+
+            const fontSize = isMobile ? Math.max(11, Math.min(14, poolRadius * 0.58)) : 14;
+            ctx.fillStyle = pool.contaminated ? '#fff' : pool.clean ? '#fff' : '#1e40af';
+            ctx.font = `bold ${fontSize}px 'Segoe UI', system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pool.number, pool.x, pool.y);
+        });
+    }
+
+    function drawArrow(fromX, fromY, toX, toY) {
+        const headlen = isMobile ? Math.max(5, poolRadius * 0.3) : 8;
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+        const angle = Math.atan2(dy, dx);
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const shortening = isMobile ? Math.min(3, length * 0.1) : Math.min(4, length * 0.1);
+        const actualToX = toX - shortening * Math.cos(angle);
+        const actualToY = toY - shortening * Math.sin(angle);
+        const lineWidth = isMobile ? Math.max(1, poolRadius * 0.05) : 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(actualToX, actualToY);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fillStyle = '#94a3b8';
+        ctx.fill();
+    }
+
+    function isContaminatedHypothetically(sourceIndex, targetIndex) {
+        const sourceRow = Math.floor(sourceIndex / numCols);
+        const sourceCol = sourceIndex % numCols;
+        const targetRow = Math.floor(targetIndex / numCols);
+        const targetCol = targetIndex % numCols;
+        return targetRow >= sourceRow && targetCol >= sourceCol;
+    }
+
+    function handleCanvasInteraction(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+        checkPoolInteraction(x, y);
+    }
+
+    function checkPoolInteraction(x, y) {
+        poolsData.forEach((pool, index) => {
+            const touchRadius = isMobile ? poolRadius * 1.2 : poolRadius;
+            const distance = Math.sqrt((x - pool.x) ** 2 + (y - pool.y) ** 2);
+            if (distance < touchRadius) checkPollution(index);
+        });
+    }
+
+    function showMessage(text, type) {
+        const el = document.getElementById('message');
+        el.textContent = text;
+        el.classList.remove('hidden', 'text-slate-600', 'text-red-600', 'text-green-700', 'bg-slate-100', 'border-slate-200', 'bg-red-50', 'border-red-200', 'bg-green-50', 'border-green-200');
+        if (type === 'contaminated') {
+            el.classList.add('text-red-600', 'bg-red-50', 'border-red-200');
+        } else if (type === 'clean') {
+            el.classList.add('text-green-700', 'bg-green-50', 'border-green-200');
+        } else {
+            el.classList.add('text-slate-600', 'bg-slate-100', 'border-slate-200');
+        }
+        el.classList.remove('hidden');
+    }
+
+    function checkPollution(index) {
+        if (checkedPools[index] !== null) {
+            showMessage(STRINGS.alreadyTested(index + 1), 'neutral');
+            return;
+        }
+
+        let contaminatedCount = 0;
+        let notContaminatedCount = 0;
+        let contaminatedSources = [];
+        let notContaminatedSources = [];
+
+        potentialSources.forEach(source => {
+            if (isContaminatedHypothetically(source, index)) {
+                contaminatedCount++;
+                contaminatedSources.push(source);
+            } else {
+                notContaminatedCount++;
+                notContaminatedSources.push(source);
+            }
+        });
+
+        let isActuallyContaminated;
+        if (contaminatedCount > notContaminatedCount) {
+            isActuallyContaminated = true;
+            potentialSources = contaminatedSources;
+        } else if (notContaminatedCount > contaminatedCount) {
+            isActuallyContaminated = false;
+            potentialSources = notContaminatedSources;
+        } else {
+            isActuallyContaminated = Math.random() < 0.5;
+            potentialSources = isActuallyContaminated ? contaminatedSources : notContaminatedSources;
+        }
+
+        checkedPools[index] = isActuallyContaminated;
+        questionCount++;
+        document.getElementById('question-count-pill').textContent = STRINGS.testsUsed(questionCount);
+
+        poolsData[index].contaminated = isActuallyContaminated;
+        poolsData[index].clean = !isActuallyContaminated;
+
+        showMessage(
+            isActuallyContaminated ? STRINGS.resultContaminated(index + 1) : STRINGS.resultClean(index + 1),
+            isActuallyContaminated ? 'contaminated' : 'clean'
+        );
+
+        drawPools();
+    }
+
+    function checkGuess() {
+        const guessInput = document.getElementById('guess');
+        const guessedSource = parseInt(guessInput.value) - 1;
+
+        if (isNaN(guessedSource) || guessedSource < 0 || guessedSource >= numPools) {
+            showMessage(STRINGS.guessOutOfRange, 'neutral');
+            return;
+        }
+
+        if (potentialSources.length === 1 && potentialSources[0] === guessedSource) {
+            showMessage(STRINGS.guessCorrect(guessedSource + 1), 'clean');
+            revealPollution(guessedSource);
+            if (isMobile) canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+        } else {
+            const otherPotentialSources = potentialSources.filter(s => s !== guessedSource);
+            let otherPotentialSource;
+            if (otherPotentialSources.length > 0) {
+                const randomIndex = Math.floor(Math.random() * otherPotentialSources.length);
+                otherPotentialSource = otherPotentialSources[randomIndex] + 1;
+            }
+            showMessage(STRINGS.guessIncorrect(otherPotentialSource), 'contaminated');
+            revealPollution(otherPotentialSources[0]);
+            if (isMobile) canvas.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }
+
+    function revealPollution(source) {
+        for (let i = 0; i < numPools; i++) {
+            if (isContaminatedHypothetically(source, i)) {
+                poolsData[i].contaminated = true;
+                poolsData[i].clean = false;
+            } else {
+                poolsData[i].contaminated = false;
+                poolsData[i].clean = true;
+            }
+        }
+        poolsData[source].contaminated = true;
+        poolsData[source].clean = false;
+        drawPools();
+
+        ctx.beginPath();
+        ctx.arc(poolsData[source].x, poolsData[source].y, poolRadius + 4, 0, 2 * Math.PI);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#f97316';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(poolsData[source].x, poolsData[source].y, poolRadius + 7, 0, 2 * Math.PI);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#fdba74';
+        ctx.stroke();
+    }
+
+    function resetGame() {
+        potentialSources = Array.from({ length: numPools }, (_, i) => i);
+        questionCount = 0;
+        checkedPools = new Array(numPools).fill(null);
+        document.getElementById('question-count-pill').textContent = STRINGS.testsUsed(0);
+        const msgEl = document.getElementById('message');
+        msgEl.classList.add('hidden');
+        document.getElementById('guess').value = '';
+        poolsData.forEach(pool => { pool.contaminated = false; pool.clean = false; });
+        drawPools();
+    }
+
+    window.addEventListener('resize', () => { if (canvas) resizeCanvas(); });
+
+    document.getElementById('guess').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkGuess();
+    });
+
+    window.addEventListener('load', () => {
+        applyStrings();
+        initCanvas();
+        drawPools();
+    });
+</script>
+
+</body>
+</html>

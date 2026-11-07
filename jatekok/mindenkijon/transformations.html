@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tükrözések</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #fff;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 15px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Desmos container*/
+        .DesmosFrameContainer {
+            width: 500px;
+            height: 500px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        /* Desmos canvas*/
+        .DesmosFrame {
+            width: 100%;
+            height: 1400px;
+            position: relative;
+            top: -100px;
+        }
+
+        li {
+            margin: 0px 0px 70px 0px;
+        }
+
+        p {
+            text-align: center;
+        }
+
+        @media (min-width: 769px) {
+            body {
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                padding: 40px;
+            }
+
+            .container {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Tükrözések</h2>
+
+        <p>Állítsuk be úgy a tükörtengelyeket, hogy a megadott képet kapjuk!</p>
+
+        <!-- Copy link and remove "?embed" from the end to edit -->
+        <ol>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/14ipixcqws" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/1zk3lqmdta" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+                <p>Keressünk 2 megoldást! Hány megoldás van?</p>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/yfydahfkx7" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/rtvlncvlkw" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/2p3br2spsg" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+                <p>Keressünk 2 megoldást! Hány megoldás van?</p>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/mri0yqfhcy" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+                <p>Meg lehet-e oldani kevesebb tengellyel? Miért (nem)?</p>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/amvbngkn9j" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+                <p>Meg lehet-e oldani kevesebb tengellyel? Miért (nem)?</p>
+            </li>
+            <li>
+                <br>
+                <div class="DesmosFrameContainer">
+                    <iframe src="https://www.desmos.com/geometry/ywfn8trubd" class="DesmosFrame"
+                        frameborder="0"></iframe>
+                </div>
+                <p>Meg lehet-e oldani kevesebb tengellyel? Miért (nem)?</p>
+            </li>
+
+        </ol>
+    </div>
+
+    <div class="button-container">
+        <button id="printButton" onClick="window.print()">Megoldások mentése</button>
+    </div>
+
+</body>
+
+</html>

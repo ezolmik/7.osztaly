@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cél a 100!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #334155;
+        }
+        .canvas-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .number-line {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            position: relative;
+        }
+        .marker {
+            width: 32px;
+            height: 32px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+            z-index: 10;
+        }
+        .pawn {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+            pointer-events: none;
+        }
+        .step-button {
+            transition: all 0.2s;
+            touch-action: manipulation;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.1;
+        }
+        .step-button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+        .win-gradient {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+        }
+        .loss-gradient {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid #fecaca;
+        }
+        .draw-gradient {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+        }
+        .lang-switch {
+            transition: all 0.2s;
+        }
+        .lang-switch:hover {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="canvas-card w-full max-w-2xl p-6 md:p-10">
+
+    <!-- Language switcher -->
+    <div class="flex justify-end mb-4">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag"></span>
+            <span id="lang-switch-label"></span>
+        </a>
+    </div>
+
+    <header class="text-center mb-10">
+        <h1 id="title" class="text-3xl font-extrabold text-slate-800 mb-3"></h1>
+        <p id="subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <div class="flex flex-wrap justify-between items-end mb-8 gap-4">
+        <div id="status-pill" class="px-4 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-600 border border-blue-100"></div>
+        <div class="text-right">
+            <span id="score-label" class="text-slate-400 text-xs uppercase tracking-wider font-bold"></span>
+            <div id="score-text" class="text-4xl font-black text-slate-700">0</div>
+        </div>
+    </div>
+
+    <div class="py-14 mb-6">
+        <div class="number-line">
+            <div id="progress" class="absolute h-full bg-blue-400 rounded-l-4 transition-all duration-500" style="width: 0%"></div>
+            <div id="marker" class="marker" style="left: 0%">
+                <div class="pawn" id="pawn-emoji"></div>
+                <span id="marker-val">0</span>
+            </div>
+            <div id="number-line-labels" class="absolute w-full flex justify-between -bottom-8 px-0 text-[10px] font-bold text-slate-400"></div>
+        </div>
+    </div>
+
+    <div id="button-grid" class="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-8">
+    </div>
+
+    <div id="alert" class="hidden mb-8 p-6 rounded-xl text-center animate-in fade-in zoom-in duration-300">
+        <p id="alert-text" class="font-bold text-lg mb-4"></p>
+        <button onclick="resetGame()" id="new-game-btn" class="px-8 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-lg font-semibold hover:bg-slate-50 transition-colors shadow-sm"></button>
+    </div>
+
+    <div class="flex justify-center border-t border-slate-100 pt-8">
+        <button id="reset-link" onclick="resetGame()" class="text-slate-400 hover:text-slate-600 text-sm font-medium transition-colors"></button>
+    </div>
+
+    <div class="text-center pt-4 border-t border-slate-100 mt-2">
+        <p id="footer-text" class="text-slate-400 text-xs"></p>
+    </div>
+
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const LANG = (params.get('lang') === 'en') ? 'en' : 'hu';
+    document.documentElement.lang = LANG;
+
+    const STRINGS_HU = {
+        pageTitle:        "Cél a 100!",
+        subtitle:         'Érd el pontosan a <span class="font-bold text-slate-700">100</span>-at! <br class="hidden sm:block"> Válassz egy számot <span class="font-bold text-blue-600">3</span> és <span class="font-bold text-blue-600">10</span> között.',
+        scoreLabel:       "Aktuális helyzet",
+        pawnEmoji:        "👤",
+        numberLineLabels: ["0", "25", "50", "75", "100"],
+        statusPlayer:     "Te jössz!",
+        statusCpuMove:    "{n}-et léptünk, te jössz!",
+        statusCpu:        "Gondolkodunk...",
+        statusGameOver:   "Játék vége",
+        endWin:           "Gratulálunk, győztél! 🎉",
+        endLoss:          "Mi nyertünk.",
+        endDraw:          "Döntetlen! Senki sem tud pontosan 100-ra lépni.",
+        newGame:          "Új játék",
+        resetLink:        "Újrakezdés",
+        langSwitchFlag:   "🇬🇧",
+        langSwitchLabel:  "English",
+        langSwitchHref:   "?lang=en",
+        footerText:     'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+    };
+
+    const STRINGS_EN = {
+        pageTitle:        "Race to 100!",
+        subtitle:         'Be the first to reach exactly <span class="font-bold text-slate-700">100</span>! <br class="hidden sm:block"> Choose a number between <span class="font-bold text-blue-600">3</span> and <span class="font-bold text-blue-600">10</span>.',
+        scoreLabel:       "Current position",
+        pawnEmoji:        "👤",
+        numberLineLabels: ["0", "25", "50", "75", "100"],
+        statusPlayer:     "Your turn!",
+        statusCpuMove:    "We moved {n}, your turn!",
+        statusCpu:        "Thinking...",
+        statusGameOver:   "Game over",
+        endWin:           "Congratulations, you won! 🎉",
+        endLoss:          "We win.",
+        endDraw:          "Draw! Nobody can reach exactly 100.",
+        newGame:          "New game",
+        resetLink:        "Restart",
+        langSwitchFlag:   "🇭🇺",
+        langSwitchLabel:  "Magyar",
+        langSwitchHref:   "?lang=hu",
+        footerText:     'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+    };
+
+    const STRINGS = LANG === 'en' ? STRINGS_EN : STRINGS_HU;
+
+    const CONFIG = { target: 100, min: 3, max: 10 };
+    let state = { score: 0, player: 1, active: true, lastCpuMove: null };
+
+    const elements = {
+        grid:      document.getElementById('button-grid'),
+        score:     document.getElementById('score-text'),
+        marker:    document.getElementById('marker'),
+        markerVal: document.getElementById('marker-val'),
+        progress:  document.getElementById('progress'),
+        status:    document.getElementById('status-pill'),
+        alert:     document.getElementById('alert'),
+        alertText: document.getElementById('alert-text'),
+        resetLink: document.getElementById('reset-link')
+    };
+
+    function applyStaticStrings() {
+        document.title = STRINGS.pageTitle;
+        document.getElementById('title').innerText        = STRINGS.pageTitle;
+        document.getElementById('subtitle').innerHTML     = STRINGS.subtitle;
+        document.getElementById('score-label').innerText  = STRINGS.scoreLabel;
+        document.getElementById('pawn-emoji').innerText   = STRINGS.pawnEmoji;
+        document.getElementById('new-game-btn').innerText = STRINGS.newGame;
+        elements.resetLink.innerText                      = STRINGS.resetLink;
+        elements.status.innerText                         = STRINGS.statusPlayer;
+        document.getElementById('footer-text').innerHTML      = STRINGS.footerText;
+
+        document.getElementById('lang-switch-flag').innerText  = STRINGS.langSwitchFlag;
+        document.getElementById('lang-switch-label').innerText = STRINGS.langSwitchLabel;
+        document.getElementById('lang-switch-link').href       = STRINGS.langSwitchHref;
+
+        const labelsContainer = document.getElementById('number-line-labels');
+        labelsContainer.innerHTML = STRINGS.numberLineLabels
+            .map(l => `<span>${l}</span>`)
+            .join('');
+    }
+
+    function init() {
+        applyStaticStrings();
+        elements.grid.innerHTML = '';
+        for (let i = CONFIG.min; i <= CONFIG.max; i++) {
+            const btn = document.createElement('button');
+            btn.className = `step-button py-2 px-1 bg-white border border-slate-200 text-slate-700 rounded-lg hover:border-blue-400 hover:text-blue-600 disabled:opacity-20`;
+            btn.innerHTML = `<span class="font-bold text-base">+${i}</span><span class="text-[10px] opacity-60 mt-0.5" id="target-${i}"></span>`;
+            btn.onclick = () => handleMove(i);
+            btn.id = `btn-${i}`;
+            elements.grid.appendChild(btn);
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        elements.score.innerText = state.score;
+        const percent = Math.min(state.score, CONFIG.target);
+        elements.marker.style.left = `${percent}%`;
+        elements.markerVal.innerText = state.score;
+        elements.progress.style.width = `${percent}%`;
+
+        let availableMoves = 0;
+        for (let i = CONFIG.min; i <= CONFIG.max; i++) {
+            const btn = document.getElementById(`btn-${i}`);
+            const targetSpan = document.getElementById(`target-${i}`);
+            if (btn) {
+                const nextScore = state.score + i;
+                const isPossible = nextScore <= CONFIG.target;
+                btn.disabled = !state.active || !isPossible;
+                if (isPossible) availableMoves++;
+                if (targetSpan) targetSpan.innerText = nextScore;
+            }
+        }
+
+        if (state.active && availableMoves === 0 && state.score < CONFIG.target) {
+            showEnd(STRINGS.endDraw, "draw");
+            return;
+        }
+
+        if (state.active) {
+            if (state.player === 1) {
+                if (state.lastCpuMove) {
+                    elements.status.innerText = STRINGS.statusCpuMove.replace('{n}', state.lastCpuMove);
+                } else {
+                    elements.status.innerText = STRINGS.statusPlayer;
+                }
+            } else {
+                elements.status.innerText = STRINGS.statusCpu;
+            }
+            
+            elements.status.className = `px-4 py-1.5 rounded-full text-sm font-medium ${
+                state.player === 1
+                    ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                    : 'bg-amber-50 text-amber-600 border border-amber-100 animate-pulse'
+            }`;
+        }
+    }
+
+    async function handleMove(step) {
+        if (!state.active) return;
+        const lsl = document.getElementById('lang-switch-link');
+        lsl.style.pointerEvents = 'none';
+        lsl.style.opacity = '0.35';
+        
+        if (state.player === 2) {
+            state.lastCpuMove = step;
+        }
+        
+        state.score += step;
+
+        if (state.score === CONFIG.target) {
+            showEnd(
+                state.player === 1 ? STRINGS.endWin : STRINGS.endLoss,
+                state.player === 1 ? "win" : "loss"
+            );
+            return;
+        }
+
+        state.player = state.player === 1 ? 2 : 1;
+        updateUI();
+
+        if (state.player === 2 && state.active) {
+            await new Promise(r => setTimeout(r, 800));
+            cpuThink();
+        }
+    }
+
+    function cpuThink() {
+        const diff = CONFIG.min + CONFIG.max;
+        const remainder = CONFIG.target % diff;
+
+        let move = -1;
+        for (let s = CONFIG.min; s <= CONFIG.max; s++) {
+            if ((state.score + s) % diff === remainder) { move = s; break; }
+        }
+
+        if (move === -1 || state.score + move > CONFIG.target) {
+            const valid = [];
+            for (let s = CONFIG.min; s <= CONFIG.max; s++) {
+                if (state.score + s <= CONFIG.target) valid.push(s);
+            }
+            if (valid.length > 0) {
+                move = valid[Math.floor(Math.random() * valid.length)];
+            }
+        }
+
+        if (move !== -1) {
+            handleMove(move);
+        } else {
+            updateUI();
+        }
+    }
+
+    function showEnd(msg, type) {
+        state.active = false;
+        updateUI();
+        elements.status.innerText = STRINGS.statusGameOver;
+        elements.status.className = "px-4 py-1.5 rounded-full text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200";
+
+        const lsl = document.getElementById('lang-switch-link');
+        lsl.style.pointerEvents = 'none';
+        lsl.style.opacity = '0.35';
+
+        elements.alertText.innerText = msg;
+        elements.alert.classList.remove('hidden');
+
+        let gradientClass = 'draw-gradient';
+        if (type === 'win') gradientClass = 'win-gradient';
+        if (type === 'loss') gradientClass = 'loss-gradient';
+        elements.alert.className = `p-8 rounded-2xl text-center mb-8 ${gradientClass}`;
+
+        elements.grid.classList.add('hidden');
+        elements.resetLink.classList.add('invisible');
+    }
+
+    function resetGame() {
+        state = { score: 0, player: 1, active: true, lastCpuMove: null };
+        elements.alert.classList.add('hidden');
+        elements.grid.classList.remove('hidden');
+        elements.resetLink.classList.remove('invisible');
+
+        const lsl = document.getElementById('lang-switch-link');
+        lsl.style.pointerEvents = '';
+        lsl.style.opacity = '';
+
+        updateUI();
+    }
+
+    init();
+</script>
+</body>
+</html>

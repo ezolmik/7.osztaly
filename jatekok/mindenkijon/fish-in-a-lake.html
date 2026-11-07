@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish in a lake</title>
+    <style>
+        :root {
+            --grid-color: #808080;
+            --water-color: #a5d8ff;
+            --shore-color: #a18072;
+            --fisherman-color: #a89187;
+            --active-line-color: orange; /* Aktív damil színe */
+            --cell-size: 50px; /* Egységes cellaméret */
+            --mobil-cell-size: 28px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .game-container {
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        table {
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        td {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            min-width: var(--cell-size);
+            min-height: var(--cell-size);
+            border: 1px solid var(--grid-color);
+            text-align: center;
+            vertical-align: middle;
+            font-size: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .land {
+            background-color: var(--shore-color);
+        }
+        
+        .water {
+            background-color: var(--water-color);
+        }
+        
+        .fisherman {
+            font-size: 36px;
+            cursor: pointer;
+            user-select: none;
+            background: #d2bab0;
+        }
+        
+        .fish {
+            font-size: 36px;
+            user-select: none;
+        }
+        
+        .line-segment {
+            position: absolute;
+            background-color: black;
+            z-index: 10;
+        }
+        
+        .active-line .line-segment {
+            background-color: var(--active-line-color);
+        }
+
+        .possible-move {
+            position: relative;
+        }
+        
+        .possible-move::after {
+            content: "•";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--active-line-color);
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .instructions {
+            margin: 20px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+
+        .message-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .line-counter {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 0px;
+            right: 0px;
+            user-select: none;
+        }
+
+        .caught-fish {
+            position: relative;
+        }
+
+        .caught-fish::after {
+            content: "✓";
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            color: green;
+            font-size: 24px;
+            font-weight: bold;
+            user-select: none;
+        }
+        
+        .reset-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+        
+        .reset-button:hover {
+            background-color: #28852b;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        @media only screen and (max-width: 600px) {
+            td {
+                font-size: 20px;
+                width: var(--mobil-cell-size);
+                height: var(--mobil-cell-size);
+                min-width: var(--mobil-cell-size);
+                min-height: var(--mobil-cell-size);
+
+            }
+            .fisherman {
+                font-size: 20px;
+            }
+            .fish {
+                font-size: 20px;
+            }
+            .line-counter {
+                width: 12px;
+                height: 12px;
+            }
+            .caught-fish::after {
+                font-size: 12px;
+            }
+
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Fish in a lake</h1>
+    
+    <div class="instructions">Some anglers are standing around a lake, and each of them has just hooked a fish. We know that everyone caught their fish using 9 units of fishing line, that is, each line passes through 9 tiles, excluding the tile of the angler but including that of the fish. <br><br> Click on a fisherman to start drawing. You can continue an active fishing line by clicking on a neighboring cell. To delete the last segment, click on the end of the active line. Draw the paths of the fishing lines!
+    </div>
+    
+    <div class="controls">
+        <button id="resetButton" class="reset-button">Start Over</button>
+    </div>
+
+    <div class="game-container">
+        <table id="gameBoard"></table>
+        <div id="winMessage" class="message-overlay">
+            Congratulations! All the fish have been caught!
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ROWS = 11;
+            const COLS = 11;
+            const MAX_LINE_LENGTH = 9;
+            const gameBoard = document.getElementById('gameBoard');
+            const winMessage = document.getElementById('winMessage');
+            const resetButton = document.getElementById('resetButton');
+            
+            // Array to track the game state
+            let board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+            
+            // Track lines
+            let lines = [];
+            let activeLine = null;
+            let completedLines = 0;
+            
+            // Create the game board
+            function createBoard() {
+                // Clear any existing table
+                gameBoard.innerHTML = '';
+                
+                for (let i = 0; i < ROWS; i++) {
+                    const row = document.createElement('tr');
+                    for (let j = 0; j < COLS; j++) {
+                        const cell = document.createElement('td');
+                        
+                        // Set cell type - land (border) or water (inner)
+                        if (i === 0 || i === ROWS - 1 || j === 0 || j === COLS - 1) {
+                            cell.classList.add('land');
+                            board[i][j] = { type: 'land' };
+                        } else {
+                            cell.classList.add('water');
+                            board[i][j] = { type: 'water' };
+                        }
+                        
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        cell.addEventListener('click', handleCellClick);
+                        
+                        row.appendChild(cell);
+                    }
+                    gameBoard.appendChild(row);
+                }
+            }
+
+            // Place fishermen and fish
+            function placeFishAndFishermen() {
+                // Place fishermen on the land (border)
+                const landPositions = [];
+                
+                // Top row
+                landPositions.push({row: 0, col: 2});
+                landPositions.push({row: 0, col: 5});
+                
+                // Right column
+                landPositions.push({row: 1, col: COLS-1});
+                landPositions.push({row: 4, col: COLS-1});
+                landPositions.push({row: 6, col: COLS-1});
+                
+                // Bottom row
+                landPositions.push({row: ROWS-1, col: 3});
+                landPositions.push({row: ROWS-1, col: 8});
+                
+                // Left column
+                landPositions.push({row: 3, col: 0});
+                landPositions.push({row: 9, col: 0});
+                
+                landPositions.forEach(pos => {
+                    const cell = getCellElement(pos.row, pos.col);
+                    cell.innerHTML = '🎣';
+                    cell.classList.add('fisherman');
+                    board[pos.row][pos.col].content = 'fisherman';
+                    board[pos.row][pos.col].lineId = lines.length;
+                    
+                    // Create a new line starting from this fisherman
+                    lines.push({
+                        id: lines.length,
+                        path: [{row: pos.row, col: pos.col}],
+                        fishermanPos: {row: pos.row, col: pos.col},
+                        completed: false,
+                        elements: []
+                    });
+                });
+                
+                // Place fish in the water (inner part)
+                const fishPositions = [
+                    {row: 1, col: 3}, {row: 3, col: 2}, 
+                    {row: 4, col: 4}, {row: 4, col: 5}, 
+                    {row: 4, col: 8}, {row: 6, col: 4}, 
+                    {row: 7, col: 4}, {row: 8, col: 5},
+                    {row: 8, col: 8}
+                ];
+                
+                fishPositions.forEach(pos => {
+                    const cell = getCellElement(pos.row, pos.col);
+                    cell.innerHTML = '🐟';
+                    cell.classList.add('fish');
+                    board[pos.row][pos.col].content = 'fish';
+                });
+            }
+            
+            // Get a cell element by its row and column
+            function getCellElement(row, col) {
+                return gameBoard.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+            }
+            
+            // Handle cell click events
+            function handleCellClick(event) {
+                const row = parseInt(event.target.dataset.row);
+                const col = parseInt(event.target.dataset.col);
+                const cell = board[row][col];
+                
+                // If clicked on a fisherman, activate its line
+                if (cell.content === 'fisherman' && cell.lineId !== undefined) {
+                    const lineId = cell.lineId;
+                    setActiveLine(lineId);
+                    return;
+                }
+                
+                // If clicked on a line segment cell, activate that line but don't do anything else
+                if (cell.lineId !== undefined) {
+                    const lineId = cell.lineId;
+                    
+                    // Only do delete action if clicked on the last segment of the active line
+                    const line = lines[lineId];
+                    const lastSegment = line.path[line.path.length - 1];
+                    
+                    if (row === lastSegment.row && col === lastSegment.col && line.path.length > 1 && lineId === activeLine) {
+                        removeLastSegment();
+                    }
+
+                    setActiveLine(lineId);                    
+
+                    return;
+                }
+                
+                // If there is an active line and the clicked cell is a valid move
+                if (activeLine !== null && isPossibleMove(row, col)) {
+                    extendLine(row, col);
+                }
+            }
+            
+            // Set the active line
+            function setActiveLine(lineId) {
+                // Clear previous active line highlighting
+                if (activeLine !== null) {
+                    const previousLineDiv = document.getElementById(`line-${activeLine}`);
+                    if (previousLineDiv) {
+                        previousLineDiv.classList.remove('active-line');
+                    }
+                }
+                
+                activeLine = lineId;
+                
+                // Highlight the new active line
+                const lineDiv = document.getElementById(`line-${activeLine}`);
+                if (lineDiv) {
+                    lineDiv.classList.add('active-line');
+                }
+                
+                updatePossibleMoves();
+            }
+            
+            // Check if a cell is a possible move for the active line
+            function isPossibleMove(row, col) {
+                if (activeLine === null) return false;
+                
+                const line = lines[activeLine];
+                
+                // If line is completed, no more moves
+                if (line.completed) return false;
+                
+                // Don't allow more than 9 segments
+                if (line.path.length - 1 >= MAX_LINE_LENGTH) return false;
+                
+                const lastPos = line.path[line.path.length - 1];
+                
+                // Must be adjacent (up, down, left, right)
+                const isAdjacent = (
+                    (Math.abs(row - lastPos.row) === 1 && col === lastPos.col) ||
+                    (Math.abs(col - lastPos.col) === 1 && row === lastPos.row)
+                );
+                
+                if (!isAdjacent) return false;
+                
+                // Cell must be water (not land)
+                const cell = board[row][col];
+                if (cell.type !== 'water') return false;
+                
+                // Cell must not already have a line
+                if (cell.lineId !== undefined) return false;
+                
+                // If the cell contains a fish:
+                // 1. It must be the 9th move (for a total of 10 cells including fisherman)
+                // 2. It must not already be caught
+                if (cell.content === 'fish') {
+                    // If not the 9th move, return false
+                    if (line.path.length < MAX_LINE_LENGTH) {
+                        return false;
+                    }
+                    
+                    // Check if fish is already caught by another line
+                    const cellElement = getCellElement(row, col);
+                    if (cellElement.classList.contains('caught-fish')) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // Update and display possible moves for the active line
+            function updatePossibleMoves() {
+                // Clear previous possible moves
+                document.querySelectorAll('.possible-move').forEach(cell => {
+                    cell.classList.remove('possible-move');
+                });
+                
+                if (activeLine === null) return;
+                
+                const line = lines[activeLine];
+                
+                // If line is completed, no more possible moves
+                if (line.completed) return;
+                
+                // If line is already at max length, no more possible moves 
+                if (line.path.length - 1 >= MAX_LINE_LENGTH) return;
+                
+                const lastPos = line.path[line.path.length - 1];
+                
+                // Check all four directions
+                const directions = [
+                    {row: lastPos.row - 1, col: lastPos.col}, // Up
+                    {row: lastPos.row + 1, col: lastPos.col}, // Down
+                    {row: lastPos.row, col: lastPos.col - 1}, // Left
+                    {row: lastPos.row, col: lastPos.col + 1}  // Right
+                ];
+                
+                directions.forEach(dir => {
+                    if (dir.row >= 0 && dir.row < ROWS && dir.col >= 0 && dir.col < COLS) {
+                        if (isPossibleMove(dir.row, dir.col)) {
+                            const cell = getCellElement(dir.row, dir.col);
+                            cell.classList.add('possible-move');
+                        }
+                    }
+                });
+            }
+            
+            // Update line counter - only show on the last segment
+            function updateLineCounter() {
+                // Remove all line counters first
+                document.querySelectorAll('.line-counter').forEach(counter => {
+                    counter.parentNode.removeChild(counter);
+                });
+                
+                // Add counter only to the last segment of each line
+                lines.forEach(line => {
+                    if (line.path.length > 1) {
+                        const lastPos = line.path[line.path.length - 1];
+                        const cell = getCellElement(lastPos.row, lastPos.col);
+                        
+                        const counter = document.createElement('div');
+                        counter.className = 'line-counter';
+                        counter.textContent = line.path.length - 1;  // Subtract fisherman
+                        cell.appendChild(counter);
+                    }
+                });
+            }
+            
+            // Draw a line segment between two points
+            function drawLineSegment(fromRow, fromCol, toRow, toCol, lineId) {
+                const fromCell = getCellElement(fromRow, fromCol);
+                const toCell = getCellElement(toRow, toCol);
+                
+                const fromRect = fromCell.getBoundingClientRect();
+                const toRect = toCell.getBoundingClientRect();
+                const gameRect = gameBoard.getBoundingClientRect();
+                
+                const startX = fromRect.left + fromRect.width / 2 - gameRect.left;
+                const startY = fromRect.top + fromRect.height / 2 - gameRect.top;
+                const endX = toRect.left + toRect.width / 2 - gameRect.left;
+                const endY = toRect.top + toRect.height / 2 - gameRect.top;
+                
+                // Create line container if doesn't exist
+                let lineContainer = document.getElementById(`line-${lineId}`);
+                if (!lineContainer) {
+                    lineContainer = document.createElement('div');
+                    lineContainer.id = `line-${lineId}`;
+                    lineContainer.className = 'line-container';
+                    lineContainer.style.position = 'absolute';
+                    lineContainer.style.top = '0';
+                    lineContainer.style.left = '0';
+                    lineContainer.style.width = '100%';
+                    lineContainer.style.height = '100%';
+                    lineContainer.style.pointerEvents = 'none';
+                    gameBoard.parentNode.appendChild(lineContainer);
+                    
+                    if (activeLine === lineId) {
+                        lineContainer.classList.add('active-line');
+                    }
+                }
+                
+                const segment = document.createElement('div');
+                segment.className = 'line-segment';
+                
+                // Determine if line is horizontal or vertical
+                if (fromRow === toRow) {
+                    // Horizontal line
+                    segment.style.height = '4px';
+                    segment.style.width = Math.abs(endX - startX) + 'px';
+                    segment.style.left = Math.min(startX, endX) + 'px';
+                    segment.style.top = (startY - 2) + 'px';
+                } else {
+                    // Vertical line
+                    segment.style.width = '4px';
+                    segment.style.height = Math.abs(endY - startY) + 'px';
+                    segment.style.top = Math.min(startY, endY) + 'px';
+                    segment.style.left = (startX - 2) + 'px';
+                }
+                
+                lineContainer.appendChild(segment);
+                return segment;
+            }
+            
+            // Extend the active line to a new cell
+            function extendLine(row, col) {
+                if (activeLine === null) return;
+                
+                const line = lines[activeLine];
+                
+                // If line is already completed, don't extend
+                if (line.completed) return;
+                
+                // Don't allow more than 9 segments
+                if (line.path.length - 1 >= MAX_LINE_LENGTH) return;
+                
+                // Check if the cell contains a fish and if it's not the 9th step
+                if (board[row][col].content === 'fish' && line.path.length < MAX_LINE_LENGTH) {
+                    return;
+                }
+                
+                const lastPos = line.path[line.path.length - 1];
+                
+                // Draw the line segment
+                const segment = drawLineSegment(lastPos.row, lastPos.col, row, col, activeLine);
+                line.elements.push(segment);
+                
+                // Update the path
+                line.path.push({row, col});
+                
+                // Update the board state
+                board[row][col].lineId = activeLine;
+                
+                // Check if we caught a fish and line is exactly MAX_LENGTH
+                if (board[row][col].content === 'fish' && line.path.length - 1 === MAX_LINE_LENGTH) {
+                    line.completed = true;
+                    completedLines++;
+                    getCellElement(row, col).classList.add('caught-fish');
+                    
+                    // Check if all lines are complete
+                    checkWinCondition();
+                }
+                
+                // Update line counter
+                updateLineCounter();
+                
+                updatePossibleMoves();
+            }
+            
+            // Remove the last segment of the active line
+            function removeLastSegment() {
+                if (activeLine === null) return;
+                
+                const line = lines[activeLine];
+                if (line.path.length <= 1) return; // Can't remove the fisherman
+                
+                const lastPos = line.path.pop();
+                
+                // Remove visual line segment
+                if (line.elements.length > 0) {
+                    const lastElement = line.elements.pop();
+                    lastElement.parentNode.removeChild(lastElement);
+                }
+                
+                // If it was a fish with check mark, remove it
+                const cell = getCellElement(lastPos.row, lastPos.col);
+                cell.classList.remove('caught-fish');
+                
+                // If this line was marked as completed, un-mark it
+                if (line.completed) {
+                    line.completed = false;
+                    completedLines--;
+                }
+                
+                // Clear the board state
+                delete board[lastPos.row][lastPos.col].lineId;
+                
+                // Update line counter
+                updateLineCounter();
+                
+                updatePossibleMoves();
+            }
+            
+            // Check if the game is won
+            function checkWinCondition() {
+                // Count fish cells that have been reached with exactly 9-long lines
+                let caughtFish = document.querySelectorAll('.caught-fish').length;
+                
+                // If all 9 fish are caught, the game is won
+                if (caughtFish === 9) {
+                    winMessage.style.display = 'block';
+                }
+            }
+            
+            // Reset the game
+            function resetGame() {
+                // Hide win message if visible
+                winMessage.style.display = 'none';
+                
+                // Clear all line containers
+                document.querySelectorAll('.line-container').forEach(container => {
+                    container.parentNode.removeChild(container);
+                });
+                
+                // Reset global variables
+                board = Array(ROWS).fill().map(() => Array(COLS).fill(null));
+                lines = [];
+                activeLine = null;
+                completedLines = 0;
+                
+                // Create board and place pieces again
+                createBoard();
+                placeFishAndFishermen();
+            }
+            
+            // Add reset button event listener
+            resetButton.addEventListener('click', resetGame);
+            
+            // Initialize the game
+            createBoard();
+            placeFishAndFishermen();
+        });
+    </script>
+</body>
+</html>

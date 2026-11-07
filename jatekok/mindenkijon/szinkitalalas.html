@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #334155; }
+        .game-card { background: white; border-radius: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        #grid-container {
+            background-color: rgba(0, 0, 0, 0.07);
+            gap: 3px;
+            padding: 1px;
+        }
+        .grid-cell {
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: background-color 0.5s ease-in-out, box-shadow 0.15s ease-in-out, opacity 0.3s;
+            position: relative;
+            font-size: 0.6rem;
+            border-radius: 2px;
+            background-color: #f3f4f6;
+            touch-action: manipulation;
+        }
+
+        .painted-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 35%;
+            height: 35%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .grid-cell.center-marker::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 100%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background-color: #374151;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .unknown-cell { }
+        .target-cell {
+            box-shadow: 0 0 0 3px #1f2937 inset;
+            animation: pulse-shadow 1s infinite alternate;
+        }
+        @keyframes pulse-shadow {
+            from { box-shadow: 0 0 0 3px #1f2937 inset; }
+            to   { box-shadow: 0 0 0 5px #f59e0b inset; }
+        }
+        .color-option-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.25rem;
+            transition: transform 0.1s, opacity 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+        }
+        .color-option-button:hover { transform: scale(1.05); opacity: 0.9; }
+        .color-option-button:active { transform: scale(0.95); }
+        .initial-cell { box-shadow: 0 0 0 2px #1f2937 inset; }
+        .guess-result-emoji {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            line-height: 1;
+            pointer-events: none;
+            z-index: 6;
+        }
+        .paint-modal-label {
+            font-size: 0.6rem;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 3px;
+            display: none;
+        }
+        #color-picker-modal.paint-mode .paint-modal-label { display: block; }
+        #color-picker-modal.paint-mode .color-option-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .lang-switch { transition: all 0.2s; }
+        .lang-switch:hover { background-color: #f1f5f9; }
+        input:focus { outline: none; border-color: #eab308; box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15); }
+        .action-button { transition: all 0.2s; touch-action: manipulation; }
+        .action-button:active:not(:disabled) { transform: scale(0.95); }
+        .reflection-link { color: #3b82f6; text-decoration: underline; cursor: pointer; }
+        .reflection-link:hover { color: #2563eb; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+<div class="game-card w-full max-w-4xl p-6 md:p-10 border border-slate-100 relative">
+
+    <div class="flex justify-end mb-4">
+        <a id="lang-switch-link" href="#" class="lang-switch px-3 py-1.5 rounded-full text-xs font-semibold border border-slate-200 text-slate-500 flex items-center gap-1.5">
+            <span id="lang-switch-flag"></span>
+            <span id="lang-switch-label"></span>
+        </a>
+    </div>
+
+    <header class="text-center mb-8">
+        <h1 id="ui-title" class="text-3xl font-extrabold text-slate-800 mb-3 tracking-tight"></h1>
+        <p id="ui-subtitle" class="text-slate-500 text-sm md:text-base leading-relaxed"></p>
+    </header>
+
+    <div class="flex justify-center items-center mb-6">
+        <!-- Score display (hidden initially) -->
+        <div id="score-display" class="hidden text-2xl font-bold px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl w-full sm:w-1/2 max-w-sm text-center text-slate-700"></div>
+        <!-- Start button (shown initially) -->
+        <button id="start-button" onclick="handleStartButton()" class="action-button text-2xl font-bold px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl w-full sm:w-1/2 max-w-sm text-center shadow-md"></button>
+    </div>
+
+    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
+        <div id="grid-container" class="mx-auto relative" style="display: grid; grid-template-columns: repeat(12, 1fr); aspect-ratio: 1 / 1; width: 100%; max-width: 600px;"></div>
+    </div>
+
+    <div id="color-picker-modal" class="absolute hidden bg-white p-2 rounded-lg shadow-xl border border-slate-200 z-30 transition-opacity duration-100">
+        <div class="paint-modal-label" id="ui-paint-label"></div>
+        <div id="color-options" class="flex space-x-1">
+            <button class="color-option-button" style="background-color: #ef4444;" data-color="C0" aria-label="Red"></button>
+            <button class="color-option-button" style="background-color: #10b981;" data-color="C1" aria-label="Green"></button>
+            <button class="color-option-button" style="background-color: #3b82f6;" data-color="C2" aria-label="Blue"></button>
+            <button class="color-option-button bg-slate-200 hover:bg-slate-300 flex items-center justify-center font-bold text-slate-700" data-color="CLEAR" aria-label="Clear">✕</button>
+        </div>
+        <div class="absolute w-3 h-3 bg-white transform rotate-45 border-t border-l border-slate-200" style="bottom: -6px; left: 50%; margin-left: -6px; pointer-events: none;"></div>
+    </div>
+
+    <div class="flex justify-center mb-6">
+        <button onclick="restartGame()" id="ui-restart-btn" class="action-button px-6 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:border-amber-400 hover:text-amber-600 shadow-sm"></button>
+    </div>
+
+    <div class="text-center border-t border-slate-100 pt-5">
+        <p id="ui-footer" class="text-slate-400 text-xs font-medium"></p>
+    </div>
+
+    <div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full relative border border-slate-100">
+            <button id="close-modal-button" class="absolute top-2 right-2 text-slate-400 hover:text-slate-800 text-2xl font-bold w-8 h-8 rounded-full transition-colors" aria-label="Close">&times;</button>
+            <h2 id="modal-title" class="text-3xl font-bold mb-4 text-slate-800"></h2>
+            <p id="modal-message" class="text-lg text-slate-600 mb-6"></p>
+            <button id="restart-modal-button" class="action-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-md"></button>
+        </div>
+    </div>
+
+    <div id="reflection-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md w-full relative border border-slate-100">
+            <button id="close-reflection-modal" class="absolute top-2 right-2 text-slate-400 hover:text-slate-800 text-2xl font-bold w-8 h-8 rounded-full">&times;</button>
+            <h2 id="reflection-modal-title" class="text-2xl font-bold mb-6 text-slate-800"></h2>
+            <div class="mb-6 bg-slate-50 rounded-xl p-4 overflow-visible">
+                <svg id="reflection-svg" width="340" height="200" viewBox="0 0 340 200" class="mx-auto overflow-visible">
+
+                    <line id="line-full-1" x1="40" y1="140" x2="200" y2="20" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4,4" opacity="0"/>
+                    <line id="line-full-2" x1="200" y1="20" x2="220" y2="160" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4,4" opacity="0"/>
+                    
+                    <circle id="center-o" cx="120" cy="80" r="5" fill="#1f2937" opacity="0"/>
+                    <text id="label-o" x="120" y="65" text-anchor="middle" font-size="12" font-weight="bold" fill="#1f2937" opacity="0">O₁</text>
+                    
+                    <circle id="center-o2" cx="210" cy="90" r="5" fill="#1f2937" opacity="0"/>
+                    <text id="label-o2" x="210" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#1f2937" opacity="0">O₂</text>
+
+                    <circle id="point-a-prime" cx="200" cy="20" r="8" fill="#ef4444" opacity="0"/>
+                    <text id="label-a-prime" x="200" y="5" text-anchor="middle" font-size="14" font-weight="bold" fill="#ef4444" opacity="0">A'</text>
+
+                    <circle id="point-a-double-prime" cx="220" cy="160" r="8" fill="#10b981" opacity="0"/>
+                    <text id="label-a-double-prime" x="220" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#10b981" opacity="0">A''</text>
+
+                    <circle id="point-a" cx="40" cy="140" r="8" fill="#3b82f6"/>
+                    <text id="label-a-static" x="40" y="165" text-anchor="middle" font-size="14" font-weight="bold" fill="#3b82f6">A</text>
+                </svg>
+            </div>
+            <p id="reflection-description" class="text-slate-600 text-sm mb-6 min-h-[3rem] font-medium"></p>
+            <button id="replay-animation" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md"></button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+(() => {
+    const params = new URLSearchParams(window.location.search);
+    const LANG = (params.get('lang') === 'en') ? 'en' : 'hu';
+
+    const STRINGS_HU = {
+        pageTitle: "Színkitalálás",
+        subtitle: "A lenti ábrán a fekete pöttyök szimmetria-középpontok. Néhány mező színét megadtuk, ezek alapján kell kitalálnod 5 mező színét. Cél, hogy minél többször helyesen tippelj, minél kevesebb idő alatt. Más mezőkre is rakhatsz jelölőt, ez nem számít tippnek. <span id='reflection-link' class='reflection-link'>Mi a középpontos tükrözés?</span>",
+        scoreLabel: "Pontszám:",
+        startBtn: "▶ Start",
+        restartBtn: "↺ Újrakezdés",
+        paintLabel: "Ez csak jelölő, nem tipp",
+        modalTitle: "Játék vége!",
+        modalMessageSuccess: "Gratulálunk!",
+        modalScore: "Elért pontszám:",
+        modalTime: "Eltelt idő:",
+        modalSeconds: "másodperc",
+        restartModalBtn: "▶ Új játék",
+        langSwitchFlag: "🇬🇧",
+        langSwitchLabel: "English",
+        langSwitchHref: "?lang=en",
+        footer: 'További feladatok: <a href="https://www.mindenkijon.hu/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">minden·ki·jön</a>',
+        reflectionModalTitle: "Középpontos tükrözés",
+        step1: "Az A pontot az O₁ középpontra tükrözve kapjuk az A' pontot.",
+        step2: "Ha az A' pontot egy másik (O₂) pontra is tükrözzük, megkapjuk az A''-t.",
+        step3: "Tehát, ha az A pontot O₁-re majd O₂-re tükrözzük, akkor A''-t kapjuk.",
+        replayAnimation: "Animáció indítása"
+    };
+
+    const STRINGS_EN = {
+        pageTitle: "Color Guessing",
+        subtitle: "In the figure below, the black dots are centers of symmetry. The colors of some cells are given; based on these, you have to figure out the colors of 5 cells. The goal is to guess correctly as many times as possible in the shortest amount of time. You can also place markers on other cells—this does not count as a guess. <span id='reflection-link' class='reflection-link'>What is central reflection?</span>",
+        scoreLabel: "Score:",
+        startBtn: "▶ Start",
+        restartBtn: "↺ Restart",
+        paintLabel: "This is just a marker, not a guess",
+        modalTitle: "Game Over!",
+        modalMessageSuccess: "Congratulations!",
+        modalScore: "Final score:",
+        modalTime: "Time elapsed:",
+        modalSeconds: "seconds",
+        restartModalBtn: "▶ New Game",
+        langSwitchFlag: "🇭🇺",
+        langSwitchLabel: "Magyar",
+        langSwitchHref: "?lang=hu",
+        footer: 'This game is part of the <a href="https://monthofmath.substack.com/" target="_blank" rel="noopener" class="underline hover:text-slate-600 transition-colors">Month of Math</a> program.',
+        reflectionModalTitle: "Point Reflection",
+        step1: "Reflecting point A across O₁ gives point A'.",
+        step2: "Reflecting A' across another center O₂ gives point A''.",
+        step3: "So, if point A is reflected first across O₁ and then across O₂, we obtain A''.",
+        replayAnimation: "Start Animation"
+    };
+
+    const STRINGS = LANG === 'en' ? STRINGS_EN : STRINGS_HU;
+
+    const CFG = {
+        GRID_SIZE:   12,
+        UNIT_ROWS:   2, 
+        UNIT_COLS:   3, 
+        GUESS_GOAL:  5,
+        COLORS: ['#ef4444', '#10b981', '#3b82f6'],
+        COLOR_MAP: { C0: '#ef4444', C1: '#10b981', C2: '#3b82f6' },
+        BASE_UNIT: [
+            [0, 1, 2, 3,  4,  5],
+            [6, 7, 8, 9, 10, 11]
+        ],
+        COLOR_INDEX: [0, 1, 1, 0, 2, 2, 2, 0, 2, 1, 0, 1],
+    };
+    CFG.TR_UNIT_COLS  = 2 * CFG.UNIT_COLS;
+    CFG.TOTAL_TYPES   = CFG.UNIT_ROWS * CFG.TR_UNIT_COLS;
+
+    const $ = id => document.getElementById(id);
+    const dom = {
+        gameContainer:    document.querySelector('.game-card'),
+        gridContainer:    $('grid-container'),
+        scoreDisplay:     $('score-display'),
+        startButton:      $('start-button'),
+        colorPickerModal: $('color-picker-modal'),
+        messageModal:     $('message-modal'),
+        modalTitle:       $('modal-title'),
+        modalMessage:     $('modal-message'),
+        restartButton:    $('restart-modal-button'),
+        closeModalButton: $('close-modal-button'),
+        reflectionModal:  $('reflection-modal'),
+        closeReflectionModal: $('close-reflection-modal'),
+        reflectionModalTitle: $('reflection-modal-title'),
+        reflectionDescription: $('reflection-description'),
+        replayAnimation:  $('replay-animation'),
+    };
+    const colorOptionButtons = dom.colorPickerModal.querySelectorAll('.color-option-button');
+
+    let state = {};
+    let gameStarted = false;
+
+    function showStartButton() {
+        dom.scoreDisplay.classList.add('hidden');
+        dom.startButton.classList.remove('hidden');
+    }
+
+    function showScoreDisplay() {
+        dom.startButton.classList.add('hidden');
+        dom.scoreDisplay.classList.remove('hidden');
+    }
+
+    function applyStaticStrings() {
+        document.title = STRINGS.pageTitle;
+        $('ui-title').innerText = STRINGS.pageTitle;
+        $('ui-subtitle').innerHTML = STRINGS.subtitle;
+        $('ui-restart-btn').innerText = STRINGS.restartBtn;
+        $('ui-paint-label').innerText = STRINGS.paintLabel;
+        $('ui-footer').innerHTML = STRINGS.footer;
+        $('lang-switch-flag').innerText = STRINGS.langSwitchFlag;
+        $('lang-switch-label').innerText = STRINGS.langSwitchLabel;
+        $('lang-switch-link').href = STRINGS.langSwitchHref;
+        dom.reflectionModalTitle.innerText = STRINGS.reflectionModalTitle;
+        dom.reflectionDescription.innerText = STRINGS.reflectionDescription;
+        dom.replayAnimation.innerText = STRINGS.replayAnimation;
+        dom.startButton.innerText = STRINGS.startBtn;
+        dom.restartButton.textContent = STRINGS.restartModalBtn;
+    }
+
+    function resetState() {
+        state = {
+            gridData:            [],
+            knownCells:          new Set(),
+            initialRevealedCells: new Set(),
+            userPaintedCells:    {},
+            guessedCells:        {},
+            targetCell:          null,
+            score:               0,
+            guessesCompleted:    0,
+            startTime:           null,
+            isRunning:           false,
+        };
+    }
+
+    function buildGridData() {
+        const { GRID_SIZE, UNIT_ROWS, UNIT_COLS, TR_UNIT_COLS, BASE_UNIT } = CFG;
+        const grid = [];
+        for (let r = 0; r < GRID_SIZE; r++) {
+            grid[r] = [];
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const unitC = c % TR_UNIT_COLS;
+                const unitR = r % (2 * UNIT_ROWS);
+                grid[r][c] = unitR < UNIT_ROWS
+                    ? BASE_UNIT[unitR][unitC]
+                    : BASE_UNIT[2 * UNIT_ROWS - unitR - 1][TR_UNIT_COLS - 1 - unitC];
+            }
+        }
+        return grid;
+    }
+
+    function buildSymmetryCenters() {
+        const { GRID_SIZE, UNIT_ROWS, UNIT_COLS } = CFG;
+        const centers = [];
+        for (let r = 0; r < GRID_SIZE - 1; r++) {
+            for (let c = 0; c < GRID_SIZE - 1; c++) {
+                if ((r + 1) % UNIT_ROWS === 0 && (c + 1) % UNIT_COLS === 0) {
+                    centers.push({ r: r + 0.5, c: c + 0.5 });
+                }
+            }
+        }
+        return centers;
+    }
+
+    const SYMMETRY_CENTERS = buildSymmetryCenters();
+
+    function renderGrid() {
+        const { GRID_SIZE, UNIT_ROWS, UNIT_COLS } = CFG;
+        dom.gridContainer.innerHTML = '';
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const cell = document.createElement('div');
+                let cls = 'grid-cell unknown-cell rounded-sm';
+                if ((r + 1) % UNIT_ROWS === 0 && (c + 1) % UNIT_COLS === 0
+                        && r !== GRID_SIZE - 1 && c !== GRID_SIZE - 1) {
+                    cls += ' center-marker';
+                }
+                cell.className   = cls;
+                cell.id          = `cell-${r}-${c}`;
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                dom.gridContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function renderEmptyGrid() {
+        const { GRID_SIZE, UNIT_ROWS, UNIT_COLS } = CFG;
+        dom.gridContainer.innerHTML = '';
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                const cell = document.createElement('div');
+                let cls = 'grid-cell unknown-cell rounded-sm';
+                if ((r + 1) % UNIT_ROWS === 0 && (c + 1) % UNIT_COLS === 0
+                        && r !== GRID_SIZE - 1 && c !== GRID_SIZE - 1) {
+                    cls += ' center-marker';
+                }
+                cell.className   = cls;
+                cell.id          = `cell-${r}-${c}`;
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                dom.gridContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function getCellEl(r, c) { return $(`cell-${r}-${c}`); }
+
+    function updateGridDisplay() {
+        const gameEnded = !state.isRunning && state.guessesCompleted >= CFG.GUESS_GOAL;
+        for (let r = 0; r < CFG.GRID_SIZE; r++) {
+            for (let c = 0; c < CFG.GRID_SIZE; c++) {
+                updateCell(r, c, gameEnded);
+            }
+        }
+        hideColorPicker();
+    }
+
+    function updateCell(r, c, gameEnded) {
+        const cellKey     = `${r},${c}`;
+        const cell        = getCellEl(r, c);
+        const colorIndex  = CFG.COLOR_INDEX[state.gridData[r][c]];
+        const actualColor = CFG.COLORS[colorIndex];
+
+        cell.classList.remove('target-cell', 'initial-cell');
+        cell.style.opacity = '1';
+        cell.querySelector('.painted-dot')?.remove();
+        cell.querySelector('.guess-result-emoji')?.remove();
+
+        const isKnown = state.knownCells.has(cellKey);
+
+        if (isKnown || gameEnded) {
+            cell.style.backgroundColor = actualColor;
+            cell.classList.remove('unknown-cell');
+            cell.style.opacity = state.initialRevealedCells.has(cellKey) ? '1' : '0.5';
+            if (state.initialRevealedCells.has(cellKey)) cell.classList.add('initial-cell');
+            if (Object.hasOwn(state.guessedCells, cellKey)) {
+                appendEmoji(cell, state.guessedCells[cellKey] ? '✓' : '✗');
+            }
+        } else if (state.userPaintedCells[cellKey]) {
+            cell.style.backgroundColor = '';
+            cell.classList.add('unknown-cell');
+            appendDot(cell, state.userPaintedCells[cellKey]);
+        } else {
+            cell.style.backgroundColor = '';
+            cell.classList.add('unknown-cell');
+        }
+
+        if (state.isRunning && state.targetCell?.r === r && state.targetCell?.c === c) {
+            cell.classList.add('target-cell');
+            cell.style.opacity = '1';
+        }
+    }
+
+    function appendDot(cell, color) {
+        const dot = document.createElement('div');
+        dot.className = 'painted-dot';
+        dot.style.backgroundColor = color;
+        cell.appendChild(dot);
+    }
+
+    function appendEmoji(cell, text) {
+        const span = document.createElement('span');
+        span.className = 'guess-result-emoji';
+        span.textContent = text;
+        cell.appendChild(span);
+    }
+
+    function selectNewTarget() {
+        const { GRID_SIZE, UNIT_ROWS, UNIT_COLS } = CFG;
+        const allCells = [];
+        for (let r = 0; r < GRID_SIZE; r++) {
+            for (let c = 0; c < GRID_SIZE; c++) {
+                allCells.push({ r, c });
+            }
+        }
+        
+        const randomizedCells = allCells
+            .map(cell => ({ cell, rand: Math.random() }))
+            .sort((a, b) => a.rand - b.rand)
+            .map(item => item.cell);
+
+        const currentGoalIndex = state.guessesCompleted + 1;
+
+        const getRectCoords = (r, c) => ({
+            r: Math.floor(r / UNIT_ROWS),
+            c: Math.floor(c / UNIT_COLS)
+        });
+
+        const getRectCorners = (rectR, rectC) => {
+            const corners = [];
+            for (let dr = 0; dr <= 1; dr++) {
+                for (let dc = 0; dc <= 1; dc++) {
+                    const cr = (rectR + dr) * UNIT_ROWS - 0.5;
+                    const cc = (rectC + dc) * UNIT_COLS - 0.5;
+                    if (SYMMETRY_CENTERS.some(p => p.r === cr && p.c === cc)) {
+                        corners.push({ r: cr, c: cc });
+                    }
+                }
+            }
+            return corners;
+        };
+
+        const getReflectedPos = (r, c, pr, pc) => {
+            const rr = 2 * pr - r;
+            const rc = 2 * pc - c;
+            if (rr >= 0 && rr < GRID_SIZE && rc >= 0 && rc < GRID_SIZE) return { r: rr, c: rc };
+            return null;
+        };
+
+        const getReflectedKey = (r, c, pr, pc) => {
+            const pos = getReflectedPos(r, c, pr, pc);
+            return pos ? `${pos.r},${pos.c}` : null;
+        };
+
+        for (const cell of randomizedCells) {
+            const cellKey = `${cell.r},${cell.c}`;
+            if (state.knownCells.has(cellKey)) continue;
+
+            const rect = getRectCoords(cell.r, cell.c);
+            let found = false;
+
+            if (currentGoalIndex === 1 || currentGoalIndex === 2) {
+                const corners = getRectCorners(rect.r, rect.c);
+                if (corners.some(p => state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c)))) found = true;
+
+            } else if (currentGoalIndex === 3) {
+                const ownCorners = getRectCorners(rect.r, rect.c);
+                const isKnownFromOwn = ownCorners.some(p => state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c)));
+                
+                if (!isKnownFromOwn) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (Math.abs(dr) + Math.abs(dc) !== 1) continue;
+                            const corners = getRectCorners(rect.r + dr, rect.c + dc);
+                            if (corners.some(p => state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c)))) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                }
+
+            } else if (currentGoalIndex === 4) {
+                const ownCorners = getRectCorners(rect.r, rect.c);
+                const isKnownFromOwn = ownCorners.some(p => state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c)));
+                
+                if (!isKnownFromOwn) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (Math.abs(dr) + Math.abs(dc) !== 1) continue;
+                            const corners = getRectCorners(rect.r + dr, rect.c + dc);
+                            if (corners.some(p => state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c)))) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                }
+
+            } else if (currentGoalIndex === 5) {
+                const ownCorners = getRectCorners(rect.r, rect.c);
+                const ownCornersSet = new Set(ownCorners.map(p => `${p.r},${p.c}`));
+                
+                for (const p1 of ownCorners) {
+                    const midPos = getReflectedPos(cell.r, cell.c, p1.r, p1.c);
+                    if (!midPos) continue;
+
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            if (Math.abs(dr) + Math.abs(dc) !== 1) continue;
+                            
+                            const adjCorners = getRectCorners(rect.r + dr, rect.c + dc);
+                            for (const p2 of adjCorners) {
+                                if (ownCornersSet.has(`${p2.r},${p2.c}`)) continue;
+
+                                const finalKey = getReflectedKey(midPos.r, midPos.c, p2.r, p2.c);
+                                if (finalKey && state.knownCells.has(finalKey)) {
+                                    let knownBySingle = false;
+                                    for (const p of SYMMETRY_CENTERS) {
+                                        if (state.knownCells.has(getReflectedKey(cell.r, cell.c, p.r, p.c))) {
+                                            knownBySingle = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!knownBySingle) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (found) break;
+                        }
+                        if (found) break;
+                    }
+                    if (found) break;
+                }
+            }
+
+            if (found) {
+                state.targetCell = cell;
+                updateGridDisplay();
+                return;
+            }
+        }
+
+        state.targetCell = allCells.find(c => !state.knownCells.has(`${c.r},${c.c}`));
+        if (!state.targetCell) endGame();
+        else updateGridDisplay();
+    }
+
+    function revealInitialCells() {
+        const typeCells = Array.from({ length: CFG.TOTAL_TYPES }, () => []);
+        for (let r = 0; r < CFG.GRID_SIZE; r++) {
+            for (let c = 0; c < CFG.GRID_SIZE; c++) {
+                typeCells[state.gridData[r][c]].push({ r, c });
+            }
+        }
+        typeCells.forEach(cells => {
+            const { r, c } = cells[Math.floor(Math.random() * cells.length)];
+            const key = `${r},${c}`;
+            state.initialRevealedCells.add(key);
+            state.knownCells.add(key);
+        });
+    }
+
+    function showColorPicker(r, c, mode) {
+        if (mode === 'guess' && (!state.isRunning || state.targetCell?.r !== r || state.targetCell?.c !== c)) return;
+
+        const targetEl      = getCellEl(r, c);
+        const targetRect    = targetEl.getBoundingClientRect();
+        const containerRect = dom.gameContainer.getBoundingClientRect();
+
+        dom.colorPickerModal.classList.remove('hidden');
+        dom.colorPickerModal.classList.toggle('paint-mode', mode === 'paint');
+        dom.colorPickerModal.dataset.mode    = mode;
+        dom.colorPickerModal.dataset.cellKey = `${r},${c}`;
+
+        requestAnimationFrame(() => {
+            const pw = dom.colorPickerModal.offsetWidth;
+            const ph = dom.colorPickerModal.offsetHeight;
+            dom.colorPickerModal.style.top  = `${targetRect.top - containerRect.top - ph - 5}px`;
+            dom.colorPickerModal.style.left = `${targetRect.left - containerRect.left + targetRect.width / 2 - pw / 2}px`;
+        });
+    }
+
+    function hideColorPicker() {
+        dom.colorPickerModal.classList.add('hidden');
+        dom.colorPickerModal.classList.remove('paint-mode');
+    }
+
+    function handleGuess(colorCode) {
+        if (!state.isRunning || !state.targetCell) return;
+
+        const { r, c } = state.targetCell;
+        const cellKey        = `${r},${c}`;
+        const guessedIdx     = parseInt(colorCode.replace('C', ''), 10);
+        const actualIdx      = CFG.COLOR_INDEX[state.gridData[r][c]];
+        const isCorrect      = guessedIdx === actualIdx;
+
+        if (isCorrect) state.score++;
+        state.guessesCompleted++;
+        state.knownCells.add(cellKey);
+        delete state.userPaintedCells[cellKey];
+        state.guessedCells[cellKey] = isCorrect;
+
+        updateScoreDisplay();
+
+        if (state.guessesCompleted >= CFG.GUESS_GOAL) endGame();
+        else selectNewTarget();
+    }
+
+    function handlePaint(colorCode, cellKey) {
+        if (colorCode === 'CLEAR') {
+            delete state.userPaintedCells[cellKey];
+        } else {
+            const colorHex = CFG.COLOR_MAP[colorCode];
+            if (state.userPaintedCells[cellKey] === colorHex) {
+                delete state.userPaintedCells[cellKey];
+            } else {
+                state.userPaintedCells[cellKey] = colorHex;
+            }
+        }
+        hideColorPicker();
+        updateGridDisplay();
+    }
+
+    function updateScoreDisplay() {
+        dom.scoreDisplay.textContent = `${STRINGS.scoreLabel} ${state.score} / ${state.guessesCompleted}`;
+    }
+
+    function endGame() {
+        state.isRunning = false;
+        hideColorPicker();
+
+        // Show start button again on main canvas, hide score
+        showStartButton();
+
+        const timeTaken = ((Date.now() - state.startTime) / 1000).toFixed(2);
+        dom.modalTitle.textContent = STRINGS.modalTitle;
+        dom.modalMessage.innerHTML = `
+            ${STRINGS.modalMessageSuccess}
+            <br><br>
+            ${STRINGS.modalScore} <strong class="text-slate-800">${state.score} / ${state.guessesCompleted}</strong>
+            <br>
+            ${STRINGS.modalTime} <strong class="text-amber-600">${timeTaken} ${STRINGS.modalSeconds}</strong>
+        `;
+        dom.restartButton.textContent = STRINGS.restartModalBtn;
+        dom.messageModal.classList.remove('hidden');
+        updateGridDisplay();
+    }
+
+    function playReflectionAnimation() {
+        const els = {
+            a: $('point-a'), ap: $('point-a-prime'), app: $('point-a-double-prime'),
+            o1: $('center-o'), o2: $('center-o2'), lo1: $('label-o'), lo2: $('label-o2'),
+            lap: $('label-a-prime'), lapp: $('label-a-double-prime'), l1: $('line-full-1'), l2: $('line-full-2')
+        };
+        const reset = () => {
+            Object.values(els).forEach(e => { e.style.transition = 'none'; e.setAttribute('opacity', '0'); });
+            els.a.setAttribute('opacity', '1'); els.a.setAttribute('cx', '40'); els.a.setAttribute('cy', '140');
+            $('reflection-description').innerText = "";
+        };
+        reset();
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        async function run() {
+            $('reflection-description').innerText = STRINGS.step1;
+            await delay(500); els.o1.setAttribute('opacity', '1'); els.lo1.setAttribute('opacity', '1');
+            await delay(500); els.l1.setAttribute('opacity', '1');
+            await delay(300);
+            els.a.style.transition = 'all 2s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
+            els.a.setAttribute('cx', '200'); els.a.setAttribute('cy', '20');
+            await delay(2100);
+            els.ap.setAttribute('opacity', '0.4'); els.lap.setAttribute('opacity', '1');
+
+            await delay(800);
+            $('reflection-description').innerText = STRINGS.step2;
+            els.o2.setAttribute('opacity', '1'); els.lo2.setAttribute('opacity', '1');
+            await delay(500); els.l2.setAttribute('opacity', '1');
+            await delay(300);
+            els.a.style.transition = 'all 2s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
+            els.a.setAttribute('cx', '220'); els.a.setAttribute('cy', '160');
+            await delay(2100);
+            els.app.setAttribute('opacity', '0.4'); els.lapp.setAttribute('opacity', '1');
+            
+            await delay(800);
+            $('reflection-description').innerText = STRINGS.step3;
+        }
+        run();
+    }
+
+    function setupEventListeners() {
+        dom.gridContainer.onclick = event => {
+            const cell = event.target.closest('.grid-cell');
+            if (!cell) { hideColorPicker(); return; }
+
+            const r       = parseInt(cell.dataset.row, 10);
+            const c       = parseInt(cell.dataset.col, 10);
+            const cellKey = `${r},${c}`;
+
+            if (state.isRunning && state.targetCell?.r === r && state.targetCell?.c === c) {
+                showColorPicker(r, c, 'guess');
+            } else if (state.knownCells.has(cellKey)) {
+                hideColorPicker();
+            } else {
+                showColorPicker(r, c, 'paint');
+            }
+        };
+
+        colorOptionButtons.forEach(btn => {
+            btn.onclick = event => {
+                const mode      = dom.colorPickerModal.dataset.mode;
+                const cellKey   = dom.colorPickerModal.dataset.cellKey;
+                const colorCode = event.currentTarget.dataset.color;
+                if (mode === 'guess')        handleGuess(colorCode);
+                else if (mode === 'paint')   handlePaint(colorCode, cellKey);
+            };
+        });
+
+        document.addEventListener('click', event => {
+            if (!dom.gridContainer.contains(event.target) && !dom.colorPickerModal.contains(event.target)) {
+                hideColorPicker();
+            }
+        });
+
+        const reflectionLink = $('reflection-link');
+        if (reflectionLink) {
+            reflectionLink.onclick = (e) => {
+                e.preventDefault();
+                dom.reflectionModal.classList.remove('hidden');
+                playReflectionAnimation();
+            };
+        }
+
+        dom.closeReflectionModal.onclick = () => {
+            dom.reflectionModal.classList.add('hidden');
+        };
+
+        dom.replayAnimation.onclick = () => {
+            playReflectionAnimation();
+        };
+
+        dom.reflectionModal.onclick = (e) => {
+            if (e.target === dom.reflectionModal) {
+                dom.reflectionModal.classList.add('hidden');
+            }
+        };
+    }
+
+    function startGame() {
+        resetState();
+        state.isRunning  = true;
+        state.startTime  = Date.now();
+
+        state.gridData = buildGridData();
+        updateScoreDisplay();
+        showScoreDisplay();
+        renderGrid();
+        revealInitialCells();
+        selectNewTarget();
+    }
+
+    function handleStartButton() {
+        dom.messageModal.classList.add('hidden');
+        startGame();
+    }
+
+    window.handleStartButton = handleStartButton;
+    window.restartGame = () => {
+        dom.messageModal.classList.add('hidden');
+        startGame();
+    };
+
+    window.addEventListener('load', () => {
+        applyStaticStrings();
+        // Show empty grid and start button initially
+        renderEmptyGrid();
+        showStartButton();
+        setupEventListeners();
+
+        // Modal restart button
+        dom.restartButton.onclick = handleStartButton;
+        dom.closeModalButton.onclick = () => dom.messageModal.classList.add('hidden');
+    });
+})();
+</script>
+</body>
+</html>
