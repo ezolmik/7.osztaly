@@ -116,6 +116,43 @@
     .group-note.error{border-radius:8px;padding:8px;color:var(--red);background:var(--red-soft);font-weight:800}
     .mosaic-coverage{display:grid;gap:4px;flex-basis:100%;border-radius:9px;padding:8px 10px;background:var(--gold-soft);font-size:.82rem;font-weight:750;line-height:1.45}
     .mosaic-coverage[hidden]{display:none}
+    .station-mode-button[aria-pressed="true"]{border-color:var(--green);color:#fff;background:var(--green)}
+    .station-work[hidden],.station-hidden[hidden]{display:none!important}
+    .desks[hidden],.constraint-report[hidden]{display:none!important}
+    .station-work{margin:0 3px 18px}
+    .station-toolbar{display:flex;flex-wrap:wrap;align-items:end;gap:10px;margin-bottom:16px}
+    .station-toolbar label{display:grid;gap:5px;font-size:.82rem;font-weight:800}
+    .station-toolbar select{min-width:105px;min-height:42px}
+    .station-toolbar button{min-height:42px}
+    .station-round{margin:0 0 14px;border-radius:14px;padding:15px;color:#fff;background:var(--green)}
+    .station-round strong{display:block;font:800 clamp(1.4rem,3vw,2.3rem)/1.2 Georgia,serif}
+    .station-round span{display:block;margin-top:5px;font-size:.88rem}
+    .station-timer{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:0 0 16px;border:1px solid var(--line);border-radius:14px;padding:14px;background:#f8fbfa}
+    .station-timer-config{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+    .station-timer label{display:grid;gap:4px;font-size:.8rem;font-weight:800}
+    .station-timer input[type="number"]{width:90px;min-height:42px;border:1px solid var(--line);border-radius:9px;padding:6px 9px}
+    .station-timer .sound-setting{display:flex;align-items:center;gap:7px}
+    .station-timer .sound-setting input{width:18px;height:18px;accent-color:var(--green)}
+    .timer-clock{min-width:130px;color:var(--green);font:850 clamp(2rem,4vw,3.2rem)/1 Georgia,serif;font-variant-numeric:tabular-nums}
+    .timer-phase{font-size:.9rem;font-weight:850}
+    .timer-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+    .timer-controls button{min-height:40px}
+    .timer-notice{width:100%;margin:0;color:var(--muted);font-size:.78rem;line-height:1.35}
+    .station-timer.finished{border-color:#a8d0c7;background:var(--green-soft)}
+    .station-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0 20px}
+    .station-card{border:2px solid var(--group-color);border-radius:14px;padding:12px;background:var(--group-bg)}
+    .station-card h3{margin:0 0 5px;color:var(--group-color);font-size:1.12rem}
+    .station-card p{margin:0 0 8px;font-weight:850;line-height:1.3}
+    .station-card small{display:block;color:var(--ink);line-height:1.4}
+    .station-card .next{margin-top:8px;border-top:1px solid var(--group-color);padding-top:7px;font-size:.8rem;font-weight:800}
+    .station-name-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0 16px}
+    .station-name-fields label{display:grid;gap:4px;font-size:.8rem;font-weight:800}
+    .station-name-fields input{width:100%;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:6px 9px}
+    .station-route{width:100%;border-collapse:collapse;font-size:.84rem;text-align:left}
+    .station-route th,.station-route td{border-bottom:1px solid var(--line);padding:9px 7px}
+    .station-route th{color:var(--green)}
+    .station-route .active-round{background:var(--green-soft);font-weight:900}
+    .station-table-wrap{overflow-x:auto}
     .desks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 22px;align-items:stretch}
     .desk{position:relative;display:grid;grid-template-columns:1fr 1fr;min-height:104px;border:2px solid #9c7440;border-radius:10px 10px 16px 16px;padding:13px 9px 10px;background:linear-gradient(#e9c57f,#d6a65c);box-shadow:0 8px 0 #9a6b35,0 12px 20px rgba(89,61,29,.13)}
     .desk.single{grid-template-columns:1fr}
@@ -166,6 +203,7 @@
     }
     @media print{
       body{background:#fff}.shell{width:100%;padding:0}header{margin-bottom:12px}.header-actions,.panel{display:none!important}.app{display:block}.room{min-height:0;border:0;box-shadow:none;padding:0}.room.group-layout .desks{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.desks{gap:17px}.desk{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}.group-picker,.toast,.mosaic-tabs,.group-panel label,.group-note,.group-name-settings,.group-assignments{display:none!important}.group-panel{break-inside:avoid}.mosaic-seat-button{border:0;outline:0!important}
+      .station-work{break-inside:avoid}.station-toolbar,.station-name-settings,.station-timer{display:none!important}.station-card{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     }
   </style>
 </head>
@@ -224,6 +262,7 @@
           </aside>
         </details>
         <button id="groupModeButton" class="group-mode-button" type="button" aria-pressed="false">Csoportmód</button>
+        <button id="stationModeButton" class="station-mode-button" type="button" aria-pressed="false">Állomásmunka</button>
         <button id="manualButton" type="button">Kézi szerkesztés</button>
         <button id="printButton" type="button">Nyomtatás</button>
         <button id="shuffleTop" class="primary" type="button">Új ülésrend</button>
@@ -254,6 +293,38 @@
           </details>
           <details class="group-name-settings" id="groupNameSettings"><summary>Csoportnevek</summary><div id="groupNameFields" class="group-name-fields"></div></details>
           <p id="groupNote" class="group-note"></p>
+        </div>
+        <div id="stationWork" class="station-work" hidden>
+          <div class="station-toolbar">
+            <label for="stationCountSelect">Állomások és csoportok száma <select id="stationCountSelect"></select></label>
+            <button id="regroupStations" type="button">Új csoportbontás</button>
+            <button id="useCurrentGroups" type="button">Csoportok átvétele az ülésrendből</button>
+          </div>
+          <div class="station-round" aria-live="polite"><strong id="stationRoundTitle"></strong><span id="stationRoundHint"></span></div>
+          <div id="stationTimer" class="station-timer" role="timer" aria-label="Állomásmunka időzítő">
+            <div class="station-timer-config">
+              <label for="workMinutes">Munka egy állomáson (perc) <input id="workMinutes" type="number" min="1" max="60" step="1"></label>
+              <label class="sound-setting" for="stationSound"><input id="stationSound" type="checkbox">Hangjelzés</label>
+            </div>
+            <div id="timerClock" class="timer-clock" aria-live="off">06:00</div>
+            <div id="timerPhase" class="timer-phase" aria-live="polite">Munkaidő</div>
+            <div class="timer-controls">
+              <button id="timerStartPause" class="primary" type="button">Indítás</button>
+              <button id="timerAddMinute" type="button">+1 perc</button>
+              <button id="timerReset" type="button">Kör idejének visszaállítása</button>
+              <button id="timerSoundTest" type="button">Hangpróba</button>
+            </div>
+            <p id="timerNotice" class="timer-notice">Lejáratkor hosszabb hangjelzés szól, majd az óra megáll. A következő kört te indítod.</p>
+          </div>
+          <div class="station-toolbar">
+            <button id="previousStationRound" type="button">← Előző kör</button>
+            <button id="nextStationRound" class="primary" type="button">Következő kör →</button>
+          </div>
+          <div id="stationCards" class="station-cards"></div>
+          <details id="stationNameSettings" class="station-name-settings"><summary>Állomások elnevezése</summary><div id="stationNameFields" class="station-name-fields"></div></details>
+          <h2>Teljes útvonal</h2>
+          <p class="hint">A csoportok tagjai végig együtt maradnak. Minden körben minden állomáson egy csoport dolgozik.</p>
+          <div id="stationRoute" class="station-table-wrap"></div>
         </div>
         <div id="desks" class="desks"></div>
       </section>
@@ -311,6 +382,8 @@
       const groupNames = Object.fromEntries(Object.keys(rosters).map(classId => [classId, {
         base: defaultGroupNames.base.slice(), expert: defaultGroupNames.expert.slice()
       }]));
+      const stationSessions = {};
+      const stationDefaultNames = ["1. állomás", "2. állomás", "3. állomás", "4. állomás", "5. állomás", "6. állomás"];
       const STORAGE_KEY = "ultetesrend-generator-settings-v3";
       const PREVIOUS_STORAGE_KEY = "ultetesrend-generator-settings-v2";
       const $ = id => document.getElementById(id);
@@ -327,10 +400,12 @@
       let currentClass = "7a_1";
       let manualMode = false;
       let groupMode = false;
+      let stationMode = false;
       let mosaicView = "base";
       let selectedMosaicSlot = null;
       let printingMosaic = false;
       let toastTimer;
+      let stationAudio;
 
       function shuffled(items) {
         const result = items.slice();
@@ -401,6 +476,8 @@
           maximizeMixed,
           manualLayouts,
           groupMode,
+          stationMode,
+          stationSessions,
           groupCounts,
           groupAssignments,
           groupErrors,
@@ -485,6 +562,23 @@
               }
             }
             if (Number.isInteger(data.groupCounts?.[classId])) groupCounts[classId] = data.groupCounts[classId];
+            const session = data.stationSessions?.[classId];
+            if (session && Number.isInteger(session.count) && session.count >= 2 && session.count <= 6 &&
+                Number.isInteger(session.round) && session.round >= 0 && session.round < session.count &&
+                session.members && typeof session.members === "object" && !Array.isArray(session.members) &&
+                Object.entries(session.members).every(([id, group]) =>
+                  validId(classId, id) && Number.isInteger(group) && group >= 1 && group <= session.count)) {
+              stationSessions[classId] = {
+                count: session.count, round: data.attendanceDay === attendanceDay ? session.round : 0,
+                members: data.attendanceDay === attendanceDay ? { ...session.members } : {},
+                names: Array.from({ length: 6 }, (_, index) =>
+                  cleanGroupName(session.names?.[index]) || stationDefaultNames[index]),
+                timer: validStationTimer(session.timer) && data.attendanceDay === attendanceDay
+                  ? { workMinutes: session.timer.workMinutes, soundEnabled: session.timer.soundEnabled,
+                      state: session.timer.state, remainingMs: session.timer.remainingMs,
+                      deadline: session.timer.deadline } : defaultStationTimer(session.timer)
+              };
+            }
             if (data.arrangementDay === attendanceDay &&
                 validFlexibleGroupPlan(classId, data.flexibleGroupPlans?.[classId])) {
               flexibleGroupPlans[classId] = data.flexibleGroupPlans[classId];
@@ -535,6 +629,7 @@
             }
           });
           groupMode = data.groupMode === true;
+          stationMode = data.stationMode === true;
           mosaicView = data.mosaicView === "expert" ? "expert" : "base";
           if (groupMode) Object.keys(groupErrors).forEach(classId => {
             arrangements[classId] = [];
@@ -548,6 +643,11 @@
         const today = localDay();
         if (attendanceDay === today) return false;
         attendanceDay = today;
+        Object.values(stationSessions).forEach(session => {
+          session.members = {};
+          session.round = 0;
+          session.timer = defaultStationTimer(session.timer);
+        });
         selectedMosaicSlot = null;
         Object.keys(rosters).forEach(classId => {
           absent[classId].clear();
@@ -1297,6 +1397,275 @@
         $("groupModeButton").textContent = groupMode ? "Csoportmód: be" : "Csoportmód";
         $("shuffleTop").textContent = groupMode ? "Új csoportos ülésrend" : "Új ülésrend";
         $("shuffleButton").textContent = groupMode ? "Csoportos ülésrend készítése" : "Alkalmazás és bezárás";
+      }
+
+      function stationCount(classId) {
+        return Math.max(2, Math.min(6, presentStudents(classId).length,
+          stationSessions[classId]?.count ?? 5));
+      }
+
+      function newStationMembers(classId, count) {
+        const members = {};
+        shuffled(presentStudents(classId)).forEach((student, index) => {
+          members[student.id] = index % count + 1;
+        });
+        return members;
+      }
+
+      function ensureStationSession(classId) {
+        const present = presentStudents(classId);
+        let session = stationSessions[classId];
+        if (!session) {
+          session = { count: Math.max(2, Math.min(5, present.length)), round: 0,
+            members: {}, names: stationDefaultNames.slice() };
+          stationSessions[classId] = session;
+        }
+        if (!validStationTimer(session.timer)) session.timer = defaultStationTimer(session.timer);
+        const count = stationCount(classId);
+        if (present.length < 2) {
+          if (Object.keys(session.members).length || session.timer.state !== "idle") {
+            session.members = {};
+            session.round = 0;
+            session.timer = defaultStationTimer(session.timer);
+            saveSettings();
+          }
+          return session;
+        }
+        const ids = Object.keys(session.members);
+        if (session.count !== count || ids.length !== present.length ||
+            present.some(student => !Number.isInteger(session.members[student.id]) ||
+              session.members[student.id] < 1 || session.members[student.id] > count) ||
+            Array.from({ length: count }, (_, index) => index + 1)
+              .some(group => !ids.some(id => session.members[id] === group))) {
+          session.count = count;
+          session.members = newStationMembers(classId, count);
+          session.round = 0;
+          session.timer = defaultStationTimer(session.timer);
+          saveSettings();
+        }
+        return session;
+      }
+
+      function stationFor(group, round, count) {
+        return (group - 1 + round) % count + 1;
+      }
+
+      function defaultStationTimer(previous) {
+        const workMinutes = Number.isInteger(previous?.workMinutes) &&
+          previous.workMinutes >= 1 && previous.workMinutes <= 60 ? previous.workMinutes : 6;
+        return { workMinutes, soundEnabled: previous?.soundEnabled !== false,
+          state: "idle", remainingMs: workMinutes * 60000, deadline: null };
+      }
+
+      function validStationTimer(timer) {
+        return timer && Number.isInteger(timer.workMinutes) && timer.workMinutes >= 1 && timer.workMinutes <= 60 &&
+          typeof timer.soundEnabled === "boolean" && timer.phase !== "move" &&
+          ["idle", "running", "paused", "waiting", "done"].includes(timer.state) &&
+          Number.isFinite(timer.remainingMs) && timer.remainingMs >= 0 && timer.remainingMs <= 86400000 &&
+          (timer.state !== "running" || Number.isFinite(timer.deadline) && timer.deadline > 0);
+      }
+
+      async function unlockStationSound() {
+        try {
+          const Audio = window.AudioContext || window.webkitAudioContext;
+          if (!Audio) return false;
+          if (!stationAudio) stationAudio = new Audio();
+          if (stationAudio.state !== "running") await stationAudio.resume();
+          return stationAudio.state === "running";
+        } catch (error) { return false; }
+      }
+
+      function playStationSound() {
+        if (!stationAudio || stationAudio.state !== "running") return;
+        const now = stationAudio.currentTime;
+        Array.from({ length: 10 }, (_, index) => index * .58).forEach((delay, index) => {
+          const tone = stationAudio.createOscillator();
+          const volume = stationAudio.createGain();
+          tone.type = "sine";
+          tone.frequency.value = index % 2 ? 780 : 620;
+          volume.gain.setValueAtTime(.0001, now + delay);
+          volume.gain.exponentialRampToValueAtTime(.13, now + delay + .02);
+          volume.gain.exponentialRampToValueAtTime(.0001, now + delay + .38);
+          tone.connect(volume).connect(stationAudio.destination);
+          tone.start(now + delay);
+          tone.stop(now + delay + .4);
+        });
+      }
+
+      function stationTimerRemaining(timer) {
+        return timer.state === "running" ? Math.max(0, timer.deadline - Date.now()) : timer.remainingMs;
+      }
+
+      function reconcileStationTimer(classId) {
+        const session = stationSessions[classId];
+        if (!session || session.timer?.state !== "running") return false;
+        const timer = session.timer;
+        if (timer.deadline > Date.now()) return false;
+        timer.state = session.round === session.count - 1 ? "done" : "waiting";
+        timer.remainingMs = 0;
+        timer.deadline = null;
+        saveSettings();
+        if (timer.soundEnabled) playStationSound();
+        if (classId === currentClass && stationMode) renderStationWork();
+        return true;
+      }
+
+      function renderStationClock(timer) {
+        const remaining = Math.ceil(stationTimerRemaining(timer) / 1000);
+        $("timerClock").textContent = String(Math.floor(remaining / 60)).padStart(2, "0") + ":" +
+          String(remaining % 60).padStart(2, "0");
+      }
+
+      function renderStationTimer(session, available) {
+        const timer = session.timer;
+        renderStationClock(timer);
+        $("timerPhase").textContent = timer.state === "done" ? "Az állomásmunka véget ért" :
+          timer.state === "waiting" ? "Lejárt · állomásváltás" : "Munkaidő";
+        $("stationTimer").classList.toggle("finished", ["waiting", "done"].includes(timer.state));
+        $("workMinutes").value = timer.workMinutes;
+        $("stationSound").checked = timer.soundEnabled;
+        $("workMinutes").disabled = !available;
+        $("stationSound").disabled = !available;
+        $("timerStartPause").disabled = !available || ["waiting", "done"].includes(timer.state);
+        $("timerStartPause").textContent = timer.state === "running" ? "Szünet" :
+          timer.state === "paused" ? "Folytatás" : "Indítás";
+        $("timerAddMinute").disabled = !available || ["waiting", "done"].includes(timer.state);
+        $("timerReset").disabled = !available;
+        $("timerSoundTest").disabled = !available;
+        $("timerNotice").textContent = timer.state === "waiting" ?
+          "Az óra megállt. Várd meg, amíg mindenki átér, majd lépj a következő körre és indítsd el az időzítőt." :
+          timer.state === "done" ?
+          "Minden kör véget ért. A kör idejének visszaállításával újraindíthatod az utolsó kört." :
+          timer.state === "running" && timer.soundEnabled && (!stationAudio || stationAudio.state !== "running") ?
+          "A hanghoz kattints a Hangpróba gombra; az időmérés enélkül is folytatódik." :
+          "Lejáratkor az időzítő megáll. Az állomásváltás és a következő kör indítása a te kezedben van.";
+      }
+
+      function currentGroupMembers(classId) {
+        if (!groupMode || groupCount(classId) < 2 || groupErrors[classId]) return null;
+        const plan = mosaicEnabled[classId] ? mosaicPlans[classId] : flexibleGroupPlans[classId];
+        if (plan) return { ...plan.baseById };
+        const members = {};
+        (arrangements[classId] || []).forEach((desk, index) =>
+          desk.seats.forEach(student => { members[student.id] = groupAssignments[classId]?.[index]; }));
+        return Object.keys(members).length === presentStudents(classId).length &&
+          Object.values(members).every(group => Number.isInteger(group) && group >= 1 && group <= groupCount(classId))
+          ? members : null;
+      }
+
+      function renderStationWork() {
+        const box = $("stationWork");
+        box.hidden = !stationMode;
+        $("desks").hidden = stationMode;
+        $("groupModeButton").hidden = stationMode;
+        $("manualButton").hidden = stationMode;
+        $("shuffleTop").hidden = stationMode;
+        $("stationModeButton").setAttribute("aria-pressed", String(stationMode));
+        $("stationModeButton").textContent = stationMode ? "Állomásmunka: bezárás" : "Állomásmunka";
+        if (!stationMode) return;
+        const present = presentStudents(currentClass);
+        const session = ensureStationSession(currentClass);
+        const count = stationCount(currentClass);
+        renderStationTimer(session, present.length >= 2);
+        const select = $("stationCountSelect");
+        select.innerHTML = "";
+        for (let value = 2; value <= Math.min(6, present.length); value += 1) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = value;
+          option.selected = value === count;
+          select.appendChild(option);
+        }
+        select.disabled = present.length < 2;
+        $("regroupStations").disabled = present.length < 2;
+        const groupMembers = currentGroupMembers(currentClass);
+        $("useCurrentGroups").disabled = !groupMembers;
+        $("useCurrentGroups").title = groupMembers ? "" : "Előbb készíts csoportos ülésrendet";
+        if (present.length < 2) {
+          $("stationRoundTitle").textContent = "Legalább két jelenlévő diák szükséges";
+          $("stationRoundHint").textContent = "Jelöld a jelenlévőket a Beállítások menüben.";
+          $("stationCards").replaceChildren();
+          $("stationRoute").replaceChildren();
+          $("stationNameFields").replaceChildren();
+          $("previousStationRound").disabled = true;
+          $("nextStationRound").disabled = true;
+          return;
+        }
+        $("stationRoundTitle").textContent = (session.round + 1) + "/" + count + ". kör";
+        $("stationRoundHint").textContent = session.timer.state === "waiting"
+          ? "Lejárt. Átállás után te léptetsz a következő körre."
+          : session.timer.state === "done" ? "Minden állomáson véget ért a munka."
+          : session.round + 1 < count ? "A következő kör állomását minden csoport kártyája mutatja."
+          : "Utolsó kör: minden csoport minden állomáson járt.";
+        $("previousStationRound").disabled = session.round === 0;
+        $("nextStationRound").disabled = session.round === count - 1;
+        const cards = $("stationCards");
+        cards.replaceChildren();
+        for (let station = 1; station <= count; station += 1) {
+          const group = (station - 1 - session.round + count) % count + 1;
+          const card = document.createElement("article");
+          card.className = "station-card group-" + group;
+          const heading = document.createElement("h3");
+          heading.textContent = session.names[station - 1];
+          const groupLabel = document.createElement("p");
+          groupLabel.textContent = groupTitle(currentClass, "base", group) + " csoport";
+          const names = document.createElement("small");
+          names.textContent = present.filter(student => session.members[student.id] === group)
+            .map(student => displayName(student)).join(", ");
+          card.append(heading, groupLabel, names);
+          if (session.round + 1 < count) {
+            const next = document.createElement("div");
+            next.className = "next";
+            next.textContent = "Következő: " + session.names[stationFor(group, session.round + 1, count) - 1];
+            card.appendChild(next);
+          }
+          cards.appendChild(card);
+        }
+        const fields = $("stationNameFields");
+        fields.replaceChildren();
+        for (let station = 1; station <= count; station += 1) {
+          const label = document.createElement("label");
+          label.textContent = station + ". állomás neve";
+          const input = document.createElement("input");
+          input.type = "text";
+          input.maxLength = 40;
+          input.value = session.names[station - 1];
+          input.addEventListener("change", () => {
+            session.names[station - 1] = cleanGroupName(input.value) || stationDefaultNames[station - 1];
+            saveSettings();
+            renderStationWork();
+          });
+          label.appendChild(input);
+          fields.appendChild(label);
+        }
+        const table = document.createElement("table");
+        table.className = "station-route";
+        const head = document.createElement("thead");
+        const headingRow = document.createElement("tr");
+        ["Csoport", ...Array.from({ length: count }, (_, index) => (index + 1) + ". kör")]
+          .forEach((title, index) => {
+            const cell = document.createElement("th");
+            cell.textContent = title;
+            if (index === session.round + 1) cell.className = "active-round";
+            headingRow.appendChild(cell);
+          });
+        head.appendChild(headingRow);
+        const body = document.createElement("tbody");
+        for (let group = 1; group <= count; group += 1) {
+          const row = document.createElement("tr");
+          const title = document.createElement("th");
+          title.textContent = groupTitle(currentClass, "base", group);
+          row.appendChild(title);
+          for (let round = 0; round < count; round += 1) {
+            const cell = document.createElement("td");
+            cell.textContent = session.names[stationFor(group, round, count) - 1];
+            if (round === session.round) cell.className = "active-round";
+            row.appendChild(cell);
+          }
+          body.appendChild(row);
+        }
+        table.append(head, body);
+        $("stationRoute").replaceChildren(table);
       }
 
       function renderGroupNameEditor() {
@@ -2161,13 +2530,25 @@
         $("classTitle").innerHTML = "<strong>" + currentClass + "</strong> · " +
           presentStudents(currentClass).length + "/" + students[currentClass].length + " jelen";
         renderGroupPanel();
-        if (manualMode && !(groupMode && mosaicEnabled[currentClass])) renderManualRoom();
-        else renderRandomRoom();
+        $("groupPanel").hidden = stationMode || !groupMode;
+        if (!stationMode) {
+          if (manualMode && !(groupMode && mosaicEnabled[currentClass])) renderManualRoom();
+          else renderRandomRoom();
+        } else $("roomStats").textContent = "Állomásmunka";
+        renderStationWork();
         renderConstraintReport();
+        $("constraintReport").hidden = stationMode;
       }
 
       function selectClass(classId) {
         ensureToday();
+        if (stationMode && currentClass !== classId && stationSessions[currentClass]?.timer?.state === "running") {
+          const oldTimer = stationSessions[currentClass].timer;
+          oldTimer.remainingMs = stationTimerRemaining(oldTimer);
+          oldTimer.deadline = null;
+          oldTimer.state = "paused";
+          saveSettings();
+        }
         currentClass = classId;
         selectedMosaicSlot = null;
         if (manualMode && groupMode && !mosaicEnabled[classId]) {
@@ -2350,6 +2731,106 @@
         renderRoom();
         saveSettings();
       });
+      $("stationModeButton").addEventListener("click", () => {
+        ensureToday();
+        stationMode = !stationMode;
+        if (stationMode && manualMode) toggleManualMode();
+        renderRoom();
+        saveSettings();
+      });
+      $("stationCountSelect").addEventListener("change", event => {
+        const session = ensureStationSession(currentClass);
+        session.count = Number(event.target.value);
+        session.members = newStationMembers(currentClass, session.count);
+        session.round = 0;
+        session.timer = defaultStationTimer(session.timer);
+        saveSettings();
+        renderRoom();
+      });
+      $("regroupStations").addEventListener("click", () => {
+        const session = ensureStationSession(currentClass);
+        session.members = newStationMembers(currentClass, session.count);
+        session.round = 0;
+        session.timer = defaultStationTimer(session.timer);
+        saveSettings();
+        renderRoom();
+      });
+      $("useCurrentGroups").addEventListener("click", () => {
+        const members = currentGroupMembers(currentClass);
+        if (!members) return;
+        const session = ensureStationSession(currentClass);
+        session.count = groupCount(currentClass);
+        session.members = members;
+        session.round = 0;
+        session.timer = defaultStationTimer(session.timer);
+        saveSettings();
+        renderRoom();
+      });
+      for (const [id, step] of [["previousStationRound", -1], ["nextStationRound", 1]]) {
+        $(id).addEventListener("click", () => {
+          const session = ensureStationSession(currentClass);
+          session.round = Math.max(0, Math.min(session.count - 1, session.round + step));
+          session.timer = defaultStationTimer(session.timer);
+          saveSettings();
+          renderStationWork();
+        });
+      }
+      $("workMinutes").addEventListener("change", event => {
+        const session = ensureStationSession(currentClass);
+        const value = Number(event.target.value);
+        if (!Number.isInteger(value) || value < 1 || value > 60) {
+          renderStationTimer(session, true);
+          showToast("1 és 60 perc közötti egész számot adj meg");
+          return;
+        }
+        session.timer.workMinutes = value;
+        if (session.timer.state === "idle") session.timer.remainingMs = value * 60000;
+        saveSettings();
+        renderStationTimer(session, true);
+      });
+      $("stationSound").addEventListener("change", async event => {
+        const session = ensureStationSession(currentClass);
+        session.timer.soundEnabled = event.target.checked;
+        if (event.target.checked) await unlockStationSound();
+        saveSettings();
+        renderStationTimer(session, true);
+      });
+      $("timerSoundTest").addEventListener("click", async () => {
+        if (await unlockStationSound()) playStationSound();
+        else showToast("A böngésző nem engedi a hangjelzést");
+        renderStationTimer(ensureStationSession(currentClass), true);
+      });
+      $("timerStartPause").addEventListener("click", async () => {
+        const session = ensureStationSession(currentClass);
+        const timer = session.timer;
+        if (["waiting", "done"].includes(timer.state)) return;
+        if (timer.state === "running") {
+          timer.remainingMs = stationTimerRemaining(timer);
+          timer.deadline = null;
+          timer.state = "paused";
+        } else {
+          if (timer.soundEnabled) await unlockStationSound();
+          timer.deadline = Date.now() + timer.remainingMs;
+          timer.state = "running";
+        }
+        saveSettings();
+        renderStationTimer(session, true);
+      });
+      $("timerAddMinute").addEventListener("click", () => {
+        const session = ensureStationSession(currentClass);
+        const timer = session.timer;
+        if (["waiting", "done"].includes(timer.state)) return;
+        if (timer.state === "running") timer.deadline += 60000;
+        else timer.remainingMs += 60000;
+        saveSettings();
+        renderStationTimer(session, true);
+      });
+      $("timerReset").addEventListener("click", () => {
+        const session = ensureStationSession(currentClass);
+        session.timer = defaultStationTimer(session.timer);
+        saveSettings();
+        renderStationTimer(session, true);
+      });
       $("mosaicToggle").addEventListener("change", event => {
         mosaicEnabled[currentClass] = event.target.checked;
         mosaicView = "base";
@@ -2408,6 +2889,12 @@
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) ensureToday();
       });
+      window.setInterval(() => {
+        const changed = reconcileStationTimer(currentClass);
+        if (!changed && stationMode && stationSessions[currentClass]?.timer) {
+          renderStationClock(stationSessions[currentClass].timer);
+        }
+      }, 250);
 
       selectClass(currentClass);
       updateManualButton();
