@@ -23,7 +23,7 @@
 </style>
 </head>
 <body>
-<header><div class="brand"><div class="mark" aria-hidden="true">÷</div><div><strong>Számolásvizsga Guru</strong><small>Gyakorolj biztos alapokra.</small></div></div><span class="mode" id="mode-label">EDZÉS · 7. OSZTÁLY</span></header>
+<header><div class="brand"><div class="mark" aria-hidden="true">÷</div><div><strong>Számolásvizsga Guru</strong><small>Gyakorolj a biztos alapokért.</small></div></div><span class="mode" id="mode-label">EDZÉS · 7. OSZTÁLY</span></header>
 <main>
 <div class="intro"><div><div class="eyebrow">Kis lépések. Biztos számolás.</div><h1 id="intro-heading">Itt ér hibázni.</h1><p id="intro-text">Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.</p></div><span class="session-tag">✎ Füzet + ceruza. Számológép nélkül.</span></div>
 <nav class="mode-switch" aria-label="Játékmód"><button type="button" id="practice-mode" aria-pressed="true">Edzés</button><button type="button" id="exam-mode" aria-pressed="false">Próbavizsga</button><button type="button" id="timed-mode" aria-pressed="false">5 perces edzés</button><button type="button" id="progress-mode" aria-pressed="false">Fejlődésem</button></nav>
@@ -830,7 +830,7 @@ if(typeof document!=='undefined'){
   if(activeExam()&&mode!=='exam')return;if(activeTimed()&&mode!=='timed')return;activeMode=mode;syncPracticeClock();
   const exam=mode==='exam',dashboard=mode==='progress';if(exam||mode==='timed')$('badge-toast').hidden=true;$('timed-panel').hidden=mode!=='timed';$('timed-mode').setAttribute('aria-pressed',String(mode==='timed'));$('practice-panel').hidden=mode!=='practice';$('exam-panel').hidden=!exam;$('progress-panel').hidden=!dashboard;if(dashboard)renderDashboard();
   $('practice-mode').setAttribute('aria-pressed',String(mode==='practice'));$('progress-mode').setAttribute('aria-pressed',String(dashboard));$('exam-mode').setAttribute('aria-pressed',String(exam));$('mode-label').textContent=mode==='timed'?'5 PERCES EDZÉS · 7. OSZTÁLY':exam?'PRÓBAVIZSGA · 7. OSZTÁLY':'EDZÉS · 7. OSZTÁLY';
-  $('intro-heading').textContent=mode==='timed'?'Először pontosan, aztán gyorsan.':dashboard?'Minden gyakorlás számít.':exam?'Mutasd meg, mit tudsz!':'Itt ér hibázni.';
+  $('intro-heading').textContent=mode==='timed'?'Először pontosan, aztán gyorsan.':dashboard?'Minden gyakorlás számít.':exam?'Mutasd meg, mit tudsz!':'Legyél Te is Számolásvizsga Guru!';
   $('intro-text').textContent=mode==='timed'?'Öt perc önálló számolás. Egy válasz minden feladatra. A javítást a végén kapod meg.':dashboard?'Nézd meg, mi megy már jól, és hol érdemes még gyakorolnod.':exam?'A vizsga ritmusában: önálló számolás, pontos eredmények, javítás a végén.':'Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.';
  }
  function showExamPart(part){showMode('exam');for(const p of ['setup','running','results'])$('exam-'+p).hidden=p!==part}
