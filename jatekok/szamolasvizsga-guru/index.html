@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123d37">
-<title>Számolásvizsga Guru · Pontosan és tempósan</title>
+<title>Számolásvizsga Guru · Írásbeli számolás</title>
 <style>
 :root{--ink:#173c36;--muted:#536b64;--paper:#f5f4ec;--green:#12624e;--line:#d8ded3;--lime:#e3ef99;--white:#fffef9;--red:#a7352b}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.55}button,input,select{border-radius:12px}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #d59124;outline-offset:4px}header{background:var(--ink);color:white;padding:26px max(24px,calc((100vw - 1160px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{display:flex;align-items:center;gap:13px}.mark{width:43px;height:43px;border-radius:13px;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-size:26px;font-weight:800}.brand strong{display:block;font-size:19px;letter-spacing:-.5px}.brand small{color:#bbd3c7;font-size:12px}.mode{color:var(--lime);border:1px solid #608074;border-radius:100px;padding:6px 13px;font-size:12px;font-weight:700;letter-spacing:1px}main{max-width:1208px;margin:auto;padding:35px 24px 25px}.intro{display:flex;justify-content:space-between;gap:25px;align-items:flex-end;margin-bottom:28px}.eyebrow{text-transform:uppercase;letter-spacing:1.7px;font-size:11px;font-weight:800;color:var(--green)}h1{font-size:clamp(27px,4vw,39px);line-height:1.16;letter-spacing:-1.3px;margin:9px 0 12px}.intro p{margin:0;color:var(--muted);max-width:640px}.session-tag{font-size:13px;color:var(--muted);white-space:nowrap}.layout{display:grid;grid-template-columns:285px minmax(0,1fr);gap:24px;align-items:start}aside{border:1px solid var(--line);background:#eeefe5;border-radius:20px;padding:21px 15px}aside h2{font-size:12px;text-transform:uppercase;letter-spacing:1.3px;margin:0 8px 16px}.topic{width:100%;display:flex;gap:12px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;color:var(--ink);padding:12px 9px;margin:2px 0;border-radius:12px}.topic:hover{background:#e3e8d9}.topic.active{background:var(--ink);color:white;box-shadow:0 4px 10px #123d3715}.topic .num{flex-shrink:0;border:1px solid #bfcdc1;border-radius:8px;display:grid;place-items:center;width:29px;height:29px;font-size:12px;font-weight:700}.topic.active .num{background:var(--lime);border-color:var(--lime);color:var(--ink)}.topic span:last-child{font-size:13px;font-weight:650;line-height:1.35}.topic.active .tiny{color:#c9d9cf}.tiny{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:4px}.mixed{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}.practice{min-width:0}.card{background:var(--white);border:1px solid var(--line);border-radius:22px;padding:28px 32px;box-shadow:0 7px 25px #173c3605}.card-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.pill{padding:4px 10px;background:#eef1e3;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.5px}.counter{font-size:12px;color:var(--muted)}h2#task-title{font-size:19px;line-height:1.3;margin:23px 0 5px;letter-spacing:-.3px}.instruction{font-size:13px;color:var(--muted);margin:0}.expression{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:clamp(25px,3.1vw,34px);padding:34px 0;line-height:2.1;overflow-x:auto;white-space:nowrap;min-height:122px}.frac{display:inline-flex;vertical-align:middle;flex-direction:column;align-items:stretch;text-align:center;font-size:.87em;line-height:1.18;margin:0 .12em}.frac .top{padding:0 .13em .08em;border-bottom:1.4px solid currentColor}.frac .bottom{padding:.08em .13em 0}.expression sup,.math sup{font-size:.65em;vertical-align:super}.answer-label{display:block;font-size:13px;font-weight:750;margin-bottom:8px}.answer-row{display:flex;gap:10px}.answer-row input{width:100%;min-width:0;background:#fff;border:1.5px solid #a4b8aa;padding:13px 15px;color:var(--ink);font-size:20px}.primary{background:var(--green);color:white;border:1px solid var(--green);padding:12px 23px;font-weight:700;white-space:nowrap}.primary:hover{background:#0c4d3c}.formats{font-size:12px;color:var(--muted);margin:8px 0 0}.feedback{padding:13px 15px;border-radius:11px;background:#f2f4e9;margin-top:18px;font-size:14px}.feedback[data-tone="error"]{background:#fff0e9;color:#8b3228}.feedback[data-tone="success"]{background:#e8f2d8;color:#25552c}.feedback[data-tone="notice"]{background:#fff4d9;color:#6a4d11}[hidden]{display:none!important}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:23px;padding-top:20px;border-top:1px solid #e7eade}.secondary{border:1px solid #c8d3c4;background:transparent;color:var(--ink);padding:10px 13px;font-size:13px;font-weight:650}.secondary:hover{background:#eef1e3}.next{margin-left:auto;background:var(--ink);border-color:var(--ink);color:#fff}.next:hover{background:#24564c}.help{background:#f5f5eb;padding:17px 18px;border-radius:12px;margin-top:16px;font-size:14px}.help h3{font-size:13px;margin:0 0 8px}.help p{margin:0}.steps{margin:0;padding-left:23px}.steps li{padding:5px 0}.math{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:20px;line-height:1.9;overflow-wrap:anywhere}.solution-note{color:var(--muted);font-size:12px;margin-top:12px!important}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.metric{border:1px solid var(--line);border-radius:15px;padding:16px 19px;background:#eeefe5}.metric b{font-size:24px;display:block;line-height:1.25;letter-spacing:-.7px}.metric span{font-size:12px;color:var(--muted)}.metric:first-child{background:var(--lime);border-color:#d4df91}.bottom-note{margin:13px 2px;font-size:11px;color:var(--muted)}details{font-size:13px;border-top:1px solid var(--line);padding-top:16px;margin-top:20px;color:var(--muted)}summary{cursor:pointer;color:var(--ink);font-weight:650}details p{margin:10px 0}footer{max-width:1208px;margin:auto;padding:16px 24px 25px;display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}#mobile-topics{display:none}.keyboard-note{font-size:11px;color:var(--muted)}@media(max-width:850px){.layout{grid-template-columns:235px minmax(0,1fr);gap:15px}.card{padding:22px}.topic{padding:11px 6px}.keyboard-note{display:none}}@media(max-width:680px){header{padding:18px 19px}.brand strong{font-size:16px}.brand small{font-size:11px}.mark{width:36px;height:36px}.mode{font-size:10px;padding:5px 9px}main{padding:25px 16px 10px}.intro{margin-bottom:20px}.session-tag{display:none}.intro p{font-size:14px}.layout{display:block}aside{display:none}#mobile-topics{display:block;margin:0 0 15px}#mobile-topics label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}select{width:100%;padding:12px;background:#eeefe5;border:1px solid #b9c8b8;color:var(--ink)}.card{padding:22px 18px;border-radius:17px}.expression{padding:25px 0;font-size:27px}.answer-row{flex-wrap:wrap}.answer-row .primary{width:100%}.actions{gap:8px}.next{margin-left:0;flex-grow:1}.metrics{gap:8px}.metric{padding:12px 10px}.metric span{font-size:11px}footer{padding:16px;gap:10px}h2#task-title{font-size:18px}.math{font-size:18px}}@media(prefers-reduced-motion:no-preference){button{transition:background .15s,transform .15s}button:active{transform:translateY(1px)}}
 .mode-switch{display:flex;gap:6px;margin-bottom:27px;padding:5px;background:#e9ecdf;border:1px solid var(--line);border-radius:14px;width:fit-content}.mode-switch button{border:0;background:transparent;color:var(--ink);padding:10px 22px;font-weight:750;font-size:14px}.mode-switch button[aria-pressed="true"]{background:var(--ink);color:white}.mode-switch button:disabled{opacity:.5}.exam-setup{max-width:830px;margin:0 auto}.exam-setup h2,.result-summary h2{font-size:30px;line-height:1.2;letter-spacing:-.7px;margin:12px 0}.exam-setup>p{color:var(--muted)}.exam-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:25px 0}.exam-facts>div{background:#edf1df;padding:17px;border-radius:13px}.exam-facts strong{display:block;font-size:29px;letter-spacing:-1px}.exam-facts span{display:block;font-size:12px;color:var(--muted)}.exam-rules{padding-left:22px;line-height:1.6}.exam-rules li{padding:5px 0}.exam-toolbar{position:sticky;top:10px;z-index:5;background:var(--ink);color:white;border-radius:16px;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 18px #173c3620}.exam-toolbar span{display:block;color:#c7d9cc;font-size:12px}.clock-wrap{text-align:right}.exam-toolbar #exam-clock{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:1px;color:var(--lime)}.exam-toolbar.urgent{background:#813c28}.exam-note{margin:18px 2px}.exam-task{margin:15px 0;padding:24px 28px}.exam-task h3{font-size:16px;margin:0}.exam-task .expression{padding:21px 0;min-height:0;font-size:29px}.exam-task input{max-width:460px}.exam-submit{margin:20px 0}.exam-submit>p{margin-top:0}.exam-task:focus-within{border-color:#789b7f}.result-summary{border-top:6px solid var(--green)}.result-summary.failed{border-top-color:#b36325}.result-row{margin:15px 0}.result-row h3{font-size:17px;margin:0}.row-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.score-chip{white-space:nowrap;padding:4px 10px;border-radius:8px;background:#f7e8db;color:#823e1d;font-weight:750;font-size:13px}.score-chip.correct{background:#e5efcf;color:#2d5c31}.result-row .expression{font-size:25px;padding:20px 0;min-height:0}.result-answer{display:flex;gap:22px;flex-wrap:wrap;background:#f3f4ea;padding:13px 16px;border-radius:10px;font-size:13px}.result-answer strong{display:block;font-size:18px;overflow-wrap:anywhere}.result-label{font-size:13px;color:var(--muted);margin:10px 0 0}.result-row details{margin-top:15px}.retry-banner{border:1px solid #cad993;background:#edf3cf;border-radius:13px;padding:14px 18px;margin-bottom:18px;display:flex;gap:12px;justify-content:space-between;align-items:center;font-size:13px}.retry-banner button{padding:7px 11px;white-space:nowrap}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}#exam-panel{max-width:960px;margin:auto}#exam-results:focus{outline:none}@media(max-width:680px){.mode-switch{width:100%}.mode-switch button{flex:1;padding:9px 11px}.exam-setup h2,.result-summary h2{font-size:26px}.exam-facts{gap:7px}.exam-facts>div{padding:13px 9px}.exam-facts strong{font-size:23px}.exam-toolbar{top:5px;padding:13px 16px}.exam-task{padding:21px 17px}.exam-task .expression{font-size:26px}.result-row .expression{font-size:24px}.retry-banner{align-items:flex-start;flex-direction:column}.row-heading h3{font-size:15px}.exam-submit .primary{white-space:normal}.result-summary .actions{align-items:stretch}.result-summary .actions button{width:100%}}
@@ -15,10 +15,14 @@
 
 .timing-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:13px;margin:0 0 20px;padding:15px 19px;border:1px solid var(--line);border-radius:14px;background:var(--white)}.timing-controls label{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;cursor:pointer}.timing-controls input{width:19px;height:19px;accent-color:var(--green)}.timing-controls p{margin:4px 0 0;font-size:11px;color:var(--muted)}.task-time{border:1px solid #d3dfaf;background:#f0f4df;border-radius:10px;padding:12px 15px;font-size:13px;margin-top:15px}.timed-settings{display:grid;grid-template-columns:2fr 1fr;gap:15px;margin:22px 0}.timed-settings label{display:block;font-size:12px;font-weight:750;margin-bottom:7px}.timed-settings select{width:100%;background:var(--white);border:1px solid #b4c5b4;padding:11px;color:var(--ink)}#timed-panel{max-width:900px;margin:auto}#timed-results:focus{outline:none}.timed-task{margin-top:19px}.timed-task h2{font-size:19px;margin:20px 0 0}.timed-toolbar #timed-clock{display:block;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--lime)}.timing-table{width:100%;border-collapse:collapse;font-size:12px;min-width:490px}.timing-table th,.timing-table td{padding:12px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.timing-table th{font-weight:750}.timing-history-card{margin-top:20px}.timing-level-row{display:flex;align-items:center;gap:14px;margin:17px 0}.timing-level-row label{font-size:12px;font-weight:700}.timing-level-row select{padding:8px 12px;border:1px solid #b8c9b6;background:var(--white);color:var(--ink)}.timed-history{list-style:none;margin:15px 0 0;padding:0}.timed-history li{border-top:1px solid var(--line);padding:13px 0;font-size:12px}.timed-history strong{display:block;font-size:14px;margin:4px 0}.mode-switch{flex-wrap:wrap}.timing-view-button{font-size:12px}.timed-result-caption{font-size:12px;color:var(--muted)}@media(max-width:680px){.mode-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.mode-switch button{width:100%}.timed-settings{grid-template-columns:1fr}.timing-controls{padding:14px}.timing-controls>div{width:100%}.timed-task .expression{font-size:27px}.timed-task{padding:22px 17px}.timing-level-row{align-items:flex-start;flex-direction:column;gap:6px}}
 
+.written{color:var(--ink);min-width:0}.wa-example{margin:18px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--white);min-width:0}.wa-example h4{margin:0 0 10px;font-size:18px}.wa-example p{font-size:13px;line-height:1.5}.wa-explanation{margin-top:12px!important;color:var(--muted)}.wa-scroll{max-width:100%;overflow-x:auto;padding:12px 8px;background:#f4f6ee;border-radius:8px}.wa-stack,.wa-division{font-family:ui-monospace,"DejaVu Sans Mono",monospace;font-size:19px;line-height:1.7;font-variant-numeric:tabular-nums;width:max-content;min-width:4ch}.wa-row{display:flex;justify-content:flex-end;min-height:1.7em;white-space:nowrap}.wa-sign{width:1.4ch;flex:none;text-align:left}.wa-number{display:inline-flex;justify-content:flex-end;white-space:nowrap}.wa-digit{display:inline-block;width:1ch;text-align:center;position:relative;flex:none}.wa-comma{margin-right:.55ch}.wa-comma-mark{position:absolute;left:1ch;width:.55ch}.wa-annotation{font-size:19px;color:#93610b;line-height:1.4;min-height:1.4em}.wa-annotation .wa-digit{font-size:19px}.wa-digit small{font-size:12px}.wa-annotation .wa-comma-mark{visibility:hidden}.wa-annotation .wa-number{transform:translateY(2px)}.wa-rule{border-bottom:1.5px solid var(--ink)}.wa-top-rule{border-top:1.5px solid var(--ink)}.wa-total{font-weight:750}.wa-repeat{text-decoration:overline}.wa-division-head>.wa-number{margin-left:1.4ch}.wa-division-head{display:flex;gap:1ch;white-space:nowrap;padding-bottom:7px}.wa-div-step{box-sizing:content-box;margin-bottom:8px}.wa-div-step .wa-row{width:100%}.wa-remainder{color:var(--green)}.wa-digit s{color:#8e594b;text-decoration-thickness:1px}
+
+.wd-grid{--wd-cell:27px;display:grid;width:max-content;min-width:100%;position:relative;background-color:#fffef9;background-image:linear-gradient(to right,#d9e0d4 1px,transparent 1px),linear-gradient(to bottom,#d9e0d4 1px,transparent 1px);background-size:var(--wd-cell) var(--wd-cell);font:18px/1 ui-monospace,"DejaVu Sans Mono",monospace;font-variant-numeric:tabular-nums;color:var(--ink);border-right:1px solid #d9e0d4;border-bottom:1px solid #d9e0d4}.wd-cell{display:flex;align-items:center;justify-content:center;position:relative;z-index:1}.wd-cell small{position:absolute;right:-3px;bottom:2px;font-size:18px;z-index:2}.wd-down{color:#095f4c;font-weight:800;background:#dceebc;box-shadow:inset 0 0 0 3px #fffef9}.wd-added{color:#63766b}.wd-product{color:#5d655c}.wd-minus{font-size:17px}.wd-rule{border-bottom:2px solid #607064;z-index:2;pointer-events:none}.wd-final{font-weight:800;color:#095f4c}.wd-period{text-decoration:overline;text-decoration-thickness:1.5px}.wd-accessible{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
 </style>
 </head>
 <body>
-<header><div class="brand"><div class="mark" aria-hidden="true">÷</div><div><strong>Számolásvizsga Guru</strong><small>Gyakorolj a biztos alapokért.</small></div></div><span class="mode" id="mode-label">EDZÉS · 7. OSZTÁLY</span></header>
+<header><div class="brand"><div class="mark" aria-hidden="true">÷</div><div><strong>Számolásvizsga Guru</strong><small>Gyakorolj biztos alapokra.</small></div></div><span class="mode" id="mode-label">EDZÉS · 7. OSZTÁLY</span></header>
 <main>
 <div class="intro"><div><div class="eyebrow">Kis lépések. Biztos számolás.</div><h1 id="intro-heading">Itt ér hibázni.</h1><p id="intro-text">Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.</p></div><span class="session-tag">✎ Füzet + ceruza. Számológép nélkül.</span></div>
 <nav class="mode-switch" aria-label="Játékmód"><button type="button" id="practice-mode" aria-pressed="true">Edzés</button><button type="button" id="exam-mode" aria-pressed="false">Próbavizsga</button><button type="button" id="timed-mode" aria-pressed="false">5 perces edzés</button><button type="button" id="progress-mode" aria-pressed="false">Fejlődésem</button></nav>
@@ -28,7 +32,7 @@
 <div class="practice-rank-row"><span>Fokozatod: <strong id="practice-rank">Újonc</strong></span><button class="secondary" type="button" id="view-badges">Fokozatok és jelvények →</button></div>
 <div id="retry-banner" class="retry-banner" hidden><strong id="retry-status"></strong><button class="secondary" type="button" id="retry-results">Vissza az eredménylaphoz</button></div>
 <div class="practice-controls"><div><label for="difficulty">Nehézségi szint</label><select id="difficulty"><option value="warmup">Bemelegítő</option><option value="exam" selected>Vizsgaszint</option><option value="challenge">Kihívás</option></select></div><p id="level-description"></p></div>
-<div class="timing-controls"><div><label><input type="checkbox" id="measure-time">Időmérés</label><p>Csak megoldás után látod az időt. Az átállítás új feladatot indít.</p></div><button class="secondary timing-view-button" type="button" id="open-timed">Inkább egy 5 perces edzés →</button></div>
+<div class="timing-controls"><div><label><input type="checkbox" id="measure-time">Időmérés határidő nélkül</label><p>Csak megoldás után látod az időt. Az átállítás új feladatot indít.</p></div><button class="secondary timing-view-button" type="button" id="open-timed">Inkább egy 5 perces edzés →</button></div>
 <div id="mobile-topics"><label for="topic-select">Mit gyakorolsz?</label><select id="topic-select"></select></div>
 <div class="layout">
 <aside aria-label="Edzésterületek"><h2>Válassz edzésterületet</h2><nav id="topics" aria-label="Feladattípusok"></nav><div class="mixed"><button class="topic" id="mixed"><span class="num" aria-hidden="true">↝</span><span>Vegyes edzés<span class="tiny">Mind a hét típusból</span></span></button><button type="button" class="topic" id="weak"><span class="num" aria-hidden="true">◎</span><span>Gyenge pontjaim<span class="tiny">A korábbi eredményeid alapján</span></span></button></div></aside>
@@ -55,7 +59,7 @@
 </div>
 
 <div class="help" id="hint-box" hidden><h3>Erre figyelj</h3><p id="hint-text"></p></div>
-<div class="help" id="solution-box" hidden><h3>Rövid levezetés</h3><ol class="steps" id="steps"></ol><p class="solution-note">Egy lehetséges megoldás. Más helyes számolási út is jó.</p></div>
+<div class="help" id="solution-box" hidden><h3>Rövid levezetés</h3><ol class="steps" id="steps"></ol><div id="written-work"></div><p class="solution-note">Egy lehetséges megoldás. Más helyes számolási út is jó.</p></div>
 </div>
 <div class="metrics" aria-label="Az edzés eredményei"><div class="metric"><b id="stat-first">0</b><span>Elsőre, önállóan</span></div><div class="metric"><b id="stat-retry">0</b><span>Javítva, önállóan</span></div><div class="metric"><b id="stat-help">0</b><span>Segítséggel megoldva</span></div></div>
 <p class="bottom-note">A számlálók a korábbi edzéseidet is tartalmazzák. A készségeid alakulását a Fejlődésem fülön látod.</p>
@@ -105,7 +109,7 @@
  <details class="data-settings"><summary>Mentés és alaphelyzet</summary><p>Az eredményeid ezen a böngészőn maradnak. Másik eszközre nem kerülnek át automatikusan. Letöltött HTML-nél a fájl átnevezése vagy áthelyezése befolyásolhatja a mentés elérését. A böngészőadatok törlése a mentést is törölheti.</p><button id="reset-progress" type="button" class="secondary">Eredmények törlése…</button><div id="reset-confirm" class="help" hidden><p>Törlöd a készségmutatókat, az edzésszámlálókat és a mentett vizsgákat ezen a böngészőn? Ezt nem lehet visszavonni.</p><div class="actions"><button type="button" id="reset-yes" class="secondary">Igen, törlöm az eredményeket</button><button type="button" id="reset-no" class="secondary">Mégsem</button></div></div></details>
 </section>
 
-</main><footer><span>7.a · Számolj bátran, ellenőrizz pontosan.</span><span>5. sprint · Pontosan és tempósan</span></footer>
+</main><footer><span>7.a · Számolj bátran, ellenőrizz pontosan.</span><span>6. sprint · Írásbeli számolás</span></footer>
 <noscript><p>A gyakorláshoz engedélyezd a JavaScript futtatását a böngésződben.</p></noscript>
 <script>
 'use strict';
@@ -410,7 +414,152 @@ function archiveTimed(progress,s){
  progress.timedHistory.push({id,at:s.startedAt,topic:s.topic,level:s.level,correct:s.result.correct,wrong:s.result.wrong,elapsed:s.result.elapsed});progress.timedHistory=progress.timedHistory.slice(-15);return true;
 }
 
-const GuruCore={Q,q,generate,parseAnswer,evaluate,topics,decimal,ExamSession,gradeTask,EXAM_POINTS,EXAM_DURATION,LEVELS,LEVEL_NAMES,emptyProgress,cleanProgress,recordSkill,skillSummary,chooseWeak,taskSpec,restoreTask,saveExam,restoreExam,archiveExam,seeded,makeCoach,gradeCheckpoint,cleanCoach,BADGES,updateBadges,rankInfo,PracticeClock,timeComparison,TimedSession,TIMED_DURATION,saveTimed,restoreTimed,archiveTimed};
+// Written arithmetic is generated from exact rational operands, never from HTML.
+const writtenAbs=v=>q(abs(v.n),v.d);
+function writtenNeed(op,a,b){
+ const A=decimal(writtenAbs(a)),B=decimal(writtenAbs(b));
+ if(A===null||B===null)return true;
+ const digits=s=>s.replace(',','').replace(/^0+/,'').length;
+ if(op==='add'||op==='sub')return A.includes(',')||B.includes(',')||digits(A)>=3||digits(B)>=3;
+ if(op==='mul')return ![A,B].some(s=>/^10*$/.test(s))&&(A.includes(',')||B.includes(',')||(digits(A)>1&&digits(B)>1));
+ return b.d!==1n||abs(b.n)>=10n||a.div(b).d!==1n;
+}
+function writtenModel(op,a,b){
+ const result=({add:()=>a.add(b),sub:()=>a.sub(b),mul:()=>a.mul(b),div:()=>a.div(b)})[op]();
+ if(decimal(a)===null||decimal(b)===null)throw Error('Az írásbeli művelethez véges tizedes alak szükséges.');
+ const model={op,a,b,result};
+ if(op==='add'||op==='sub'){
+  const effective=op==='sub'?b.neg():b;let A=writtenAbs(a),B=writtenAbs(effective);
+  model.kind=(a.n<0n)===(effective.n<0n)?'add':'sub';
+  if(model.kind==='sub'&&A.n*B.d<B.n*A.d)[A,B]=[B,A];
+  const places=Math.max(decimalPlaces(A),decimalPlaces(B)),factor=q(10n**BigInt(places));
+  const x=A.mul(factor).n,y=B.mul(factor).n;
+  const width=Math.max(String(x).length,String(y).length,places+1);
+  const top=String(x).padStart(width,'0'),bottom=String(y).padStart(width,'0');
+  model.places=places;model.top=top;model.bottom=bottom;
+  const adjusted=top.split('').map(Number),carry=Array(width).fill(0);
+  if(model.kind==='add'){
+   let c=0;for(let i=width-1;i>=0;i--){const n=Number(top[i])+Number(bottom[i])+c;c=Math.floor(n/10);if(i>0)carry[i-1]=c}model.leadingCarry=c;
+  }else{
+   for(let i=width-1;i>=0;i--)if(adjusted[i]<Number(bottom[i])){
+    let j=i-1;while(adjusted[j]===0){adjusted[j]=9;j--}adjusted[j]--;adjusted[i]+=10;
+   }
+  }
+  model.adjusted=adjusted;model.carry=carry;model.integerResult=model.kind==='add'?x+y:x-y;
+ }else if(op==='mul'){
+  const da=decimalPlaces(a),db=decimalPlaces(b),x=writtenAbs(a).mul(q(10n**BigInt(da))).n,y=writtenAbs(b).mul(q(10n**BigInt(db))).n;
+  model.x=x;model.y=y;model.places=da+db;model.integerResult=x*y;
+  model.partials=String(y).split('').reverse().map((digit,i)=>({digit:Number(digit),shift:i,value:x*BigInt(digit)*10n**BigInt(i)}));
+ }else{
+  const scale=q(10n**BigInt(decimalPlaces(b))),A=writtenAbs(a).mul(scale),B=writtenAbs(b).mul(scale).n;
+  model.scale=scale;model.dividend=A;model.divisor=B;model.rows=[];
+  const input=decimal(A).split(','),whole=input[0],fraction=input[1]||'';let r=0n,integerQuotient='';
+  function step(digit,index,fractional){const partial=r*10n+BigInt(digit),digitQ=partial/B,product=digitQ*B;r=partial-product;model.rows.push({index,partial,digit:Number(digitQ),product,remainder:r,fractional});return String(digitQ)}
+  for(let i=0;i<whole.length;i++)integerQuotient+=step(whole[i],i,false);
+  model.whole=whole;model.fraction='';model.quotientWhole=integerQuotient.replace(/^0+(?=\d)/,'');model.quotientFraction='';
+  const seen=new Map();let i=0;model.repeatAt=null;model.truncated=false;
+  while(i<fraction.length||r!==0n){
+   if(i>=fraction.length){if(seen.has(String(r))){model.repeatAt=seen.get(String(r));break}seen.set(String(r),i)}
+   if(i>=80){model.truncated=true;break}
+   const digit=i<fraction.length?fraction[i]:'0';model.fraction+=digit;model.quotientFraction+=step(digit,whole.length+i,true);i++;
+  }
+  model.remainder=r;
+ }
+ return model;
+}
+function writtenCalculations(task){
+ const out=[],seen=new Set();
+ function add(op,a,b,context=''){
+  if(!writtenNeed(op,a,b))return;
+  const key=op+':'+a.key()+':'+b.key();if(seen.has(key))return;seen.add(key);
+  out.push({...writtenModel(op,a,b),context});
+ }
+ function rational(op,a,b){
+  if(decimal(a)!==null&&decimal(b)!==null){add(op,a,b);return}
+  if(op==='add'||op==='sub'){
+   const d=a.d/gcd(a.d,b.d)*b.d,A=q(a.n*(d/a.d)),B=q(b.n*(d/b.d));
+   add('mul',q(a.n),q(d/a.d),'Közös nevezőre hozás: az első számláló.');
+   add('mul',q(b.n),q(d/b.d),'Közös nevezőre hozás: a második számláló.');
+   add(op,A,B,'A közös nevező '+d+'; a számlálókkal számolunk.');
+  }else{
+   add('mul',q(a.n),q(op==='div'?b.d:b.n),'A számláló kiszámítása'+(op==='div'?' a reciprokával való szorzás után.':'.'));
+   add('mul',q(a.d),q(op==='div'?b.n:b.d),'A nevező kiszámítása.');
+  }
+ }
+ function walk(t){if(t.op==='v')return;walk(t.a);if(t.op!=='pow')walk(t.b);
+  const a=evaluate(t.a);
+  if(t.op==='pow'){let p=a;for(let i=1;i<t.b;i++){rational('mul',p,a);p=p.mul(a)}}else rational(t.op,a,evaluate(t.b));
+ }
+ walk(task.ast);return out;
+}
+function writtenCells(s,places=0,annotations=null,strike=null){
+ return String(s).split('').map((c,i)=>{
+  const comma=places>0&&i===String(s).length-places-1;
+  const text=annotations?'<small>'+(annotations[i]??'')+'</small>':c;
+  return '<span class="wa-digit'+(comma?' wa-comma':'')+'">'+(strike&&strike[i]!==Number(c)?'<s>'+text+'</s>':text)+(comma?'<span class="wa-comma-mark">,</span>':'')+'</span>';
+ }).join('');
+}
+function writtenRow(s,places=0,cls='',prefix='',annotations=null,strike=null){return '<div class="wa-row '+cls+'"><span class="wa-sign">'+prefix+'</span><span class="wa-number">'+writtenCells(s,places,annotations,strike)+'</span></div>'}
+function writtenDivisionGrid(m){
+ const digits=m.whole+m.fraction;
+ const first=m.rows.findIndex(row=>row.digit!==0||row.index===m.whole.length-1);
+ const rows=m.rows.slice(Math.max(0,first));
+ const cells=[];let y=0;
+ const put=(text,col,row,cls='',comma=false)=>cells.push('<span aria-hidden="true" class="wd-cell '+cls+'" style="grid-column:'+(col+1)+';grid-row:'+(row+1)+'">'+text+(comma?'<small>,</small>':'')+'</span>');
+ const number=(text,end,row,cls='',highlight=false)=>{
+  const s=String(text);for(let i=0;i<s.length;i++)put(s[i],end-s.length+1+i,row,cls+(highlight&&i===s.length-1?' wd-down':''));
+ };
+ // The dividend starts one square in, leaving room for subtraction signs.
+ const originalFraction=(decimal(m.dividend).split(',')[1]||'').length;
+ for(let i=0;i<digits.length;i++)put(digits[i],i+1,0,i>=m.whole.length+originalFraction?'wd-added':'',m.fraction.length>0&&i===m.whole.length-1);
+ let col=digits.length+2;put(':',col++,0);for(const d of String(m.divisor))put(d,col++,0);put('=',col++,0);col++;
+ const quotient=m.quotientWhole+m.quotientFraction;
+ for(let i=0;i<quotient.length;i++)put(quotient[i],col++,0,m.repeatAt!==null&&i>=m.quotientWhole.length+m.repeatAt?'wd-period':'',m.quotientFraction.length>0&&i===m.quotientWhole.length-1);
+ if(m.truncated)put('…',col++,0);
+ rows.forEach((row,i)=>{
+  const end=row.index+1;
+  if(i>0){y++;number(row.partial,end,y,'',true)}
+  y++;number(row.product,end,y,'wd-product');
+  const start=end-String(row.product).length;put('−',start,y,'wd-minus');
+  cells.push('<span aria-hidden="true" class="wd-rule" style="grid-column:'+(start+1)+' / '+(end+2)+';grid-row:'+(y+1)+'"></span>');
+  if(i===rows.length-1){y++;number(row.remainder,end,y,'wd-final')}
+ });
+ const descriptions=rows.map((r,i)=>'<li>'+(i?'Lehozzuk a következő számjegyet. ':'')+r.partial+' : '+m.divisor+' → '+r.digit+'; '+r.partial+' − '+r.product+' = '+r.remainder+'.</li>').join('');
+ return '<div class="wd-grid" role="img" aria-label="'+dec(m.dividend)+' osztva '+m.divisor+'; az írásbeli osztás menete." style="grid-template-columns:repeat('+Math.max(col+1,digits.length+3)+',var(--wd-cell));grid-template-rows:repeat('+(y+2)+',var(--wd-cell))">'+cells.join('')+'</div><ol class="wd-accessible">'+descriptions+'</ol>';
+}
+
+function writtenOne(m){
+ const symbol={add:'+',sub:'−',mul:'·',div:':'},title=dec(m.a)+' '+symbol[m.op]+' '+signed(m.b,dec)+' = '+dec(m.result);
+ let body='',note='';
+ if(m.op==='add'||m.op==='sub'){
+  const negative=m.result.n<0n;
+  if(m.a.n<0n||m.b.n<0n||m.op!==m.kind)note+='Az előjelek rendezése után az abszolút értékekkel '+(m.kind==='add'?'összeadunk.':'a nagyobból kivonjuk a kisebbet.')+' ';
+  body='<div class="wa-stack">';
+  if(m.kind==='add'&&m.carry.some(Boolean))body+=writtenRow(m.top,m.places,'wa-annotation','',m.carry.map(n=>n||''));
+  if(m.kind==='sub'&&m.adjusted.some((n,i)=>n!==Number(m.top[i])))body+=writtenRow(m.top,m.places,'wa-annotation','',m.adjusted.map((n,i)=>n!==Number(m.top[i])?n:''));
+  body+=writtenRow(m.top,m.places,'','',null,m.kind==='sub'?m.adjusted:null)+writtenRow(m.bottom,m.places,'wa-rule',m.kind==='add'?'+':'−')+writtenRow(String(m.integerResult).padStart(m.places+1,'0'),m.places,'wa-total');
+  body+='</div>';note+=m.kind==='add'?(m.carry.some(Boolean)?'A felső kis számok az átviteleket jelölik.':'Itt nincs szükség átvitelre.'):(m.adjusted.some((n,i)=>n!==Number(m.top[i]))?'Az áthúzott számjegyek fölött a kölcsönzés utáni értékek látszanak.':'Itt nincs szükség kölcsönzésre.');
+  if(negative)note+=' Az eredmény előjele negatív.';
+ }else if(m.op==='mul'){
+  body='<div class="wa-stack">'+writtenRow(m.x)+writtenRow(m.y,0,'wa-rule','×');
+  for(const p of m.partials)body+=writtenRow(String(m.x*BigInt(p.digit))+'0'.repeat(p.shift),0,'',m.partials.length>1?'+':'');
+  if(m.partials.length>1)body+=writtenRow(m.integerResult,0,'wa-total wa-top-rule');
+  body+='</div>';note='Először a tizedesvesszők nélkül szorzunk. A részszorzatok végén a helyi érték miatti nullákat is kiírtuk.';
+  if(m.places)note+=' A tényezőkben összesen '+m.places+' tizedesjegy van, ezért a szorzatban jobbról ennyit jelölünk ki; a végső nullák elhagyhatók.';
+  if(m.result.n<0n)note+=' Az eredmény előjele negatív.';
+ }else{
+  body=writtenDivisionGrid(m);note='A kiemelt számjegyet az osztandóból hoztuk le a maradék mellé. Az aláhúzott sorokban a részszorzatokat vonjuk ki.';
+  if(m.scale.n!==1n)note='Mindkét számot '+m.scale.n+'-zel szorozzuk: '+dec(writtenAbs(m.a))+' : '+dec(writtenAbs(m.b))+' = '+dec(m.dividend)+' : '+m.divisor+'. '+note;
+  if(m.fraction.length>(decimal(m.dividend).split(',')[1]||'').length)note+=' Szükség szerint nullákat írunk a tizedes rész végére.';
+  if(m.repeatAt!==null)note+=' Ugyanaz a maradék ismétlődik: a felülvonással jelölt szakasz végtelenül ismétlődik. A pontos eredmény: '+f(m.result)+'.';
+  if(m.truncated)note+=' A hosszú osztást itt megszakítottuk; a pontos eredmény: '+f(m.result)+'.';
+  if(m.result.n<0n)note+=' A végén visszatesszük a negatív előjelet.';
+ }
+ return '<section class="wa-example"><h4 class="math">'+title+'</h4>'+(m.context?'<p>'+m.context+'</p>':'')+'<div class="wa-scroll" tabindex="0" aria-label="Írásbeli számolás, szükség esetén oldalra görgethető">'+body+'</div><p class="wa-explanation">'+note+'</p></section>';
+}
+function writtenHtml(task){const models=writtenCalculations(task);return models.length?'<details class="written"><summary>Írásbeli számolás · '+models.length+' művelet</summary>'+models.map(writtenOne).join('')+'</details>':''}
+
+const GuruCore={writtenModel,writtenCalculations,writtenHtml,Q,q,generate,parseAnswer,evaluate,topics,decimal,ExamSession,gradeTask,EXAM_POINTS,EXAM_DURATION,LEVELS,LEVEL_NAMES,emptyProgress,cleanProgress,recordSkill,skillSummary,chooseWeak,taskSpec,restoreTask,saveExam,restoreExam,archiveExam,seeded,makeCoach,gradeCheckpoint,cleanCoach,BADGES,updateBadges,rankInfo,PracticeClock,timeComparison,TimedSession,TIMED_DURATION,saveTimed,restoreTimed,archiveTimed};
 if(typeof module!=='undefined'&&module.exports)module.exports=GuruCore;
 if(typeof document!=='undefined'){
  const $=id=>document.getElementById(id);
@@ -479,7 +628,7 @@ if(typeof document!=='undefined'){
  }
  function timedResultRow(item,index){
   const row=document.createElement('article'),correct=item.verdict?.status==='correct',pending=item.verdict===null;row.className='card result-row';
-  row.innerHTML='<div class="row-heading"><h3>'+(index+1)+'. '+topics[item.task.type].name+'</h3><span class="score-chip '+(correct?'correct':'')+'">'+(pending?'Félbemaradt':correct?'Helyes':'Hibás')+'</span></div><div class="expression" role="math">'+item.task.expression+' = ?</div><div class="result-answer"><div>A válaszod<strong class="raw-answer"></strong></div><div>Helyes eredmény<strong class="math">'+end(item.task.answer)+'</strong></div></div><p class="result-label"></p><details><summary>Rövid levezetés</summary><ol class="steps">'+item.task.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('')+'</ol></details>';
+  row.innerHTML='<div class="row-heading"><h3>'+(index+1)+'. '+topics[item.task.type].name+'</h3><span class="score-chip '+(correct?'correct':'')+'">'+(pending?'Félbemaradt':correct?'Helyes':'Hibás')+'</span></div><div class="expression" role="math">'+item.task.expression+' = ?</div><div class="result-answer"><div>A válaszod<strong class="raw-answer"></strong></div><div>Helyes eredmény<strong class="math">'+end(item.task.answer)+'</strong></div></div><p class="result-label"></p><details><summary>Rövid levezetés</summary><ol class="steps">'+item.task.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('')+'</ol>'+writtenHtml(item.task)+'</details>';
   row.querySelector('.raw-answer').textContent=item.raw.trim()||'—';row.querySelector('.result-label').textContent=pending?'Ezt a feladatot nem adtad be. Nem számít hibának.':item.verdict.label;
   if(!correct){const b=document.createElement('button');b.className='secondary';b.type='button';b.style.marginTop='15px';b.textContent='Ezt újragyakorlom';b.addEventListener('click',()=>beginTimedRetry([index]));row.appendChild(b)}return row;
  }
@@ -629,7 +778,7 @@ if(typeof document!=='undefined'){
   else $('next').textContent='Új feladat →';
  }
  function loadTask(task,focus=true){current=task;sequence++;errors=0;assisted=false;done=false;attemptRecorded=false;coachState=null;practiceClock=new PracticeClock(progress.measureTime);$('task-time').hidden=true;const type=task.type;$('badge-toast').hidden=true;renderCoach();
-  $('practice-level').textContent=LEVEL_NAMES[task.level].toUpperCase()+' · IDŐKORLÁT NÉLKÜL';$('task-title').textContent=topics[type].name;$('task-count').textContent=sequence+'. feladat';$('expression').innerHTML=current.expression+' = ?';$('answer').value='';$('answer').disabled=false;$('check').disabled=false;$('hint').disabled=false;$('solution').disabled=false;$('solution').setAttribute('aria-expanded','false');$('hint-box').hidden=true;$('solution-box').hidden=true;$('feedback').hidden=true;$('answer').removeAttribute('aria-invalid');$('hint-text').textContent=topics[type].hint;$('steps').innerHTML=current.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('');updateRetry();updateWeakReason();if(focus)$('answer').focus();persist();
+  $('practice-level').textContent=LEVEL_NAMES[task.level].toUpperCase()+' · IDŐKORLÁT NÉLKÜL';$('task-title').textContent=topics[type].name;$('task-count').textContent=sequence+'. feladat';$('expression').innerHTML=current.expression+' = ?';$('answer').value='';$('answer').disabled=false;$('check').disabled=false;$('hint').disabled=false;$('solution').disabled=false;$('solution').setAttribute('aria-expanded','false');$('hint-box').hidden=true;$('solution-box').hidden=true;$('feedback').hidden=true;$('answer').removeAttribute('aria-invalid');$('hint-text').textContent=topics[type].hint;$('steps').innerHTML=current.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('');$('written-work').innerHTML=writtenHtml(current);updateRetry();updateWeakReason();if(focus)$('answer').focus();persist();
  }
  function newTask(focus=true){
   if(retryQueue!==null&&retryQueue.length){
@@ -644,8 +793,8 @@ if(typeof document!=='undefined'){
   if(activeExam()&&mode!=='exam')return;if(activeTimed()&&mode!=='timed')return;activeMode=mode;syncPracticeClock();
   const exam=mode==='exam',dashboard=mode==='progress';if(exam||mode==='timed')$('badge-toast').hidden=true;$('timed-panel').hidden=mode!=='timed';$('timed-mode').setAttribute('aria-pressed',String(mode==='timed'));$('practice-panel').hidden=mode!=='practice';$('exam-panel').hidden=!exam;$('progress-panel').hidden=!dashboard;if(dashboard)renderDashboard();
   $('practice-mode').setAttribute('aria-pressed',String(mode==='practice'));$('progress-mode').setAttribute('aria-pressed',String(dashboard));$('exam-mode').setAttribute('aria-pressed',String(exam));$('mode-label').textContent=mode==='timed'?'5 PERCES EDZÉS · 7. OSZTÁLY':exam?'PRÓBAVIZSGA · 7. OSZTÁLY':'EDZÉS · 7. OSZTÁLY';
-  $('intro-heading').textContent=mode==='timed'?'Először pontosan, aztán gyorsan.':dashboard?'Minden gyakorlás számít.':exam?'Mutasd meg, mit tudsz!':'Légy Te is Számolásvizsga Guru!';
-  $('intro-text').textContent=mode==='timed'?'Öt perc önálló számolás. Egy válasz minden feladatra. A javítást a végén kapod meg.':dashboard?'Nézd meg, mi megy már jól, és hol érdemes még gyakorolnod.':exam?'A vizsga ritmusában: önálló számolás, pontos eredmények, javítás a végén.':'Számolj a füzetedben, írd be az eredményt és ellenőrizd!';
+  $('intro-heading').textContent=mode==='timed'?'Először pontosan, aztán gyorsan.':dashboard?'Minden gyakorlás számít.':exam?'Mutasd meg, mit tudsz!':'Itt ér hibázni.';
+  $('intro-text').textContent=mode==='timed'?'Öt perc önálló számolás. Egy válasz minden feladatra. A javítást a végén kapod meg.':dashboard?'Nézd meg, mi megy már jól, és hol érdemes még gyakorolnod.':exam?'A vizsga ritmusában: önálló számolás, pontos eredmények, javítás a végén.':'Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.';
  }
  function showExamPart(part){showMode('exam');for(const p of ['setup','running','results'])$('exam-'+p).hidden=p!==part}
  function openExam(){if(examSession?.result)showExamPart('results');else if(activeExam())showExamPart('running');else showExamPart('setup')}
@@ -684,7 +833,7 @@ if(typeof document!=='undefined'){
  $('retry-mistakes').addEventListener('click',()=>beginRetry(examSession.result.rows.flatMap((r,i)=>r.status==='correct'?[]:[i])));
  function resultRow(task,row,index){
   const article=document.createElement('article');article.className='card result-row';
-  article.innerHTML='<div class="row-heading"><h3>'+(index+1)+'. '+topics[task.type].name+'</h3><span class="score-chip '+(row.status==='correct'?'correct':'')+'">'+row.earned+' / '+row.max+' pont</span></div><div class="expression" role="math">'+task.expression+' = ?</div><div class="result-answer"><div>A válaszod<strong class="raw-answer"></strong></div><div>Helyes eredmény<strong class="math">'+end(task.answer)+'</strong></div></div><p class="result-label"></p><details><summary>Rövid levezetés</summary><ol class="steps">'+task.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('')+'</ol></details>';
+  article.innerHTML='<div class="row-heading"><h3>'+(index+1)+'. '+topics[task.type].name+'</h3><span class="score-chip '+(row.status==='correct'?'correct':'')+'">'+row.earned+' / '+row.max+' pont</span></div><div class="expression" role="math">'+task.expression+' = ?</div><div class="result-answer"><div>A válaszod<strong class="raw-answer"></strong></div><div>Helyes eredmény<strong class="math">'+end(task.answer)+'</strong></div></div><p class="result-label"></p><details><summary>Rövid levezetés</summary><ol class="steps">'+task.steps.map(s=>'<li><span class="math">'+s+'</span></li>').join('')+'</ol>'+writtenHtml(task)+'</details>';
   article.querySelector('.raw-answer').textContent=row.raw.trim()||'—';article.querySelector('.result-label').textContent=row.label;
   if(row.status!=='correct'){const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.style.marginTop='15px';btn.textContent='Ezt újragyakorlom';btn.addEventListener('click',()=>beginRetry([index]));article.appendChild(btn)}
   return article;
