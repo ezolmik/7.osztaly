@@ -19,6 +19,7 @@
 
 .wd-grid{--wd-cell:27px;display:grid;width:max-content;min-width:100%;position:relative;background-color:#fffef9;background-image:linear-gradient(to right,#d9e0d4 1px,transparent 1px),linear-gradient(to bottom,#d9e0d4 1px,transparent 1px);background-size:var(--wd-cell) var(--wd-cell);font:18px/1 ui-monospace,"DejaVu Sans Mono",monospace;font-variant-numeric:tabular-nums;color:var(--ink);border-right:1px solid #d9e0d4;border-bottom:1px solid #d9e0d4}.wd-cell{display:flex;align-items:center;justify-content:center;position:relative;z-index:1}.wd-cell small{position:absolute;right:-3px;bottom:2px;font-size:18px;z-index:2}.wd-down{color:#095f4c;font-weight:800;background:#dceebc;box-shadow:inset 0 0 0 3px #fffef9}.wd-added{color:#63766b}.wd-product{color:#5d655c}.wd-minus{font-size:17px}.wd-rule{border-bottom:2px solid #607064;z-index:2;pointer-events:none}.wd-final{font-weight:800;color:#095f4c}.wd-period{text-decoration:overline;text-decoration-thickness:1.5px}.wd-accessible{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
+.wg-annotation{color:#94620b}.wg-annotation sup{font-size:12px;line-height:1}.wg-arithmetic s{color:#98604a;text-decoration-thickness:1px}.wg-decimal{background:#e8f1d9;box-shadow:inset 0 0 0 2px #fffef9}
 </style>
 </head>
 <body>
@@ -528,23 +529,59 @@ function writtenDivisionGrid(m){
  return '<div class="wd-grid" role="img" aria-label="'+dec(m.dividend)+' osztva '+m.divisor+'; az írásbeli osztás menete." style="grid-template-columns:repeat('+Math.max(col+1,digits.length+3)+',var(--wd-cell));grid-template-rows:repeat('+(y+2)+',var(--wd-cell))">'+cells.join('')+'</div><ol class="wd-accessible">'+descriptions+'</ol>';
 }
 
+function writtenArithmeticGrid(m){
+ const cells=[];let y=0;
+ const put=(text,col,row,cls='',comma=false)=>cells.push('<span aria-hidden="true" class="wd-cell '+cls+'" style="grid-column:'+(col+1)+';grid-row:'+(row+1)+'">'+text+(comma?'<small>,</small>':'')+'</span>');
+ const rule=(end,row)=>cells.push('<span aria-hidden="true" class="wd-rule" style="grid-column:1 / '+(end+2)+';grid-row:'+(row+1)+'"></span>');
+ const strip=(s,p)=>String(s).replace(/^0+(?=\d)/,'').padStart(p+1,'0');
+ const number=(text,end,row,places=0,cls='',changed=null)=>{
+  const s=String(text);for(let i=0;i<s.length;i++){
+   const c=changed&&changed[i]!==Number(s[i])?'<s>'+s[i]+'</s>':s[i];
+   put(c,end-s.length+1+i,row,cls,places>0&&i===s.length-places-1);
+  }
+ };
+ let width,description;
+ if(m.op==='add'||m.op==='sub'){
+  const result=String(m.integerResult).padStart(m.places+1,'0');width=Math.max(m.top.length,result.length);
+  const offset=width-m.top.length;
+  if(m.kind==='add'&&(m.carry.some(Boolean)||m.leadingCarry)){
+   for(let i=0;i<m.carry.length;i++)if(m.carry[i])put('<sup>'+m.carry[i]+'</sup>',offset+i+1,y,'wg-annotation');
+   if(m.leadingCarry)put('<sup>'+m.leadingCarry+'</sup>',offset,y,'wg-annotation');
+   y++;
+  }
+  if(m.kind==='sub'&&m.adjusted.some((n,i)=>n!==Number(m.top[i]))){
+   for(let i=0;i<m.adjusted.length;i++)if(m.adjusted[i]!==Number(m.top[i]))put('<sup>'+m.adjusted[i]+'</sup>',offset+i+1,y,'wg-annotation');y++;
+  }
+  number(m.top,width,y,m.places,'',m.kind==='sub'?m.adjusted:null);y++;
+  number(strip(m.bottom,m.places),width,y,m.places);put(m.kind==='add'?'+':'−',0,y);rule(width,y);y++;
+  number(result,width,y,m.places,'wd-final');
+  description=(m.kind==='add'?'Írásbeli összeadás':'Írásbeli kivonás')+', tizedesvesszők és helyi értékek szerint igazítva.';
+ }else{
+  width=Math.max(String(m.integerResult).length,String(m.x).length,String(m.y).length,m.places+1);
+  number(m.x,width,y);y++;number(m.y,width,y);put('×',0,y);rule(width,y);y++;
+  for(let i=0;i<m.partials.length;i++){
+   const p=m.partials[i],product=String(m.x*BigInt(p.digit));
+   number(product,width-p.shift,y);
+   for(let j=0;j<p.shift;j++)put('0',width-j,y,'wd-added');
+   if(i>0)put('+',0,y);y++;
+  }
+  if(m.partials.length>1){rule(width,y-1);number(m.integerResult,width,y,0,'wd-final');y++}
+  if(m.places){number(String(m.integerResult).padStart(m.places+1,'0'),width,y,m.places,'wd-final wg-decimal');put('→',0,y);y++}
+  y--;description='Írásbeli szorzás, helyi érték szerint eltolt részszorzatokkal'+(m.places?', a tizedesvessző elhelyezésével.':'.');
+ }
+ return '<div class="wd-grid wg-arithmetic" role="img" aria-label="'+description+'" style="grid-template-columns:repeat('+(width+3)+',var(--wd-cell));grid-template-rows:repeat('+(y+2)+',var(--wd-cell))">'+cells.join('')+'</div>';
+}
+
 function writtenOne(m){
  const symbol={add:'+',sub:'−',mul:'·',div:':'},title=dec(m.a)+' '+symbol[m.op]+' '+signed(m.b,dec)+' = '+dec(m.result);
  let body='',note='';
  if(m.op==='add'||m.op==='sub'){
   const negative=m.result.n<0n;
-  if(m.a.n<0n||m.b.n<0n||m.op!==m.kind)note+='Az előjelek rendezése után az abszolút értékekkel '+(m.kind==='add'?'összeadunk.':'a nagyobból kivonjuk a kisebbet.')+' ';
-  body='<div class="wa-stack">';
-  if(m.kind==='add'&&m.carry.some(Boolean))body+=writtenRow(m.top,m.places,'wa-annotation','',m.carry.map(n=>n||''));
-  if(m.kind==='sub'&&m.adjusted.some((n,i)=>n!==Number(m.top[i])))body+=writtenRow(m.top,m.places,'wa-annotation','',m.adjusted.map((n,i)=>n!==Number(m.top[i])?n:''));
-  body+=writtenRow(m.top,m.places,'','',null,m.kind==='sub'?m.adjusted:null)+writtenRow(m.bottom,m.places,'wa-rule',m.kind==='add'?'+':'−')+writtenRow(String(m.integerResult).padStart(m.places+1,'0'),m.places,'wa-total');
-  body+='</div>';note+=m.kind==='add'?(m.carry.some(Boolean)?'A felső kis számok az átviteleket jelölik.':'Itt nincs szükség átvitelre.'):(m.adjusted.some((n,i)=>n!==Number(m.top[i]))?'Az áthúzott számjegyek fölött a kölcsönzés utáni értékek látszanak.':'Itt nincs szükség kölcsönzésre.');
+  if(m.a.n<0n||m.b.n<0n||m.op!==m.kind||negative)note+='Az előjelek rendezése után '+(m.kind==='add'?'az abszolút értékeket összeadjuk.':'a nagyobb abszolút értékből kivonjuk a kisebbet.')+' ';
+  body=writtenArithmeticGrid(m);note+=m.kind==='add'?(m.carry.some(Boolean)?'A felső kis számok az átviteleket jelölik.':'Itt nincs szükség átvitelre.'):(m.adjusted.some((n,i)=>n!==Number(m.top[i]))?'Az áthúzott számjegyek fölött a kölcsönzés utáni értékek látszanak.':'Itt nincs szükség kölcsönzésre.');
   if(negative)note+=' Az eredmény előjele negatív.';
  }else if(m.op==='mul'){
-  body='<div class="wa-stack">'+writtenRow(m.x)+writtenRow(m.y,0,'wa-rule','×');
-  for(const p of m.partials)body+=writtenRow(String(m.x*BigInt(p.digit))+'0'.repeat(p.shift),0,'',m.partials.length>1?'+':'');
-  if(m.partials.length>1)body+=writtenRow(m.integerResult,0,'wa-total wa-top-rule');
-  body+='</div>';note='Először a tizedesvesszők nélkül szorzunk. A részszorzatok végén a helyi érték miatti nullákat is kiírtuk.';
+  body=writtenArithmeticGrid(m);note='Először a tizedesvesszők nélkül szorzunk. A részszorzatok végén a helyi érték miatti nullákat is kiírtuk.';
   if(m.places)note+=' A tényezőkben összesen '+m.places+' tizedesjegy van, ezért a szorzatban jobbról ennyit jelölünk ki; a végső nullák elhagyhatók.';
   if(m.result.n<0n)note+=' Az eredmény előjele negatív.';
  }else{
