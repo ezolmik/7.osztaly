@@ -25,7 +25,7 @@
 <body>
 <header><div class="brand"><div class="mark" aria-hidden="true">÷</div><div><strong>Számolásvizsga Guru</strong><small>Gyakorolj a biztos alapokért.</small></div></div><span class="mode" id="mode-label">EDZÉS · 7. OSZTÁLY</span></header>
 <main>
-<div class="intro"><div><div class="eyebrow">Kis lépések. Biztos számolás.</div><h1 id="intro-heading">Itt ér hibázni.</h1><p id="intro-text">Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.</p></div><span class="session-tag">✎ Füzet + ceruza. Számológép nélkül.</span></div>
+<div class="intro"><div><div class="eyebrow">Kis lépések. Biztos számolás.</div><h1 id="intro-heading">Legyél Te is Számolásvizsga Guru!</h1><p id="intro-text">Számolj a füzetedben, írd be az eredményt, és ellenőrizd! Ha elakadsz, segítünk továbblépni.</p></div><span class="session-tag">✎ Füzet + ceruza. Számológép nélkül.</span></div>
 <nav class="mode-switch" aria-label="Játékmód"><button type="button" id="practice-mode" aria-pressed="true">Edzés</button><button type="button" id="exam-mode" aria-pressed="false">Próbavizsga</button><button type="button" id="timed-mode" aria-pressed="false">5 perces edzés</button><button type="button" id="progress-mode" aria-pressed="false">Fejlődésem</button></nav>
 <p class="save-note" id="storage-status" role="status"></p>
 <div class="badge-toast" id="badge-toast" role="status" aria-live="polite" hidden></div>
@@ -110,7 +110,7 @@
  <details class="data-settings"><summary>Mentés és alaphelyzet</summary><p>Az eredményeid ezen a böngészőn maradnak. Másik eszközre nem kerülnek át automatikusan. Letöltött HTML-nél a fájl átnevezése vagy áthelyezése befolyásolhatja a mentés elérését. A böngészőadatok törlése a mentést is törölheti.</p><button id="reset-progress" type="button" class="secondary">Eredmények törlése…</button><div id="reset-confirm" class="help" hidden><p>Törlöd a készségmutatókat, az edzésszámlálókat és a mentett vizsgákat ezen a böngészőn? Ezt nem lehet visszavonni.</p><div class="actions"><button type="button" id="reset-yes" class="secondary">Igen, törlöm az eredményeket</button><button type="button" id="reset-no" class="secondary">Mégsem</button></div></div></details>
 </section>
 
-</main><footer><span>7.a · Számolj bátran, ellenőrizz rendszeresen.</span><span>6. sprint · Írásbeli számolás</span></footer>
+</main><footer><span>7.a · Számolj bátran, ellenőrizz rendszeresen.</span><span>7. sprint · Vizsgához hangolt gyakorlás</span></footer>
 <noscript><p>A gyakorláshoz engedélyezd a JavaScript futtatását a böngésződben.</p></noscript>
 <script>
 'use strict';
@@ -153,13 +153,14 @@ const LEVEL_NAMES=Object.freeze({warmup:'Bemelegítő',exam:'Vizsgaszint',challe
 let taskRandom=null;
 function random(){return taskRandom?taskRandom():Math.random()}
 function seeded(seed){let a=seed>>>0;return()=>{a+=0x6D2B79F5;let t=Math.imul(a^a>>>15,1|a);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296}}
-function generate(type,level='exam',seed=Math.floor(Math.random()*4294967296)){
+function generate(type,level='exam',seed=Math.floor(Math.random()*4294967296),generator=2){
+ if(![1,2].includes(generator))throw Error('Ismeretlen feladatgenerátor.');
  if(!Number.isInteger(type)||type<0||type>6||!LEVELS.includes(level)||!Number.isInteger(seed)||seed<0||seed>4294967295)throw Error('Hibás feladatbeállítás.');
  const previous=taskRandom;taskRandom=seeded(seed);
- try{return{...generateRaw(type,level),level,seed}}finally{taskRandom=previous}
+ try{return{...(generator===1?legacyGenerateRaw(type,level):generateRaw(type,level)),level,seed,generator}}finally{taskRandom=previous}
 }
-function taskSpec(t){return{type:t.type,level:t.level,seed:t.seed}}
-function restoreTask(spec){if(!spec||typeof spec!=='object'||!Number.isInteger(spec.seed)||!LEVELS.includes(spec.level))throw Error('Hibás feladatmentés.');return generate(spec.type,spec.level,spec.seed)}
+function taskSpec(t){return{type:t.type,level:t.level,seed:t.seed,generator:t.generator??1}}
+function restoreTask(spec){if(!spec||typeof spec!=='object'||!Number.isInteger(spec.seed)||!LEVELS.includes(spec.level))throw Error('Hibás feladatmentés.');return generate(spec.type,spec.level,spec.seed,spec.generator===undefined?1:spec.generator)}
 function renderAst(t){
  if(t.op==='v')return t.display==='decimal'?dec(t.v):f(t.v);
  if(t.op==='pow')return par(renderAst(t.a))+'<sup>'+t.b+'</sup>';
@@ -175,12 +176,12 @@ function reduceRound(t){
  return{...t,a:reduceRound(t.a),b:t.op==='pow'?t.b:reduceRound(t.b)};
 }
 function astTask(type,ast){let t=ast,steps=[];for(let i=0;t.op!=='v'&&i<12;i++){const next=reduceRound(t);steps.push(renderAst(t)+' = '+(next.op==='v'?end(next.v):renderAst(next)));t=next}return{type,ast,expression:renderAst(ast),steps,answer:evaluate(ast)}}
-function extraComposite(level){
+function legacyExtraComposite(level){
  if(level==='warmup'){
   const a=val(q(ri(1,5),2)),b=val(q(ri(2,4))),c=node('pow',val(q(ri(2,3))),2),x={...val(q(-ri(2,9),10)),display:'decimal'},y={...val(q(ri(1,5),10)),display:'decimal'};
   return astTask(6,node('sub',node('add',a,node('mul',b,c)),node('add',x,y)));
  }
- const base=generateRaw(6,'exam'),a=val(q(ri(1,7),6)),b=val(q(ri(1,5),4)),c=val(q(-ri(1,3),2));
+ const base=legacyGenerateRaw(6,'exam'),a=val(q(ri(1,7),6)),b=val(q(ri(1,5),4)),c=val(q(-ri(1,3),2));
  return astTask(6,node('sub',base.ast,node('mul',node('sub',a,b),c)));
 }
 function emptyProgress(){return{version:3,level:'exam',selected:0,stats:{first:0,retry:0,help:0},skills:Array.from({length:7},()=>Object.fromEntries(LEVELS.map(l=>[l,{tried:0,first:0,recent:[]}]))),exams:[],coachTotals:{started:0,completed:0},examTotals:{completed:0,passed:0,best:0},badges:[],measureTime:false,timeRecords:[],timedSettings:{topic:'mixed',level:'exam'},timedHistory:[],timed:null,practice:null,exam:null}}
@@ -227,7 +228,7 @@ function archiveExam(progress,e){
  progress.examTotals.completed++;if(e.result.passed)progress.examTotals.passed++;progress.examTotals.best=Math.max(progress.examTotals.best,e.result.score);progress.exams.push({id,at:e.startedAt,score:e.result.score,elapsed:e.result.elapsed});progress.exams=progress.exams.slice(-15);return true;
 }
 
-function generateRaw(type,level='exam'){let expression,steps,ast;const warm=level==='warmup',hard=level==='challenge';if(type===6&&level!=='exam')return extraComposite(level);
+function legacyGenerateRaw(type,level='exam'){let expression,steps,ast;const warm=level==='warmup',hard=level==='challenge';if(type===6&&level!=='exam')return legacyExtraComposite(level);
  if(type===0){const a=q(ri(warm?12:101,hard?2499:warm?99:1599)*sign(),warm?10:100),b=q(ri(warm?11:21,hard?1999:warm?89:189)*sign(),hard?1000:10),add=random()<.5;ast=node(add?'add':'sub',val(a),val(b));const effective=add?b:b.neg(),symbol=effective.n<0n?' − ':' + ';expression=dec(a)+(add?' + ':' − ')+signed(b,dec);steps=[expression+' = '+dec(a)+symbol+dec(new Q(abs(effective.n),effective.d))+' = '+dec(evaluate(ast))]}
  if(type===1){const ds=warm?[2,3,4,6]:hard?[8,9,12,15,18]:[3,4,5,6,8,10,12],a=q(ri(1,warm?5:hard?19:11)*(warm?1:sign()),pick(ds)),b=q(ri(1,warm?5:hard?19:11)*(warm?1:sign()),pick(ds)),add=random()<.5;ast=node(add?'add':'sub',val(a),val(b));expression=f(a)+(add?' + ':' − ')+signed(b);const e=add?b:b.neg(),d=a.d/gcd(a.d,e.d)*e.d,A=a.n*(d/a.d),B=e.n*(d/e.d);steps=[f(a)+(e.n<0n?' − ':' + ')+f(new Q(abs(e.n),e.d))+' = '+frac(A,d)+(B<0n?' − ':' + ')+frac(abs(B),d),frac(A+B,d)+' = '+end(evaluate(ast))]}
  if(type===2){const b=hard?q(pick([125,175,225,375])*sign(),100):warm?q(pick([12,15,25]),10):q(pick(Array.from({length:39},(_,i)=>i+11).filter(n=>n%10!==0))*sign(),10),result=q(ri(warm?2:101,warm?19:399)*sign(),warm?10:100),a=result.mul(b),shift=q(hard?100:10);ast=node('div',val(a),val(b));expression=dec(a)+' : '+signed(b,dec);steps=[expression+' = '+dec(a.mul(shift))+' : '+signed(b.mul(shift),dec)+' = '+dec(result),'Ellenőrzés: '+signed(result,dec)+' · '+signed(b,dec)+' = '+dec(a)]}
@@ -237,6 +238,84 @@ function generateRaw(type,level='exam'){let expression,steps,ast;const warm=leve
  if(type===6){const a=q(pick([1,3,5]),4),b=q(pick([4,8,12]),9),divisor=q(pick([12,15,24,25]),10),quotient=q(ri(2,6)),dividend=divisor.mul(quotient),coef=q(ri(2,4)),base=q(ri(2,4)),k=2;const x=q(-ri(12,29),10),y=q(ri(3,11),10),z=x.add(y),den=q(pick([2,3,4]),5);const t1=node('mul',val(a),val(b)),t2=node('div',val(dividend),val(divisor)),t3=node('mul',val(coef),node('pow',val(base),k)),t4=node('div',node('pow',node('add',val(x),val(y)),2),val(den));ast=node('add',node('sub',node('sub',t1,t2),t3),t4);expression=f(a)+' · '+f(b)+' − '+dec(dividend)+' : '+dec(divisor)+' − '+f(coef)+' · '+f(base)+'<sup>2</sup> + '+par(dec(x)+' + '+dec(y))+'<sup>2</sup> : '+f(den);steps=[f(a)+' · '+f(b)+' − '+dec(dividend)+' : '+dec(divisor)+' − '+f(coef)+' · '+f(base.pow(2))+' + '+par(dec(z))+'<sup>2</sup> : '+f(den),f(evaluate(t1))+' − '+f(quotient)+' − '+f(evaluate(t3))+' + '+f(z.pow(2))+' · '+f(q(den.d,den.n)),f(evaluate(t1))+' − '+f(quotient)+' − '+f(evaluate(t3))+' + '+f(evaluate(t4))+' = '+end(evaluate(ast))]}
  return{type,expression,steps,ast,answer:evaluate(ast)};
 }
+// Revision 2: bounded written workload, calibrated to the supplied 7.c/7.a exams.
+// Revision 1 remains available so an old seed still restores the identical task.
+function generateRaw(type,level='exam'){
+ const warm=level==='warmup',hard=level==='challenge',D=v=>({...val(v),display:'decimal'}),magnitude=v=>q(abs(v.n),v.d);
+ const within=(v,n,d)=>abs(v.n)<=BigInt(n)&&v.d<=BigInt(d);
+ const common=(a,b)=>a.d/gcd(a.d,b.d)*b.d;
+ const finish=ast=>astTask(type,ast);
+ if(type===0){
+  const a=q(ri(warm?12:101,warm?89:hard?1299:999),warm?10:100),b=q(ri(warm?11:101,warm?99:hard?249:209),10);
+  const [op,A,B]=pick([['sub',a,b],['add',a,b.neg()],['add',a.neg(),b],['sub',a.neg(),b.neg()],['add',a,b],['add',a.neg(),b.neg()]]);
+  return finish(node(op,D(A),D(B)));
+ }
+ if(type===1){
+  const ds=warm?[2,3,4,6]:hard?[3,4,5,6,7,8,9,10,12,15]:[3,4,5,6,7,8,9,10,12];
+  for(let attempt=0;attempt<500;attempt++){
+   const a=q(ri(1,warm?5:hard?13:11)*(warm?1:sign()),pick(ds)),b=q(ri(1,warm?5:hard?13:11)*(warm?1:sign()),pick(ds)),op=random()<.5?'add':'sub',d=common(a,b),max=warm?12:hard?90:60;
+   if(a.d===1n||b.d===1n||d>BigInt(max)||abs(a.n)>a.d*2n||abs(b.n)>b.d*2n)continue;
+   if(abs(a.n*(d/a.d))>90n||abs(b.n*(d/b.d))>90n)continue;
+   return finish(node(op,val(a),val(b)));
+  }
+ }
+ if(type===2){
+  for(let attempt=0;attempt<500;attempt++){
+   const B=warm?pick([12,15,25]):ri(12,hard?49:39);if(B%10===0)continue;
+   const b=q(B*(warm?1:sign()),10),three=!warm&&random()<.2;
+   const result=q((three?ri(201,1199)*5:ri(warm?2:101,warm?29:hard?699:599))*sign(),three?1000:warm?10:100),a=result.mul(b);
+   if(decimalPlaces(a)>(warm?2:3)||magnitude(a).n>magnitude(a).d*BigInt(hard?25:16))continue;
+   const ast=node('div',D(a),D(b)),task=finish(ast),scale=q(10n**BigInt(decimalPlaces(b)));
+   task.steps=[task.expression+' = '+dec(a.mul(scale))+' : '+signed(b.mul(scale),dec)+' = '+dec(result),'Ellenőrzés: '+signed(result,dec)+' · '+signed(b,dec)+' = '+dec(a)];return task;
+  }
+ }
+ if(type===3){
+  let A=ri(12,warm?49:hard?99:69);if(A%10===0)A++;
+  const B=warm?ri(2,9):ri(hard?201:301,hard?999:799),a=q(A*sign(),10),b=q(B*(warm?1:sign()),warm?1:100),ast=node('mul',D(a),D(b)),task=finish(ast);
+  const da=decimalPlaces(a),db=decimalPlaces(b),X=a.mul(q(10n**BigInt(da))),Y=b.mul(q(10n**BigInt(db)));
+  task.steps=[f(X)+' · '+signed(Y)+' = '+f(X.mul(Y)),'A vessző helye: '+(da+db)+' tizedesjegy (a végén álló nullák elhagyhatók): '+task.expression+' = '+dec(task.answer)];return task;
+ }
+ if(type===4){
+  for(let attempt=0;attempt<500;attempt++){
+   const a=warm?pick([q(2,10),q(4,10),q(6,10),q(8,10),q(12,10)]):(random()<.15?q(sign(),8):q(ri(12,hard?175:125)*sign(),100));
+   let b=warm?pick([q(1,2),q(1,4),q(2,5),q(3,5)]):q(ri(2,9)*sign(),pick([5,6,8,10,12,15,25]));
+   if(!warm&&random()<.1)b=q(25,12);
+   if(b.d===1n||!within(a.div(b),hard?500:300,warm?20:hard?180:120))continue;
+   const task=finish(node('div',D(a),val(b)));task.steps=[task.expression+' = '+f(a)+' · '+signed(q(b.d,b.n))+' = '+end(task.answer)];return task;
+  }
+ }
+ if(type===5){
+  for(let attempt=0;attempt<500;attempt++){
+   const a=q(ri(1,warm?3:5)*sign(),ri(2,5)),k=warm?pick([2,3]):pick([2,3,4,5]);
+   if(a.d===1n||!within(a.pow(k),warm?125:hard?1024:625,warm?125:hard?1024:625))continue;
+   const task=finish(node('pow',val(a),k));
+   task.steps=[task.expression+' = '+frac(Array(k).fill(a.n<0n?par(minus(a.n)):String(a.n)).join(' · '),Array(k).fill(String(a.d)).join(' · '))+' = '+end(task.answer)];return task;
+  }
+ }
+ if(type===6){
+  if(warm){
+   const a=val(q(ri(1,5),2)),b=val(q(ri(2,3))),c=node('pow',val(q(ri(2,3))),2),x=D(q(-ri(2,9),10)),y=D(q(ri(1,5),10));
+   return finish(node('sub',node('add',a,node('mul',b,c)),node('add',x,y)));
+  }
+  for(let attempt=0;attempt<500;attempt++){
+   const a=q(ri(1,5),pick([2,3,4,5,7])),b=q(ri(2,8),pick([3,5,6,8,9])),product=a.mul(b);
+   if(a.d===1n||b.d===1n||product.d>BigInt(hard?30:15)||abs(product.n)>product.d*3n)continue;
+   const divisor=q(pick([12,15,18,22,24,25]),10),quotient=q(ri(2,6)),dividend=divisor.mul(quotient);
+   const coef=q(ri(2,3)),base=q(ri(2,hard?4:3)),k=hard?3:pick([2,2,3]);
+   const z=q(pick([-10,-8,-6,-5,-4,-2,2,4,5,6,8,10]),10),x=q(-ri(12,39),10),y=z.sub(x),den=q(pick([2,3,4]),5);
+   if(y.n<=0n)continue;
+   const t1=node('mul',val(a),val(b)),t2=node('div',D(dividend),D(divisor)),t3=node('mul',val(coef),node('pow',val(base),k)),t4=node('div',node('pow',node('add',D(x),D(y)),2),val(den));
+   const ast=node('add',node('sub',node('sub',t1,t2),t3),t4),answer=evaluate(ast);
+   if(answer.d>BigInt(hard?120:60)||abs(answer.n)>answer.d*BigInt(hard?150:100))continue;
+   return finish(ast);
+  }
+ }
+ // Guaranteed small, still variable fallback if rejection sampling exhausts its budget.
+ const A=D(q(ri(12,49),10)),B=D(q(ri(2,9))),u=val(q(ri(1,3),4)),v=val(q(ri(1,5),6));
+ const fallback=[node('sub',A,B),node('add',u,v),node('div',D(q(ri(2,9)*12,100)),D(q(12,10))),node('mul',A,B),node('div',D(q(ri(1,9),10)),val(q(2,5))),node('pow',u,2),node('sub',node('add',u,node('mul',B,val(q(2)))),v)];
+ return finish(fallback[type]);
+}
+
 // Parse only numbers, fractions and mixed numbers. Never evaluate user-entered code.
 function parseAnswer(raw){let s=raw.trim().replace(/[−–]/g,'-').replace(/⁄/g,'/');if(!s)throw Error('Írd be az eredményed!');if(s.length>60)throw Error('Ez túl hosszú válasz. Egy pontos számot vagy törtet írj.');
  let n,d=1n,m;
@@ -802,7 +881,7 @@ if(typeof document!=='undefined'){
  }
  function updateLevel(){
   $('difficulty').value=retryQueue!==null&&current?current.level:level;$('difficulty').disabled=retryQueue!==null;$('measure-time').checked=retryQueue===null&&progress.measureTime;$('measure-time').disabled=retryQueue!==null;
-  $('level-description').textContent=retryQueue!==null?'Javítóedzés: az eredeti feladatokat oldod meg újra.':{warmup:'Rövidebb műveletsorok és egyszerűbb számok az alapokhoz.',exam:'A számolásvizsgához hasonló feladatok és számok.',challenge:'Összetettebb műveletek, nehezebb törtek és több tizedesjegy.'}[level];
+  $('level-description').textContent=retryQueue!==null?'Javítóedzés: az eredeti feladatokat oldod meg újra.':{warmup:'Rövidebb műveletsorok és egyszerűbb számok az alapokhoz.',exam:'A számolásvizsgához hasonló feladatok és számok.',challenge:'Kicsit munkásabb számolás, ugyanazokkal a hetedikes eljárásokkal.'}[level];
  }
  function updateWeakReason(){
   const visible=selected==='weak'&&retryQueue===null;$('weak-reason').hidden=!visible;
