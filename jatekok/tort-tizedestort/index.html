@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Törtből tizedestört · Írásbeli osztás</title>
+<style>
+:root{--ink:#20342f;--muted:#64736c;--green:#22664e;--pale:#eaf4ed;--line:#dce5dd;--orange:#b66425}*{box-sizing:border-box}body{margin:0;background:#f5f6f2;color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1020px;margin:0 auto;padding:32px 24px 40px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:26px}.eyebrow{font-size:11px;font-weight:750;letter-spacing:1.8px;text-transform:uppercase;color:var(--green)}h1{font-size:clamp(24px,4vw,34px);letter-spacing:-1.1px;margin:5px 0 7px;font-weight:650}p{margin:0;line-height:1.55;color:var(--muted)}.tag{font-size:12px;white-space:nowrap;padding:7px 11px;border:1px solid var(--line);border-radius:20px}.setup{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;background:white;border:1px solid var(--line);border-radius:15px;padding:17px 22px;margin-bottom:18px}form{display:flex;align-items:center;gap:10px}label{font-size:13px;color:var(--muted)}input{width:90px;border:1px solid #cad8ce;border-radius:8px;padding:10px;font:600 16px system-ui;color:var(--ink);background:#fcfdfa}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #db9d4f;outline-offset:3px}.primary{background:var(--green);border:0;border-radius:9px;color:white;padding:11px 18px;font-size:14px;font-weight:650}.examples{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.examples button,.small{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:white;color:var(--muted);font-size:13px}.examples button:hover,.small:hover{background:var(--pale);color:var(--green)}.workspace{border:1px solid var(--line);border-radius:17px;background:white;overflow:hidden}.bar{padding:15px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.bar strong{font-size:14px;font-weight:600;overflow-wrap:anywhere;min-width:0}.badge{flex-shrink:0}.choice{overflow-wrap:anywhere}.badge{font-size:12px;color:var(--green);background:var(--pale);padding:5px 10px;border-radius:20px}.paper{background-color:#fff;background-image:none;overflow:auto;max-height:440px;min-height:240px;scroll-behavior:smooth}svg{display:block;min-width:100%;font-family:ui-monospace,"DejaVu Sans Mono",monospace}.question{padding:23px 26px 21px;border-top:1px solid var(--line);background:#fcfdfb}.promptrow{display:flex;justify-content:space-between;gap:15px;align-items:center}.stepname{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--green);font-weight:750}h2{font-size:20px;letter-spacing:-.3px;font-weight:600;margin:6px 0 15px}.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:530px}.choice{background:white;border:1.5px solid #cbdacf;border-radius:11px;padding:14px 8px;color:var(--ink);font-family:ui-monospace,monospace;font-size:26px;font-weight:550;transition:background .1s}.choice:hover{background:var(--pale);border-color:var(--green)}.choice.wrong{background:#fff0ed;color:#a33e36;border-color:#d7a49e}.feedback{min-height:26px;margin-top:11px;font-size:13px}.tools{display:flex;gap:15px;flex-wrap:wrap;margin-top:10px}.link{border:0;background:transparent;color:var(--muted);padding:4px 0;font-size:12px;text-decoration:underline;text-underline-offset:3px}.result{background:var(--pale);border:1px solid #cee1d3;border-radius:11px;padding:16px 18px;line-height:1.6}.resultmath{font-family:ui-monospace,monospace;font-size:23px;overflow-wrap:anywhere;color:var(--green);margin-bottom:6px}.repeat{text-decoration:overline;text-decoration-thickness:1.5px}.under{display:flex;justify-content:space-between;gap:15px;margin:13px 2px;font-size:12px;color:var(--muted)}details{margin-top:20px;border-top:1px solid var(--line);padding-top:15px;font-size:13px;color:var(--muted)}summary{cursor:pointer;color:var(--ink)}details p{margin-top:10px}.error{color:#a33e36;font-size:13px;width:100%}.hidden{display:none!important}.finishbuttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}@media(max-width:600px){main{padding:20px 12px}header{margin-bottom:18px}.tag{display:none}.setup{padding:14px;gap:14px}form{flex-wrap:wrap;gap:8px}input{width:75px}.bar{padding:12px 14px}.question{padding:18px 15px}.promptrow{align-items:flex-start}h2{font-size:18px}.choices{gap:8px}.choice{font-size:24px;padding:13px 4px}.under{flex-direction:column;gap:3px}.paper{max-height:370px}}
+.viewbar{padding:12px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fcfdfb}.viewtoggle{display:flex;align-items:center;gap:9px;color:var(--ink);cursor:pointer;font-size:13px}.viewtoggle input{width:18px;height:18px;margin:0;accent-color:var(--green)}.viewhint{font-size:12px;color:var(--muted)}@media(max-width:600px){.viewbar{padding:12px 14px}}
+.iteration{display:block;margin:-3px 0 16px;font-size:18px}.slot{display:inline-block;min-width:35px;text-align:center;padding:3px 8px;border-radius:6px;background:#eaf4ed;font-weight:650;color:var(--green)}.slot.active{outline:1.5px solid var(--green)}.previous{font-size:13px;line-height:1.6;margin-bottom:13px;color:var(--muted)}
+.remainderlabel{margin-top:16px}.chosen{font-size:16px;color:var(--muted)}.chosen strong{color:var(--green)}
+</style>
+</head>
+<body><main>
+<header><div><div class="eyebrow">Írásbeli osztás</div><h1>Törtből tizedestört</h1><p>Hányszor van meg, és mennyi marad? Egy osztási lépés, két gyors választás.</p></div><span class="tag">7. osztály</span></header>
+<section class="setup" aria-label="Feladat kiválasztása"><form id="fractionForm"><label for="num">Saját tört</label><input id="num" value="39" inputmode="text" aria-label="Számláló" maxlength="30" required><span>/</span><input id="den" value="50" inputmode="text" aria-label="Nevező" maxlength="30" required><button class="primary" type="button" id="startFraction">Indítás</button></form><div class="examples" aria-label="Az okostankönyv példái"><span style="font-size:12px;color:var(--muted)">Tankönyvi példák</span><button data-n="39" data-d="50">39/50</button><button data-n="5" data-d="3">5/3</button><button data-n="3" data-d="7">3/7</button><button data-n="13" data-d="10">13/10</button><button data-n="7" data-d="125">7/125</button><button data-n="1385" data-d="100">1385/100</button><button data-n="111" data-d="60">111/60</button><button data-n="1" data-d="9">1/9</button></div><div id="error" class="error" role="alert"></div></section>
+<section class="workspace"><div class="bar"><strong id="task">3 : 7</strong><span class="badge" id="status">Hányadosjegy</span></div><div class="viewbar"><label class="viewtoggle"><input type="checkbox" id="detailed">Részletes levezetés</label><span class="viewhint" id="viewhint">Tömör alak · a visszaszorzást és a kivonást fejben végzed.</span></div><div class="paper" id="paper" tabindex="0" aria-label="Az írásbeli osztás levezetése"><svg id="board" role="img" aria-label="Írásbeli osztás"></svg></div><div class="question"><div id="practice"><p id="previous" class="previous" aria-live="polite"></p><div class="promptrow"><div><div class="stepname" id="stepname">Következő hányadosjegy</div><h2 id="prompt"></h2></div><button class="small" id="restart" title="Az osztás újrakezdése">Újrakezdés</button></div><div id="iteration" class="iteration" aria-live="polite"></div><div id="choices" class="choices" aria-label="Válaszlehetőségek"></div><p class="feedback" id="feedback" aria-live="polite"></p><div class="tools"><button class="link" id="help">Mutasd ezt a lépést</button><button class="link" id="solve">Osztás kitöltése</button></div></div><div id="finished" class="hidden" aria-live="polite"></div></div></section>
+<div class="under"><span id="progress">0 helyes válasz</span><span>A teljes osztás látható marad; a munkalap görgethető.</span></div>
+<details><summary>Hogyan működik?</summary><p>A kiemelt helyre válaszolsz. A helyes válasz rögtön bekerül; nincs külön továbbgomb. Alapból tömör alakban dolgozunk: a hányadosjegyet és a maradékot választod ki, a visszaszorzást és a kivonást fejben végzed. A következő számjegyet a program hozza le, halványabban jelölve. A „Részletes levezetés” kapcsoló megmutatja a visszaszorzást és a kivonást is; bármikor átválthatsz, a feladatod és a válaszaid megmaradnak. Az „Osztás kitöltése” az éppen választott alakban mutatja meg a megoldást. A gombokat az 1, 2, 3 billentyűvel is kiválaszthatod.</p><p>Minden osztási lépésben két dolgot adsz meg: hányszor van meg az osztó az aktuális számban, és mennyi a maradék. Csak ezután hozzuk le a következő számjegyet; a tizedesrészben mindig nullát, így a következő helyi értéken folytatjuk az osztást. Nulla maradéknál véges a tizedestört. Ha egy maradék visszatér, onnantól a hányados számjegyei ismétlődnek. Az ismétlődő szakaszt felső vonal jelöli.</p><p>Előjeles egész számláló és nem nulla egész nevező adható meg, legfeljebb 30 karakterrel. Negatív törtnél az abszolút érték osztását végezzük el, majd az eredmény megkapja az előjelet. Hosszú szakasznál a „Osztás kitöltése” egyszerre legfeljebb 80 osztási lépést tölt ki; ezután folytatható.</p></details>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const abs=n=>n<0n?-n:n;
+function createModel(a,b){
+ if(b===0n)throw Error('A nevező nem lehet nulla.');
+ const A=abs(a),B=abs(b),src=A.toString();
+ let pos=0,current=BigInt(src[0]);
+ while(current<B&&pos<src.length-1){pos++;current=current*10n+BigInt(src[pos]);}
+ const decimal=pos===src.length-1&&current<B&&A!==0n,seen=new Map();
+ if(decimal){seen.set(current.toString(),0);current*=10n;pos++;}
+ return {a,b,A,B,src,negative:(a<0n)!==(b<0n)&&A!==0n,pos,current,decimal,integer:decimal?'0':'',digits:'',steps:[],seen,phase:'q',done:false,cycle:null,correct:0,mistakes:0,helped:0,options:[]};
+}
+let m;
+const detailed=()=>$('detailed').checked;
+function expected(){return m.phase==='q'?m.current/m.B:m.current%m.B;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function makeOptions(){const right=expected(),set=new Set([right.toString()]);const offsets=shuffle([-1n,1n,-2n,2n,-3n,3n]);for(const off of offsets){const n=right+off;if(n>=0n&&(m.phase==='r'||n<=9n))set.add(n.toString());if(set.size===3)break;}return shuffle([...set].map(BigInt));}
+function prepare(){m.options=makeOptions();}
+function commit(){
+ if(m.phase==='q'){
+  const q=m.current/m.B;
+  m.steps.push({current:m.current,q,product:q*m.B,rem:null,pos:m.pos,decimal:m.decimal});
+  if(m.decimal)m.digits+=q.toString();else m.integer+=q.toString();
+  m.phase='r';
+ }else{
+  const r=m.current%m.B;m.steps[m.steps.length-1].rem=r;
+  if(m.pos<m.src.length-1){m.pos++;m.current=r*10n+BigInt(m.src[m.pos]);m.phase='q';}
+  else if(r===0n){m.done=true;m.phase='done';}
+  else if(m.seen.has(r.toString())){m.cycle=m.seen.get(r.toString());m.done=true;m.phase='done';}
+  else{m.seen.set(r.toString(),m.digits.length);m.decimal=true;m.pos++;m.current=r*10n;m.phase='q';}
+ }
+ if(!m.done)prepare();
+}
+function resultParts(){const int=m.integer||'0';return {int,prefix:m.cycle===null?m.digits:m.digits.slice(0,m.cycle),repeat:m.cycle===null?'':m.digits.slice(m.cycle)};}
+function quotientHTML(){const {int,prefix,repeat}=resultParts();if(!m.integer&&!m.decimal&&!m.done)return '';return (m.negative?'−':'')+int+(m.digits?','+prefix+(repeat?'<span class="repeat">'+repeat+'</span>':''):'');}
+function svgText(x,y,text,fill='#20342f',size=23,extra=''){return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" ${extra}>${text}</text>`;}
+function numberEnding(n){
+ const x=abs(n),last=Number(x%1000n);
+ if(last===0)return x!==0n&&x%1000000n!==0n?'ben':'ban';
+ if(last%10)return [1,2,4,5,7,9].includes(last%10)?'ben':'ban';
+ if(last%100)return [1,4,5,7,9].includes(Math.floor(last%100/10))?'ben':'ban';
+ return 'ban';
+}
+function numberArticle(n){
+ let x=abs(n);while(x>=1000n)x/=1000n;
+ const str=x.toString();return str[0]==='5'||x===1n?'az':'a';
+}
+function updatePrompt(){
+ if(m.done)return;
+ const isQ=m.phase==='q',t=isQ?null:m.steps.at(-1);
+ const step=isQ?m.steps.length+1:m.steps.length;
+ $('stepname').textContent=`${step}. osztási lépés`;
+ $('status').textContent=isQ?'1/2 · Hányadosjegy':'2/2 · Maradék';
+ $('prompt').textContent=`${m.current}-${numberEnding(m.current)} ${numberArticle(m.B)} ${m.B} hányszor van meg?`;
+ const suffix=['szor','szer','szer','szor','szer','ször','szor','szer','szor','szer'];
+ $('iteration').innerHTML=isQ?'<div>Megvan…</div>':`<div class="chosen">Megvan <strong>${t.q}-${suffix[Number(t.q)]}.</strong></div><div class="remainderlabel">Maradt…</div>`;
+ $('choices').setAttribute('aria-label',isQ?'Megvan — válassz hányadosjegyet':'Maradt — válassz maradékot');
+ const prev=m.steps.findLast(t=>t.rem!==null);
+ if(prev){
+  const next=m.pos<m.src.length?m.src[m.pos]:'0';
+  $('previous').textContent=`Megvan ${prev.q}-${suffix[Number(prev.q)]}, maradt ${prev.rem}. Lehozzuk a következő ${next} számjegyet: ${prev.rem} → ${m.current}.`;
+ }else $('previous').textContent=m.decimal?`A ${m.A} kisebb ${m.B}-nél, ezért az egészrész 0. Lehozunk egy nullát: ${m.A} → ${m.current}.`:'';
+}
+function draw(){
+ const cell=28,left=28,maxPos=Math.max(m.src.length-1,m.pos);
+ // All digit centres share one grid: x = left + (column + 1/2) * cell.
+ const x=col=>left+(col+.5)*cell;
+ const digit=(col,row,char,color='#20342f',extra='')=>svgText(x(col),row*cell+21,char,color,22,`text-anchor="middle" data-col="${col}" ${extra}`);
+ const question=(col,row)=>`<rect x="${left+col*cell+2}" y="${row*cell+2}" width="24" height="24" rx="4" fill="#e3f0e5" stroke="#22664e"/>`+digit(col,row,'?','#22664e');
+ const number=(value,endCol,row,color='#20342f',brought=false)=>{
+  const str=String(value);let out='';
+  for(let j=0;j<str.length;j++)out+=digit(endCol-str.length+1+j,row,str[j],brought&&j===str.length-1?'#7b8880':color);
+  return out;
+ };
+ const dividendCols=m.src.length+1,divCol=dividendCols+1,eqCol=divCol+m.B.toString().length+1,qCol=eqCol+2;
+ const int=m.integer||(m.decimal?'0':''),qDigits=int+m.digits;
+ const qEnd=qCol+qDigits.length-1,activeQ=qCol+qDigits.length;
+ const width=Math.max(756,(qCol+qDigits.length+4)*cell,(maxPos+6)*cell);
+ const gap=detailed()?4:2,remRows=detailed()?3:gap;
+ const rows=Math.max(9,6+m.steps.length*gap+(m.phase==='q'?gap:0)),height=rows*cell;
+ let s=`<defs><pattern id="squares" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M 28 0 L 0 0 0 28" fill="none" stroke="#dce5df" stroke-width="1"/></pattern></defs><rect width="${width}" height="${height}" fill="white"/><rect width="${width}" height="${height}" fill="url(#squares)"/>`;
+ if(!m.done){
+  s+=`<rect x="${left+m.pos*cell}" y="28" width="28" height="${height-28}" fill="#22664e" opacity=".055"/>`;
+  const qc=m.phase==='q'?activeQ:qEnd;
+  s+=`<rect x="${left+qc*cell}" y="28" width="28" height="56" fill="#22664e" opacity=".08"/>`;
+ }
+ for(let col=0;col<m.src.length;col++)s+=digit(col,1,m.src[col]);
+ s+=digit(dividendCols,1,':');
+ s+=number(m.B,divCol+m.B.toString().length-1,1)+digit(eqCol,1,'=');
+ if(m.negative)s+=digit(qCol-1,1,'−');
+ for(let j=0;j<qDigits.length;j++)s+=digit(qCol+j,1,qDigits[j]);
+ if(m.decimal||m.digits)s+=svgText(left+(qCol+int.length)*cell-4,49,',','#20342f',17);
+ if(!m.done&&m.phase==='q')s+=question(activeQ,1);
+ if(m.done&&m.cycle!==null)s+=`<line x1="${left+(qCol+int.length+m.cycle)*cell+5}" x2="${left+(qEnd+1)*cell-5}" y1="31" y2="31" stroke="#22664e" stroke-width="2"/>`;
+ for(let i=0;i<m.steps.length;i++){
+  const t=m.steps[i],row=3+i*gap;
+  s+=number(t.current,t.pos,row,i===0?'#20342f':'#22664e',i>0);
+  if(detailed()){
+   s+=number(t.product,t.pos,row+1,'#7b8880');
+   s+=digit(t.pos-Math.max(t.current.toString().length,t.product.toString().length),row+1,'−','#7b8880');
+   s+=`<line x1="${left+(t.pos-Math.max(t.current.toString().length,t.product.toString().length)+1)*cell}" x2="${left+(t.pos+1)*cell}" y1="${(row+2)*cell}" y2="${(row+2)*cell}" stroke="#81998a"/>`;
+   // Keep each remainder visible before the next digit is brought down.
+   if(t.rem!==null&&(!m.done||i<m.steps.length-1))s+=number(t.rem,t.pos,row+remRows,'#22664e');
+  }
+  if(i===m.steps.length-1){
+   if(m.phase==='r')s+=question(t.pos,row+remRows);
+   else if(m.done){
+    s+=number(t.rem,t.pos,row+remRows,'#22664e');
+    s+=svgText(x(t.pos+1)+12,(row+remRows)*cell+21,m.cycle===null?'az osztás véget ért':'↶ visszatérő maradék','#22664e',13);
+   }
+  }
+ }
+ if(m.phase==='q')s+=number(m.current,m.pos,3+m.steps.length*gap,'#22664e',m.steps.length>0);
+ $('board').setAttribute('width',width);$('board').setAttribute('height',height);$('board').innerHTML=s;
+ $('board').setAttribute('aria-label',`${m.a} osztva ${m.b}. Négyzetrácsos levezetés, egy számjegy egy négyzet.`);
+ const paper=$('paper');paper.scrollTop=paper.scrollHeight;
+ const activeCol=m.phase==='q'?activeQ:m.pos;
+ paper.scrollLeft=Math.max(0,x(activeCol)-paper.clientWidth+2*cell);
+}
+function render(){
+ draw();$('task').innerHTML=`${m.a} / ${m.b} = ${quotientHTML()}${m.done?'':'…'}`;$('progress').textContent=`${m.correct} helyes válasz · ${m.mistakes} tévesztés`+(m.helped?` · ${m.helped} megmutatott lépés`:'');
+ $('practice').classList.toggle('hidden',m.done);$('finished').classList.toggle('hidden',!m.done);
+ if(m.done){$('status').textContent=m.cycle===null?'Véges tizedestört':'Végtelen szakaszos tizedestört';$('finished').innerHTML=`<div class="result"><div class="resultmath">${m.a}/${m.b} = ${quotientHTML()}</div><p>${m.cycle===null?'A maradék nulla lett, ezért az osztás véget ért.':'Egy korábbi maradék visszatért. Itt megállunk: innen ugyanazok az osztási lépések és hányadosjegyek ismétlődnének. A felső vonal az ismétlődő szakaszt jelöli.'}</p></div><div class="finishbuttons"><button class="primary" id="again">Új feladat</button><button class="small" id="same">Ugyanez újra</button></div>`;$('again').onclick=randomTask;$('same').onclick=()=>start(m.a.toString(),m.b.toString());return;}
+ const isQ=m.phase==='q';
+ updatePrompt();
+ $('choices').innerHTML=m.options.map((n,i)=>`<button class="choice" data-index="${i}" aria-label="${n}">${n}</button>`).join('');
+ $('choices').querySelectorAll('button').forEach((b,i)=>b.onclick=()=>answer(i,b));
+}
+function answer(i,b){if(m.done)return;const val=m.options[i];if(val!==expected()){if(b.disabled)return;m.mistakes++;b.disabled=true;b.classList.add('wrong');$('feedback').textContent=m.phase==='q'?`Olyan számjegyet keress, amellyel a szorzat legfeljebb ${m.current}, és a maradék kisebb ${m.B}-nél.`:(detailed()?'Számold ki a különbséget.':`Szorozd vissza a hányadosjegyet ${m.B}-nel, majd vond ki ${m.current}-ból. A maradék 0 és ${m.B-1n} közé esik.`);$('progress').textContent=`${m.correct} helyes válasz · ${m.mistakes} tévesztés`;return;}m.correct++;commit();$('feedback').textContent='';render();}
+function start(a,b){try{a=String(a).trim().replace(/−/g,'-');b=String(b).trim().replace(/−/g,'-');if(!/^[+-]?\d{1,29}$/.test(a.trim())||!/^[+-]?\d{1,29}$/.test(b.trim()))throw Error('Egész számlálót és egész, nem nulla nevezőt adj meg (legfeljebb 29 számjeggyel).');m=createModel(BigInt(a),BigInt(b));$('num').value=a;$('den').value=b;$('error').textContent='';$('feedback').textContent='';$('task').textContent=`${m.a} / ${m.b}${m.negative?' · Az abszolút értékkel osztunk.':''}`;prepare();render();}catch(e){$('error').textContent=e.message;}}
+function randomTask(){const ds=[2,4,5,8,10,16,20,25,40,3,6,7,9,11,12,15,18,22,24,28];const d=ds[Math.floor(Math.random()*ds.length)];let n;do{n=1+Math.floor(Math.random()*(2*d));}while(m&&BigInt(n)===m.a&&BigInt(d)===m.b);start(String(n),String(d));}
+function startFromInputs(){start($('num').value,$('den').value);}
+$('startFraction').onclick=startFromInputs;
+$('fractionForm').onsubmit=e=>{e.preventDefault();startFromInputs();};
+for(const id of ['num','den'])$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();startFromInputs();}});
+document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>start(b.dataset.n,b.dataset.d));$('restart').onclick=()=>start(m.a.toString(),m.b.toString());$('help').onclick=()=>{m.helped++;commit();$('feedback').textContent='Ezt a lépést a program kitöltötte.';render();};$('solve').onclick=()=>{let count=0;while(!m.done&&count<160){m.helped++;commit();count++;}render();if(!m.done)$('feedback').textContent='A szakasz még nem zárult le. Folytathatod a kattintást vagy újabb 80 lépést mutathatsz meg.';};
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||m.done||e.repeat)return;if(['1','2','3'].includes(e.key)){e.preventDefault();const b=$('choices').children[Number(e.key)-1];if(b&&!b.disabled)b.click();}});
+$('detailed').onchange=()=>{draw();updatePrompt();$('viewhint').textContent=detailed()?'Részletes alak · a visszaszorzás és a kivonás is látható.':'Tömör alak · a visszaszorzást és a kivonást fejben végzed.';};
+start('39','50');
+</script></body></html>
