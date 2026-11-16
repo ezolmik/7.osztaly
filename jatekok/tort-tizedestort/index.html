@@ -17,7 +17,7 @@
 <div class="modes" role="group" aria-label="Gyakorlás módja"><button type="button" id="modeFraction" aria-pressed="true">Törtből tizedestört</button><button type="button" id="modeDivision" aria-pressed="false">Tizedestörtek osztása</button></div><section class="setup" aria-label="Feladat kiválasztása"><form id="fractionForm"><label for="num" id="inputLabel">Saját tört</label><input id="num" value="39" inputmode="text" aria-label="Számláló" maxlength="32" required><span id="operation">/</span><input id="den" value="50" inputmode="text" aria-label="Nevező" maxlength="32" required><button class="primary" type="button" id="startFraction">Indítás</button></form><div id="examples" class="examples" aria-label="Az okostankönyv példái"><span style="font-size:12px;color:var(--muted)">Tankönyvi példák</span><button data-n="39" data-d="50">39/50</button><button data-n="5" data-d="3">5/3</button><button data-n="3" data-d="7">3/7</button><button data-n="13" data-d="10">13/10</button><button data-n="7" data-d="125">7/125</button><button data-n="1385" data-d="100">1385/100</button><button data-n="111" data-d="60">111/60</button><button data-n="1" data-d="9">1/9</button></div><div id="error" class="error" role="alert"></div></section>
 <section class="workspace"><div class="bar"><strong id="task">3 : 7</strong><span class="badge" id="status">Hányadosjegy</span></div><div class="viewbar"><label class="viewtoggle"><input type="checkbox" id="detailed">Részletes levezetés</label><span class="viewhint" id="viewhint">Tömör alak · a visszaszorzást és a kivonást fejben végzed.</span></div><div id="preparation" class="preparation hidden" aria-live="polite"></div><div class="paper" id="paper" tabindex="0" aria-label="Az írásbeli osztás levezetése"><svg id="board" role="img" aria-label="Írásbeli osztás"></svg></div><div class="question" id="questionArea"><div id="practice"><p id="previous" class="previous" aria-live="polite"></p><div class="promptrow"><div><div class="stepname" id="stepname">Következő hányadosjegy</div><h2 id="prompt"></h2></div><button class="small" id="restart" title="Az osztás újrakezdése">Újrakezdés</button></div><div id="iteration" class="iteration" aria-live="polite"></div><div id="choices" class="choices" aria-label="Válaszlehetőségek"></div><p class="feedback" id="feedback" aria-live="polite"></p><div class="tools"><button class="link" id="help">Mutasd ezt a lépést</button><button class="link" id="solve">Osztás kitöltése</button></div></div><div id="finished" class="hidden" aria-live="polite"></div></div></section>
 <div class="under"><span id="progress">0 helyes válasz</span><span>A teljes osztás látható marad; a munkalap görgethető.</span></div>
-<details><summary>Hogyan működik?</summary><p>A kiemelt helyre válaszolsz. A helyes válasz rögtön bekerül; nincs külön továbbgomb. Alapból tömör alakban dolgozunk: a hányadosjegyet és a maradékot választod ki, a visszaszorzást és a kivonást fejben végzed. A következő számjegyet a program hozza le, halványabban jelölve. A „Részletes levezetés” kapcsoló megmutatja a visszaszorzást és a kivonást is; bármikor átválthatsz, a feladatod és a válaszaid megmaradnak. Az „Osztás kitöltése” az éppen választott alakban mutatja meg a megoldást. A gombokat az 1, 2, 3 billentyűvel is kiválaszthatod.</p><p>Minden osztási lépésben két dolgot adsz meg: hányszor van meg az osztó az aktuális számban, és mennyi a maradék. Csak ezután hozzuk le a következő számjegyet; a meglévő tizedesjegyek után már nullákat, így a következő helyi értéken folytatjuk az osztást. Nulla maradéknál véges a tizedestört. Ha egy maradék visszatér, onnantól a hányados számjegyei ismétlődnek. Az ismétlődő szakaszt felső vonal jelöli.</p><p>Tört módban előjeles egész számláló és nem nulla egész nevező adható meg. Osztás módban véges tizedestörteket is használhatsz, vesszővel vagy tizedesponttal, legfeljebb 29 számjeggyel. Az osztó nem lehet nulla. Tizedestört osztónál előbb mindkét számot ugyanazzal a tízhatvánnyal szorozzuk, hogy az osztó egész legyen. A vessző két számjegyoszlop közé kerül; amikor átlépjük az osztandó vesszőjét, a hányadosban is kitesszük. Negatív eredménynél az abszolút érték osztását végezzük el, majd az eredmény megkapja az előjelet. Hosszú szakasznál az „Osztás kitöltése” egyszerre legfeljebb 80 osztási lépést tölt ki; ezután folytatható.</p></details>
+<details><summary>Hogyan működik?</summary><p>A kiemelt helyre válaszolsz. A helyes válasz rögtön bekerül; nincs külön továbbgomb. Alapból tömör alakban dolgozunk: a hányadosjegyet és a maradékot választod ki, a visszaszorzást és a kivonást fejben végzed. A következő számjegyet a program hozza le, halványabban jelölve. A „Részletes levezetés” kapcsoló megmutatja a visszaszorzást és a kivonást is; bármikor átválthatsz, a feladatod és a válaszaid megmaradnak. Az „Osztás kitöltése” az éppen választott alakban mutatja meg a megoldást. A gombokat az 1, 2, 3 billentyűvel is kiválaszthatod.</p><p>Minden osztási lépésben két dolgot adsz meg: hányszor van meg az osztó az aktuális számban, és mennyi a maradék. Csak ezután hozzuk le az osztandó következő meglévő számjegyét. Ha ezek elfogytak, és maradt maradék, nullát írunk a maradékhoz, és a következő tizedeshelyen folytatjuk az osztást. Nulla maradéknál véges a tizedestört. Ha egy maradék visszatér, onnantól a hányados számjegyei ismétlődnek. Az ismétlődő szakaszt felső vonal jelöli.</p><p>Tört módban előjeles egész számláló és nem nulla egész nevező adható meg. Osztás módban véges tizedestörteket is használhatsz, vesszővel vagy tizedesponttal, legfeljebb 29 számjeggyel. Az osztó nem lehet nulla. Tizedestört osztónál előbb mindkét számot ugyanazzal a tízhatvánnyal szorozzuk, hogy az osztó egész legyen. Az osztandón csak akkor szerepel alsó tizedesvessző, ha a ténylegesen osztandó számnak van tizedesrésze. A felső kis jel az osztandó eredeti számjegyeit követi, a tizedesjegyeket is. Az utolsó eredeti számjegynél megáll; a maradékhoz hozzáírt nullák miatt már nem lép tovább. Ez a jel nem tizedesvessző. A hányadosba akkor írunk vesszőt, amikor a tizedek osztására térünk át, akár meglévő tizedesjegyet hozunk le, akár nullát írunk a maradékhoz. Negatív eredménynél az abszolút érték osztását végezzük el, majd az eredmény megkapja az előjelet. Hosszú szakasznál az „Osztás kitöltése” egyszerre legfeljebb 80 osztási lépést tölt ki; ezután folytatható.</p></details>
 </main>
 <script>
 'use strict';
@@ -81,7 +81,7 @@ function commit(){
  if(!m.done)prepare();
 }
 function resultParts(){const int=m.integer||'0';return {int,prefix:m.cycle===null?m.digits:m.digits.slice(0,m.cycle),repeat:m.cycle===null?'':m.digits.slice(m.cycle)};}
-function quotientHTML(){const {int,prefix,repeat}=resultParts();if(!m.integer&&!m.decimal&&!m.done)return '';return (m.negative?'−':'')+int+(m.digits?','+prefix+(repeat?'<span class="repeat">'+repeat+'</span>':''):'');}
+function quotientHTML(){const {int,prefix,repeat}=resultParts();if(!m.integer&&!m.decimal&&!m.done)return '';return (m.negative?'−':'')+int+(m.digits?','+prefix+(repeat?'<span class="repeat">'+repeat+'</span>':''):m.decimal&&!m.done?',':'');}
 function svgText(x,y,text,fill='#20342f',size=23,extra=''){return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" ${extra}>${text}</text>`;}
 function numberEnding(n){
  const x=abs(n),last=Number(x%1000n);
@@ -104,11 +104,23 @@ function updatePrompt(){
  const suffix=['szor','szer','szer','szor','szer','ször','szor','szer','szor','szer'];
  $('iteration').innerHTML=isQ?'<div>Megvan…</div>':`<div class="chosen">Megvan <strong>${t.q}-${suffix[Number(t.q)]}.</strong></div><div class="remainderlabel">Maradt…</div>`;
  $('choices').setAttribute('aria-label',isQ?'Megvan — válassz hányadosjegyet':'Maradt — válassz maradékot');
+ const places=['az egyeseknél','a tízeseknél','a százasoknál','az ezreseknél','a tízezreseknél','a százezreseknél','a millióknál'];
+ const decimalPlaces=['a tizedeknél','a századoknál','az ezredeknél','a tízezredeknél','a százezredeknél','a milliomodoknál'];
+ const place=m.pos<m.point?(places[m.point-1-m.pos]||'az egészrészben'):(decimalPlaces[m.pos-m.point]||'a tizedesrészben');
+ const placeText=m.pos<m.src.length?'Most '+place+' tartunk. ':'';
  const prev=m.steps.findLast(t=>t.rem!==null);
+ const next=m.pos<m.src.length?m.src[m.pos]:'0';
+ const appended=m.pos>=m.src.length;
+ const advance=rem=>appended
+  ?`A maradékhoz 0-t írunk, és a következő tizedeshelyen folytatjuk: ${rem} → ${m.current}.`
+  :`Lehozzuk az osztandó következő ${next} számjegyét: ${rem} → ${m.current}.`;
  if(prev){
-  const next=m.pos<m.src.length?m.src[m.pos]:'0';
-  $('previous').textContent=`Megvan ${prev.q}-${suffix[Number(prev.q)]}, maradt ${prev.rem}. `+(prev.pos<m.point&&m.pos>=m.point?'Elértük a vesszőt: a hányadosba is kitesszük. ':'')+`Lehozzuk a következő ${next} számjegyet: ${prev.rem} → ${m.current}.`;
- }else $('previous').textContent=m.decimal?`Az egészrész 0. Kitesszük a vesszőt, és lehozzuk a következő ${m.src[m.pos]||'0'} számjegyet: ${BigInt(m.src.slice(0,m.point))} → ${m.current}.`:'';
+  const crossed=prev.pos<m.point&&m.pos>=m.point;
+  const comma=crossed?(m.point<m.src.length?'Átléptük az osztandó tizedesvesszőjét; a hányadosba is vesszőt írunk. ':'Elfogytak az egészrész számjegyei; a hányadosba vesszőt írunk. '):'';
+  $('previous').textContent=`Megvan ${prev.q}-${suffix[Number(prev.q)]}, maradt ${prev.rem}. `+comma+advance(prev.rem)+(placeText?' '+placeText:'');
+ }else $('previous').textContent=m.decimal
+  ?'Az egészrész 0. A hányadosba vesszőt írunk. '+advance(BigInt(m.src.slice(0,m.point)))
+  :placeText+'A felső kis jel mutatja, melyik eredeti számjegynél tartunk.';
 }
 function draw(){
  const cell=28,left=28,maxPos=Math.max(m.src.length-1,m.pos);
@@ -134,7 +146,11 @@ function draw(){
   s+=`<rect x="${left+qc*cell}" y="28" width="28" height="56" fill="#22664e" opacity=".08"/>`;
  }
  for(let col=0;col<m.src.length;col++)s+=digit(col,1,m.src[col]);
- if(m.point<m.src.length||m.decimal)s+=svgText(left+m.point*cell,49,',','#20342f',17,'text-anchor="middle" data-comma="dividend"');
+ if(m.point<m.src.length)s+=svgText(left+m.point*cell,49,',','#20342f',17,'text-anchor="middle" data-comma="dividend"');
+ // A single upper marker follows every source digit, then stays at the last.
+ // Added zeros never advance it; the true decimal comma stays on the baseline.
+ const progressPos=Math.min(m.pos,m.src.length-1);
+ s+=svgText(left+(progressPos+1)*cell,31,'′','#22664e',16,`text-anchor="middle" data-progress="source" data-pos="${progressPos}"`);
  s+=digit(dividendCols,1,':');
  s+=number(m.B,divCol+m.B.toString().length-1,1)+digit(eqCol,1,'=');
  if(!detailed())s+=`<line data-separator="dividend" x1="${left}" x2="${left+m.src.length*cell}" y1="56" y2="56" stroke="#81998a" stroke-width="1.5"/>`;
@@ -187,7 +203,7 @@ function render(){
  renderPreparation();
  draw();$('task').innerHTML=`${expressionHTML()} = ${quotientHTML()}${m.done?'':'…'}`;$('progress').textContent=`${m.correct} helyes válasz · ${m.mistakes} tévesztés`+(m.helped?` · ${m.helped} megmutatott lépés`:'');
  $('practice').classList.toggle('hidden',m.done);$('finished').classList.toggle('hidden',!m.done);
- if(m.done){$('status').textContent=m.cycle===null?'Véges tizedestört':'Végtelen szakaszos tizedestört';$('finished').innerHTML=`<div class="result"><div class="resultmath">${expressionHTML()} = ${quotientHTML()}</div><p>${m.cycle===null?'A maradék nulla lett, ezért az osztás véget ért.':'Egy korábbi maradék visszatért. Itt megállunk: innen ugyanazok az osztási lépések és hányadosjegyek ismétlődnének. A felső vonal az ismétlődő szakaszt jelöli.'}</p></div><div class="finishbuttons"><button class="primary" id="again">Új feladat</button><button class="small" id="same">Ugyanez újra</button></div>`;$('again').onclick=randomTask;$('same').onclick=()=>start(m.inputA,m.inputB,m.mode);return;}
+ if(m.done){$('status').textContent=m.cycle===null?(m.digits?'Véges tizedestört':'Egész hányados'):'Végtelen szakaszos tizedestört';$('finished').innerHTML=`<div class="result"><div class="resultmath">${expressionHTML()} = ${quotientHTML()}</div><p>${m.cycle===null?'A maradék nulla lett, ezért az osztás véget ért.':'Egy korábbi maradék visszatért. Itt megállunk: innen ugyanazok az osztási lépések és hányadosjegyek ismétlődnének. A felső vonal az ismétlődő szakaszt jelöli.'}</p></div><div class="finishbuttons"><button class="primary" id="again">Új feladat</button><button class="small" id="same">Ugyanez újra</button></div>`;$('again').onclick=randomTask;$('same').onclick=()=>start(m.inputA,m.inputB,m.mode);return;}
  const isQ=m.phase==='q';
  updatePrompt();
  $('choices').innerHTML=m.options.map((n,i)=>`<button class="choice" data-index="${i}" aria-label="${n}">${n}</button>`).join('');
