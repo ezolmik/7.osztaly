@@ -1,0 +1,295 @@
+{
+  "id": "ki-hazudik",
+  "title": "Ki hazudik?",
+  "description": "Kirándulás, ablakbetörés és öt eltűnt tábla csoki. Kinek hihetsz?",
+  "tasks": [
+    {
+      "id": "hegyek",
+      "title": "Melyik hegyen járnak?",
+      "tags": [
+        "igaz-hamis",
+        "ellentmondás"
+      ],
+      "text": "Egy osztály öt hegycsúcsra mászik fel, mindegyikre pontosan egyszer. A csúcsok: Szárkő (750 m), Borsó-hegy (747 m), Magoska (734 m), Bohó-hegy (733 m) és Nagy Szárkő (729 m). Séta közben mindenki mond valamit, és pontosan egyvalaki állítása hamis.",
+      "lines": [
+        [
+          "Tanár úr",
+          "Megyünk még magasabbra is."
+        ],
+        [
+          "Juli",
+          "Magasabban vagyunk, mint tegnap."
+        ],
+        [
+          "Dobosi",
+          "Juli hazudik."
+        ],
+        [
+          "Mobil",
+          "Te hazudsz, Dobosi!"
+        ],
+        [
+          "Zsuzsi",
+          "Tegnap a Borsó-hegyen voltunk."
+        ]
+      ],
+      "hints": [
+        "Dobosi és Mobil közül hányan mondhatnak igazat?",
+        "Ha Juli és Zsuzsi igazat mond, milyen alsó határt kapsz a magasságra? Mit mond a felső határról a tanár úr?"
+      ],
+      "solution": "Dobosi és Mobil állítása egymás tagadása, így egyikük biztosan hazudik. Mindenki más igazat mond. Tegnap a Borsó-hegyen, 747 méteren jártak. Most ennél magasabban vannak. A tanár úr szerint még magasabbra is mennek, ezért a 750 méteres csúcsra még nem értek fel. A Szárkőre kapaszkodnak, 747 m és 750 m között járnak.",
+      "fields": [
+        {
+          "id": "height",
+          "label": "Milyen magasan járnak?",
+          "options": [
+            "734 m és 747 m között",
+            "Pontosan 747 m-en",
+            "747 m és 750 m között",
+            "Pontosan 750 m-en"
+          ],
+          "answer": "747 m és 750 m között",
+          "kind": "choice"
+        }
+      ],
+      "topics": [
+        "logika"
+      ]
+    },
+    {
+      "id": "ablak",
+      "title": "Ki törte be az ablakot?",
+      "tags": [
+        "igaz-hamis"
+      ],
+      "text": "Dobosi, Juli, Mobil és Zsuzsi közül valaki betört egy ablakot. Ezt mondták a négyen.",
+      "lines": [
+        [
+          "Dobosi",
+          "Mobil volt."
+        ],
+        [
+          "Juli",
+          "Nem én voltam."
+        ],
+        [
+          "Mobil",
+          "Juli volt."
+        ],
+        [
+          "Zsuzsi",
+          "Mobil hazudik."
+        ]
+      ],
+      "hints": [
+        "Melyik két ember állítása zárja ki egymást úgy, hogy egyikük biztosan igazat mond?",
+        "Készíts négy sort, egyet-egyet minden lehetséges tettesnek. Mindegyik sorban számold meg az igaz állításokat."
+      ],
+      "solution": "Mobil és Zsuzsi állítása egymás tagadása. Ha Juli a tettes, csak Mobil mond igazat. Ha Mobil a tettes, egyedül Mobil állítása hamis. Ha Dobosi vagy Zsuzsi a tettes, akkor Juli és Zsuzsi állítása igaz. Így a) Juli, b) Mobil.",
+      "fields": [
+        {
+          "id": "one-true",
+          "label": "a) Ki a tettes, ha pontosan egy gyerek mondott igazat?",
+          "options": [
+            "Dobosi",
+            "Juli",
+            "Mobil",
+            "Zsuzsi"
+          ],
+          "answer": "Juli",
+          "kind": "choice"
+        },
+        {
+          "id": "one-false",
+          "label": "b) Ki a tettes, ha pontosan egy gyerek hazudott?",
+          "options": [
+            "Dobosi",
+            "Juli",
+            "Mobil",
+            "Zsuzsi"
+          ],
+          "answer": "Mobil",
+          "kind": "choice"
+        }
+      ],
+      "activity": "truth",
+      "topics": [
+        "logika"
+      ]
+    },
+    {
+      "id": "kirandulok",
+      "title": "Hányan kirándulnak?",
+      "tags": [
+        "egyenlőtlenség"
+      ],
+      "text": "Juli szerint huszonhatnál többen, Zsuzsi szerint huszonötnél többen vannak az osztálykiránduláson. Pontosan az egyik állítás igaz.",
+      "hints": [
+        "Ha Juli állítása igaz lenne, mi következne Zsuzsi állítására?",
+        "Írd le, legalább és legfeljebb hányan lehetnek, ha csak Zsuzsinak van igaza."
+      ],
+      "solution": "Ha 26-nál többen lennének, mindketten igazat mondanának. Csak Zsuzsinak lehet igaza, így a létszám 25-nél nagyobb és legfeljebb 26. Pontosan 26-an vannak.",
+      "fields": [
+        {
+          "id": "count",
+          "label": "Hányan vannak a kiránduláson?",
+          "answer": 26,
+          "kind": "number"
+        }
+      ],
+      "topics": [
+        "logika"
+      ]
+    },
+    {
+      "id": "kerekasztal",
+      "title": "Tizenketten a kerekasztalnál",
+      "tags": [
+        "igaz-hamis",
+        "mintázat"
+      ],
+      "text": "Egy asztal körül 12 ember ül. Az igazmondók mindig igazat mondanak, a hazudósok mindig hazudnak. Mindannyian ezt állítják: „Egy igazmondó és egy hazudós között ülök.” Ezután mindenkitől megkérdezzük: „Igaz-e, hogy valamelyik szomszédod igazmondó?”",
+      "hints": [
+        "Ha két egymás mellett ülőről tudod, melyik fajtához tartoznak, meg tudod mondani, milyen a következő ember?",
+        "A két szomszéd különbözősége dönti el, hogy a középső igazmondó-e. Próbáld ki a HH és a HI kezdetet. Mi ismétlődik?"
+      ],
+      "solution": "A középső ember pontosan akkor igazmondó, ha a két szomszédja különböző. Két egymás melletti ember típusa tehát meghatározza a következőét. HH kezdetből mindenki hazudós lesz. Mindenki nemet mondana igaz válaszként, ezért mind a 12-en igennel felelnek. A többi kezdésnél két igazmondóból és egy hazudósból álló hármas ismétlődik. Mindenkinek van igazmondó szomszédja, így csak a nyolc igazmondó felel igennel. Lehetséges válaszok: 8 és 12.",
+      "fields": [
+        {
+          "id": "counts",
+          "label": "Hány „igen” hangozhat el? Add meg az összes lehetőséget.",
+          "answer": [
+            8,
+            12
+          ],
+          "kind": "numberSet"
+        }
+      ],
+      "topics": [
+        "logika"
+      ]
+    },
+    {
+      "id": "magassag",
+      "title": "Öt ember, tíz állítás",
+      "tags": [
+        "igaz-hamis",
+        "ellentmondás"
+      ],
+      "text": "Öt különböző magasságú ember két-két állítást mond. Ugyanaz az ember mondhat igazat az egyik állításában és valótlant a másikban.",
+      "lines": [
+        [
+          "Anna",
+          "Magasabb vagyok, mint Béla. Két magasabb és két alacsonyabb ember van nálam."
+        ],
+        [
+          "Béla",
+          "Magasabb vagyok, mint Endre. Dénes a legmagasabb."
+        ],
+        [
+          "Csaba",
+          "Anna mindkét állítása igaz. Magasabb vagyok, mint Endre."
+        ],
+        [
+          "Dénes",
+          "Alacsonyabb vagyok, mint Csaba. Endre a második legmagasabb."
+        ],
+        [
+          "Endre",
+          "Béla mindkét állítása hamis. Magasabb vagyok, mint Anna."
+        ]
+      ],
+      "hints": [
+        "Ha Endre első állítása igaz, legalább hány hamis állítás van?",
+        "Hasonlítsd össze Béla második és Dénes első állítását. A b) részhez próbáld úgy sorba rendezni az embereket, hogy csak Béla két állítása legyen hamis."
+      ],
+      "solution": "a) Nem. Ha Endre első állítása igaz, Béla két állítása hamis. Ha Endre első állítása hamis, akkor az egyetlen hamis állítás már megvan. Viszont egyszerre nem lehet igaz, hogy Dénes a legmagasabb és hogy Csaba magasabb nála.\nb) Igen. Például csökkenő sorrendben: Csaba, Endre, Anna, Dénes, Béla. Ebben a sorrendben pontosan Béla két állítása hamis.",
+      "fields": [
+        {
+          "id": "one",
+          "label": "a) Lehet pontosan egy hamis állítás?",
+          "options": [
+            "Igen",
+            "Nem"
+          ],
+          "answer": "Nem",
+          "kind": "choice"
+        },
+        {
+          "id": "two",
+          "label": "b) Lehet pontosan két hamis állítás?",
+          "options": [
+            "Igen",
+            "Nem"
+          ],
+          "answer": "Igen",
+          "kind": "choice"
+        },
+        {
+          "id": "example",
+          "label": "Indokold az a) választ, és adj példát a b) részhez.",
+          "kind": "text"
+        }
+      ],
+      "topics": [
+        "logika"
+      ]
+    },
+    {
+      "id": "csoki",
+      "title": "Az öt eltűnt csoki",
+      "tags": [
+        "igaz-hamis",
+        "esetszétválasztás"
+      ],
+      "text": "Eltűnt az anyuka által félretett öt tábla csoki. A táblákat csak Kati, Ila és Sanyi vihette el. Mindhárman először azt állították, hogy egyik táblához sem nyúltak. Utána így folytatták.",
+      "lines": [
+        [
+          "Kati",
+          "Ila többet vett el, mint Sanyi!"
+        ],
+        [
+          "Ila, Katinak",
+          "Hazudsz!"
+        ],
+        [
+          "Sanyi",
+          "Kati és Ila vette el mindet!"
+        ],
+        [
+          "Kati, Sanyinak",
+          "Hazudsz!"
+        ]
+      ],
+      "followup": "Minden gyerek pontosan annyiszor állított hamisat, ahány tábla csokit elvett.",
+      "hints": [
+        "Sanyi két mondata ugyanazt állítja a saját részéről. Hány tábla csoki lehet nála?",
+        "Ha Sanyi evett csokit, mindkét mondata hamis. Ekkor Ila Katinak mondott állítása igaz, mert Ilánál nem lehet kettőnél több tábla: ennél csak két állítást tett."
+      ],
+      "solution": "Jelölje K, I, S a kivett táblák számát. Sanyi mindkét állítása pontosan akkor igaz, ha S = 0. Ezért S értéke 0 vagy 2.\nHa S = 0, Ila vagy egyet sem vett el, vagy mindkét állítása hamis, így kettőt vett el. Ha I = 0, K = 5 lenne, pedig Kati csak háromszor beszélt. Ha I = 2, K = 3 lenne, de Katinál ilyenkor csak a tagadás és a Sanyinak mondott „Hazudsz!” hamis.\nEzért S = 2. Ila Katinak mondott állítása igaz, mivel Ila legfeljebb két táblát vihetett el. Így I = 0 vagy 1. Ha I = 0, K = 3, de Kati Sanyinak igazat mondott volna. Marad K = 2, I = 1, S = 2. Ezeknél Kati első két, Ila első és Sanyi mindkét állítása hamis.",
+      "fields": [
+        {
+          "id": "kati",
+          "label": "Kati",
+          "answer": 2,
+          "kind": "number"
+        },
+        {
+          "id": "ila",
+          "label": "Ila",
+          "answer": 1,
+          "kind": "number"
+        },
+        {
+          "id": "sanyi",
+          "label": "Sanyi",
+          "answer": 2,
+          "kind": "number"
+        }
+      ],
+      "topics": [
+        "logika"
+      ]
+    }
+  ]
+}
