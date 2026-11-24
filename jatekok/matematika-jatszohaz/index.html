@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Matematika Játszóház</title>
-  <style>body { margin: 0; background: #f5f5fc; }</style>
-  <style>
+  <style>body { margin:0; background:#f5f5fc; }
+
 #matek-jatszohaz {
   --ink:#202342; --muted:#505673; --paper:#f5f5fc; --line:#dedff0;
   --accent:#4935a9; --pale:#eae4ff; --navy:#26224b; --green:#126342;
@@ -87,6 +87,66 @@
 @media (max-width:530px) {
   #matek-jatszohaz .set-card { grid-template-columns:1fr }
   #matek-jatszohaz .playing-cards .answer-card { height:62px }
+}
+
+#matek-jatszohaz .dialogue { margin:13px 0; padding:8px 12px; border-left:3px solid var(--line); background:var(--paper); border-radius:0 9px 9px 0 }
+#matek-jatszohaz .dialogue div { display:grid; grid-template-columns:minmax(100px, 123px) minmax(0, 1fr); gap:8px; padding:4px 0 }
+#matek-jatszohaz .dialogue dt { font-weight:700 }
+#matek-jatszohaz .dialogue dd { margin:0 }
+#matek-jatszohaz figure { margin:12px 0 0; padding:8px; max-width:360px; border:1px solid var(--line); border-radius:12px; background:var(--paper) }
+#matek-jatszohaz figure svg { display:block; width:100%; height:auto; overflow:hidden }
+#matek-jatszohaz figure svg text { fill:var(--ink); font-family:system-ui,sans-serif; font-size:14px; font-weight:650 }
+#matek-jatszohaz figcaption { margin-top:4px; font-weight:650; text-align:center }
+#matek-jatszohaz .figure-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 225px), 1fr)); gap:8px }
+#matek-jatszohaz .diagram-edge { fill:none; stroke:var(--ink); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round }
+#matek-jatszohaz .diagram-fill { fill:#eeebfc }
+#matek-jatszohaz .diagram-guide { stroke:#5f518c; stroke-dasharray:4 4 }
+#matek-jatszohaz .diagram-accent { stroke:var(--accent); stroke-width:2.8 }
+#matek-jatszohaz .diagram-point { fill:var(--ink) }
+#matek-jatszohaz .weight { stroke:var(--ink); stroke-width:1.35 }
+#matek-jatszohaz .weight.square { fill:#9283ce }
+#matek-jatszohaz .weight.round { fill:#cbe0ef }
+#matek-jatszohaz .weight.triangle { fill:#ffd498 }
+#matek-jatszohaz .weight.pentagon { fill:#a7dcc3 }
+#matek-jatszohaz .solution .button { margin-top:10px }
+@media (max-width:420px) { #matek-jatszohaz .dialogue div { grid-template-columns:1fr; gap:0 } }
+
+#matek-jatszohaz .activity { margin:18px 0; padding:clamp(9px,3vw,16px); border:1px solid var(--line); border-radius:14px; background:var(--paper) }
+#matek-jatszohaz .activity h2 { font-size:1.19rem; margin-bottom:5px }
+#matek-jatszohaz .activity-steps, #matek-jatszohaz .activity-actions, #matek-jatszohaz .activity-note { margin-top:11px }
+#matek-jatszohaz .activity-steps + .cluster { margin-top:11px }
+#matek-jatszohaz .activity-note { margin-bottom:8px }
+#matek-jatszohaz .activity .button[aria-pressed=true] { background:var(--pale); color:var(--accent); border-color:var(--accent) }
+#matek-jatszohaz .scale-weights { display:grid; grid-template-columns:repeat(9,minmax(37px,1fr)); gap:5px; margin:8px 0 }
+#matek-jatszohaz .scale-weight { min-height:48px; padding:2px 4px; border:1px solid #aaa6ca; border-radius:9px; background:#fff; color:var(--ink); font-weight:700 }
+#matek-jatszohaz .scale-weight:hover { border-color:var(--accent) }
+#matek-jatszohaz .scale-weight small { display:block; font-size:.76rem; font-weight:750; line-height:1.10 }
+#matek-jatszohaz .scale-weight[data-place=left] { background:var(--pale); border-color:var(--accent); color:var(--accent) }
+#matek-jatszohaz .scale-weight[data-place=right] { background:#e0f1f3; border-color:#26626b; color:#1b525d }
+#matek-jatszohaz .scale-trays { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:9px 0 6px }
+#matek-jatszohaz .scale-tray { display:grid; text-align:center; padding:5px 3px; border:1px solid #a7a6c4; border-radius:4px 4px 15px 15px; background:#fff; font-variant-numeric:tabular-nums }
+#matek-jatszohaz .scale-tray span { color:var(--muted) }
+#matek-jatszohaz .truth-table { margin:9px 0; table-layout:fixed; border-collapse:separate; border-spacing:2px; width:100%; max-width:560px }
+#matek-jatszohaz .truth-table th, #matek-jatszohaz .truth-table td { padding:1px; text-align:center; overflow-wrap:anywhere; font-size:.88rem }
+#matek-jatszohaz .truth-table tr.selected > * { background:#e5dfff }
+#matek-jatszohaz .truth-name, #matek-jatszohaz .truth-cell { min-height:44px; padding:2px; width:100%; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); font-weight:650 }
+#matek-jatszohaz .truth-name[aria-pressed=true] { color:var(--accent); background:var(--pale); border-color:var(--accent) }
+#matek-jatszohaz .truth-cell[data-sign=I] { background:#e3f2ec; color:var(--green) }
+#matek-jatszohaz .truth-cell[data-sign=H] { background:#fff0db; color:var(--brown) }
+#matek-jatszohaz .truth-cell[data-checked=correct] { border-color:var(--green) }
+#matek-jatszohaz .truth-cell[data-checked=wrong] { border:2px dashed #a13e36; background:#fae6e3; color:#7e342c }
+#matek-jatszohaz .geo-emphasis { fill:none; stroke:var(--accent); stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round }
+#matek-jatszohaz .geo-guide { fill:none; stroke:#874318; stroke-width:2.5; stroke-linecap:round; stroke-dasharray:5 4 }
+#matek-jatszohaz .geo-region { fill:#b9a9f4; fill-opacity:.35; stroke:none }
+#matek-jatszohaz .geo-region.geo-reflection { fill:#efb46d; fill-opacity:.49 }
+#matek-jatszohaz .geo-point { fill:var(--accent) }
+#matek-jatszohaz #jh-task-figure figcaption { font-size:.88rem; padding:0 5px 4px; text-align:left }
+@media (max-width:590px) {
+  #matek-jatszohaz .scale-weights { grid-template-columns:repeat(5,minmax(0,1fr)) }
+}
+@media (max-width:375px) {
+  #matek-jatszohaz .truth-table { border-spacing:1px }
+  #matek-jatszohaz .truth-table th, #matek-jatszohaz .truth-table td { font-size:.78rem }
 }
 </style>
 </head>
@@ -267,10 +327,923 @@
         ]
       }
     ]
+  },
+  {
+    "id": "ki-hazudik",
+    "title": "Ki hazudik?",
+    "description": "Kirándulás, ablakbetörés és öt eltűnt tábla csoki. Kinek hihetsz?",
+    "tasks": [
+      {
+        "id": "hegyek",
+        "title": "Melyik hegyen járnak?",
+        "tags": [
+          "logika",
+          "igaz-hamis",
+          "ellentmondás"
+        ],
+        "text": "Egy osztály öt hegycsúcsra mászik fel, mindegyikre pontosan egyszer. A csúcsok: Szárkő (750 m), Borsó-hegy (747 m), Magoska (734 m), Bohó-hegy (733 m) és Nagy Szárkő (729 m). Séta közben mindenki mond valamit, és pontosan egyvalaki állítása hamis.",
+        "lines": [
+          [
+            "Tanár úr",
+            "Megyünk még magasabbra is."
+          ],
+          [
+            "Juli",
+            "Magasabban vagyunk, mint tegnap."
+          ],
+          [
+            "Dobosi",
+            "Juli hazudik."
+          ],
+          [
+            "Mobil",
+            "Te hazudsz, Dobosi!"
+          ],
+          [
+            "Zsuzsi",
+            "Tegnap a Borsó-hegyen voltunk."
+          ]
+        ],
+        "hints": [
+          "Dobosi és Mobil közül hányan mondhatnak igazat?",
+          "Ha Juli és Zsuzsi igazat mond, milyen alsó határt kapsz a magasságra? Mit mond a felső határról a tanár úr?"
+        ],
+        "solution": "Dobosi és Mobil állítása egymás tagadása, így egyikük biztosan hazudik. Mindenki más igazat mond. Tegnap a Borsó-hegyen, 747 méteren jártak. Most ennél magasabban vannak. A tanár úr szerint még magasabbra is mennek, ezért a 750 méteres csúcsra még nem értek fel. A Szárkőre kapaszkodnak, 747 m és 750 m között járnak.",
+        "fields": [
+          {
+            "id": "height",
+            "label": "Milyen magasan járnak?",
+            "options": [
+              "734 m és 747 m között",
+              "Pontosan 747 m-en",
+              "747 m és 750 m között",
+              "Pontosan 750 m-en"
+            ],
+            "answer": "747 m és 750 m között",
+            "kind": "choice"
+          }
+        ]
+      },
+      {
+        "id": "ablak",
+        "title": "Ki törte be az ablakot?",
+        "tags": [
+          "logika",
+          "igaz-hamis"
+        ],
+        "text": "Dobosi, Juli, Mobil és Zsuzsi közül valaki betört egy ablakot. Ezt mondták a négyen.",
+        "lines": [
+          [
+            "Dobosi",
+            "Mobil volt."
+          ],
+          [
+            "Juli",
+            "Nem én voltam."
+          ],
+          [
+            "Mobil",
+            "Juli volt."
+          ],
+          [
+            "Zsuzsi",
+            "Mobil hazudik."
+          ]
+        ],
+        "hints": [
+          "Melyik két ember állítása zárja ki egymást úgy, hogy egyikük biztosan igazat mond?",
+          "Készíts négy sort, egyet-egyet minden lehetséges tettesnek. Mindegyik sorban számold meg az igaz állításokat."
+        ],
+        "solution": "Mobil és Zsuzsi állítása egymás tagadása. Ha Juli a tettes, csak Mobil mond igazat. Ha Mobil a tettes, egyedül Mobil állítása hamis. Ha Dobosi vagy Zsuzsi a tettes, akkor Juli és Zsuzsi állítása igaz. Így a) Juli, b) Mobil.",
+        "fields": [
+          {
+            "id": "one-true",
+            "label": "a) Ki a tettes, ha pontosan egy gyerek mondott igazat?",
+            "options": [
+              "Dobosi",
+              "Juli",
+              "Mobil",
+              "Zsuzsi"
+            ],
+            "answer": "Juli",
+            "kind": "choice"
+          },
+          {
+            "id": "one-false",
+            "label": "b) Ki a tettes, ha pontosan egy gyerek hazudott?",
+            "options": [
+              "Dobosi",
+              "Juli",
+              "Mobil",
+              "Zsuzsi"
+            ],
+            "answer": "Mobil",
+            "kind": "choice"
+          }
+        ],
+        "activity": "truth"
+      },
+      {
+        "id": "kirandulok",
+        "title": "Hányan kirándulnak?",
+        "tags": [
+          "logika",
+          "egyenlőtlenség"
+        ],
+        "text": "Juli szerint huszonhatnál többen, Zsuzsi szerint huszonötnél többen vannak az osztálykiránduláson. Pontosan az egyik állítás igaz.",
+        "hints": [
+          "Ha Juli állítása igaz lenne, mi következne Zsuzsi állítására?",
+          "Írd le, legalább és legfeljebb hányan lehetnek, ha csak Zsuzsinak van igaza."
+        ],
+        "solution": "Ha 26-nál többen lennének, mindketten igazat mondanának. Csak Zsuzsinak lehet igaza, így a létszám 25-nél nagyobb és legfeljebb 26. Pontosan 26-an vannak.",
+        "fields": [
+          {
+            "id": "count",
+            "label": "Hányan vannak a kiránduláson?",
+            "answer": 26,
+            "kind": "number"
+          }
+        ]
+      },
+      {
+        "id": "kerekasztal",
+        "title": "Tizenketten a kerekasztalnál",
+        "tags": [
+          "logika",
+          "igaz-hamis",
+          "mintázat"
+        ],
+        "text": "Egy asztal körül 12 ember ül. Az igazmondók mindig igazat mondanak, a hazudósok mindig hazudnak. Mindannyian ezt állítják: „Egy igazmondó és egy hazudós között ülök.” Ezután mindenkitől megkérdezzük: „Igaz-e, hogy valamelyik szomszédod igazmondó?”",
+        "hints": [
+          "Ha két egymás mellett ülőről tudod, melyik fajtához tartoznak, meg tudod mondani, milyen a következő ember?",
+          "A két szomszéd különbözősége dönti el, hogy a középső igazmondó-e. Próbáld ki a HH és a HI kezdetet. Mi ismétlődik?"
+        ],
+        "solution": "A középső ember pontosan akkor igazmondó, ha a két szomszédja különböző. Két egymás melletti ember típusa tehát meghatározza a következőét. HH kezdetből mindenki hazudós lesz. Mindenki nemet mondana igaz válaszként, ezért mind a 12-en igennel felelnek. A többi kezdésnél két igazmondóból és egy hazudósból álló hármas ismétlődik. Mindenkinek van igazmondó szomszédja, így csak a nyolc igazmondó felel igennel. Lehetséges válaszok: 8 és 12.",
+        "fields": [
+          {
+            "id": "counts",
+            "label": "Hány „igen” hangozhat el? Add meg az összes lehetőséget.",
+            "answer": [
+              8,
+              12
+            ],
+            "kind": "numberSet"
+          }
+        ]
+      },
+      {
+        "id": "magassag",
+        "title": "Öt ember, tíz állítás",
+        "tags": [
+          "logika",
+          "igaz-hamis",
+          "ellentmondás"
+        ],
+        "text": "Öt különböző magasságú ember két-két állítást mond. Ugyanaz az ember mondhat igazat az egyik állításában és valótlant a másikban.",
+        "lines": [
+          [
+            "Anna",
+            "Magasabb vagyok, mint Béla. Két magasabb és két alacsonyabb ember van nálam."
+          ],
+          [
+            "Béla",
+            "Magasabb vagyok, mint Endre. Dénes a legmagasabb."
+          ],
+          [
+            "Csaba",
+            "Anna mindkét állítása igaz. Magasabb vagyok, mint Endre."
+          ],
+          [
+            "Dénes",
+            "Alacsonyabb vagyok, mint Csaba. Endre a második legmagasabb."
+          ],
+          [
+            "Endre",
+            "Béla mindkét állítása hamis. Magasabb vagyok, mint Anna."
+          ]
+        ],
+        "hints": [
+          "Ha Endre első állítása igaz, legalább hány hamis állítás van?",
+          "Hasonlítsd össze Béla második és Dénes első állítását. A b) részhez próbáld úgy sorba rendezni az embereket, hogy csak Béla két állítása legyen hamis."
+        ],
+        "solution": "a) Nem. Ha Endre első állítása igaz, Béla két állítása hamis. Ha Endre első állítása hamis, akkor az egyetlen hamis állítás már megvan. Viszont egyszerre nem lehet igaz, hogy Dénes a legmagasabb és hogy Csaba magasabb nála.\nb) Igen. Például csökkenő sorrendben: Csaba, Endre, Anna, Dénes, Béla. Ebben a sorrendben pontosan Béla két állítása hamis.",
+        "fields": [
+          {
+            "id": "one",
+            "label": "a) Lehet pontosan egy hamis állítás?",
+            "options": [
+              "Igen",
+              "Nem"
+            ],
+            "answer": "Nem",
+            "kind": "choice"
+          },
+          {
+            "id": "two",
+            "label": "b) Lehet pontosan két hamis állítás?",
+            "options": [
+              "Igen",
+              "Nem"
+            ],
+            "answer": "Igen",
+            "kind": "choice"
+          },
+          {
+            "id": "example",
+            "label": "Indokold az a) választ, és adj példát a b) részhez.",
+            "kind": "text"
+          }
+        ]
+      },
+      {
+        "id": "csoki",
+        "title": "Az öt eltűnt csoki",
+        "tags": [
+          "logika",
+          "igaz-hamis",
+          "esetszétválasztás"
+        ],
+        "text": "Eltűnt az anyuka által félretett öt tábla csoki. A táblákat csak Kati, Ila és Sanyi vihette el. Mindhárman először azt állították, hogy egyik táblához sem nyúltak. Utána így folytatták.",
+        "lines": [
+          [
+            "Kati",
+            "Ila többet vett el, mint Sanyi!"
+          ],
+          [
+            "Ila, Katinak",
+            "Hazudsz!"
+          ],
+          [
+            "Sanyi",
+            "Kati és Ila vette el mindet!"
+          ],
+          [
+            "Kati, Sanyinak",
+            "Hazudsz!"
+          ]
+        ],
+        "followup": "Minden gyerek pontosan annyiszor állított hamisat, ahány tábla csokit elvett.",
+        "hints": [
+          "Sanyi két mondata ugyanazt állítja a saját részéről. Hány tábla csoki lehet nála?",
+          "Ha Sanyi evett csokit, mindkét mondata hamis. Ekkor Ila Katinak mondott állítása igaz, mert Ilánál nem lehet kettőnél több tábla: ennél csak két állítást tett."
+        ],
+        "solution": "Jelölje K, I, S a kivett táblák számát. Sanyi mindkét állítása pontosan akkor igaz, ha S = 0. Ezért S értéke 0 vagy 2.\nHa S = 0, Ila vagy egyet sem vett el, vagy mindkét állítása hamis, így kettőt vett el. Ha I = 0, K = 5 lenne, pedig Kati csak háromszor beszélt. Ha I = 2, K = 3 lenne, de Katinál ilyenkor csak a tagadás és a Sanyinak mondott „Hazudsz!” hamis.\nEzért S = 2. Ila Katinak mondott állítása igaz, mivel Ila legfeljebb két táblát vihetett el. Így I = 0 vagy 1. Ha I = 0, K = 3, de Kati Sanyinak igazat mondott volna. Marad K = 2, I = 1, S = 2. Ezeknél Kati első két, Ila első és Sanyi mindkét állítása hamis.",
+        "fields": [
+          {
+            "id": "kati",
+            "label": "Kati",
+            "answer": 2,
+            "kind": "number"
+          },
+          {
+            "id": "ila",
+            "label": "Ila",
+            "answer": 1,
+            "kind": "number"
+          },
+          {
+            "id": "sanyi",
+            "label": "Sanyi",
+            "answer": 2,
+            "kind": "number"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "merlegeljunk",
+    "title": "Mérlegeljünk!",
+    "description": "Találd meg a hibás súlyt, és számold ki, hány mérés elég.",
+    "tasks": [
+      {
+        "id": "ermek",
+        "title": "Száz doboznyi érme",
+        "tags": [
+          "mérlegelés",
+          "stratégia"
+        ],
+        "text": "Száz dobozban száz-száz érme van. Pontosan egy dobozban minden érme hamis, a többi dobozban mindegyik valódi. A valódi érmék 10 g-osak, a hamisak 9 g-osak. A mérleg gramm pontossággal mutatja a rátett érmék össztömegét.",
+        "hints": [
+          "Mi történik a várt tömeggel minden egyes hamis érme miatt?",
+          "Vegyél ki különböző számú érmét a különböző dobozokból. Mit olvasol ki a tömeghiányból?"
+        ],
+        "solution": "Egyetlen mérés elég. Számozd meg a dobozokat 1-től 100-ig. Az i-edikből vegyél ki i érmét, és mérd meg az összes kivett érmét együtt. Összesen 5050 érme kerül a mérlegre. Ha mind valódi volna, 50 500 g-ot mutatna. Minden hamis érme 1 g-mal csökkenti a tömeget. Ahány gramm a hiány, az a hamis érmés doboz sorszáma.",
+        "fields": [
+          {
+            "id": "weighings",
+            "label": "Legkevesebb hány mérés elég?",
+            "answer": 1,
+            "kind": "number"
+          },
+          {
+            "id": "plan",
+            "label": "Mit tennél a mérlegre, és hogyan értelmeznéd az eredményt?",
+            "kind": "text"
+          }
+        ]
+      },
+      {
+        "id": "nyolc",
+        "title": "Nyolc súly összehasonlítása",
+        "tags": [
+          "mérlegelés",
+          "stratégia",
+          "minimum"
+        ],
+        "text": "Nyolc külsőre egyforma, különböző tömegű súlyod van. A kétkarú mérlegen egy mérésben két súlyt hasonlíthatsz össze. Mindhárom kérdésnél a legrosszabb esetre keresd a legkevesebb szükséges mérést.",
+        "hints": [
+          "A legnehezebb keresésekor egy mérés után melyik súly esik ki biztosan a jelöltek közül?",
+          "A minimum és maximum kereséséhez először alkoss négy párt. A két legnehezebbhez gondold végig, kiktől kaphatott ki a második helyezett."
+        ],
+        "solution": "a) 7 mérés. A kieséses versenyben minden mérés után a könnyebb kiesik. Mind a hét kiesőnek legalább egyszer veszítenie kell.\nb) 10 mérés. Először összehasonlítjuk a négy párt. A győztesek között 3 mérés elég a legnehezebbhez, a vesztesek között 3 a legkönnyebbhez. Összesen 4 + 3 + 3. A két szélsőérték megtalálásához 14 jelöltséget kell megszüntetni: hét súlynak ki kell esnie a minimum, hétnek a maximum jelöltjei közül. A legrosszabb esethez olyan mérési eredményeket válasszunk, ahol a már győztes jelölt nehezebb a már vesztes jelöltnél, a még méretlen súly pedig közéjük esik. Ekkor csak két méretlen súly összemérése zár ki egyszerre két jelöltséget. Ilyen mérésből legfeljebb négy van. A többi mérés legfeljebb egy jelöltséget zár ki, ezért 10-nél kevesebb mérés nem elég.\nc) 9 mérés. Háromfordulós kieséses versenyben a győztesnek három közvetlen ellenfele volt. A második legnehezebb csak közülük kerülhet ki. Köztük 2 újabb mérés elég, tehát 7 + 2 = 9. Az alsó korláthoz kezdetben minden még veretlen súly egyetlen jelöltet képvisel. Két veretlen összehasonlításakor a több jelöltet képviselőt tekintjük a nehezebbnek, holtversenyben választhatunk. A végső győztes minden ilyen győzelmével legfeljebb megkétszerezi az általa képviselt jelöltek számát. A nyolc jelölt összegyűjtéséhez legalább három ilyen győzelem kell. A közvetlen ellenfelekből legalább kettőt további összehasonlítással kell kizárni, mert mindegyik a győztestől kapta az első vereségét.",
+        "fields": [
+          {
+            "id": "heaviest",
+            "label": "a) A legnehezebb súly",
+            "answer": 7,
+            "kind": "number"
+          },
+          {
+            "id": "extremes",
+            "label": "b) A legkönnyebb és a legnehezebb súly",
+            "answer": 10,
+            "kind": "number"
+          },
+          {
+            "id": "top-two",
+            "label": "c) A két legnehezebb súly",
+            "answer": 9,
+            "kind": "number"
+          },
+          {
+            "id": "plans",
+            "label": "Írd le röviden a három eljárást.",
+            "kind": "text"
+          }
+        ]
+      },
+      {
+        "id": "sulykeszlet",
+        "title": "Egytől negyven grammig",
+        "tags": [
+          "mérlegelés",
+          "minimum",
+          "mintázat"
+        ],
+        "text": "Egy kétkarú mérlegen 1-től 40-ig minden egész grammot szeretnénk mérni. A súlyokat a mérendő tárggyal azonos serpenyőbe is teheted.",
+        "hints": [
+          "Egy adott súlynak hány helye lehet egy mérésben?",
+          "Egy 1 g-os és egy 3 g-os súllyal mérhető 2 g is. Próbáld ki utána a 9 g-os súlyt. Meddig jutsz?"
+        ],
+        "solution": "Négy súly elég: 1, 3, 9 és 27 g. Az 1 g-os súllyal a −1 és 1 közötti különbségeket állíthatod elő. Ha hozzáadod a 3 g-os súlyt, a −4-től 4-ig tartó egész tartományt kapod. A 9 g-os súllyal ez −13-tól 13-ig, a 27 g-ossal pedig −40-től 40-ig bővül. Például 20 = 27 − 9 + 3 − 1.\nHárom súlynál 3³ = 27 elrendezés van. Az elrendezések az oldalak felcserélésével párokba rendezhetők, és a 0 gramm nem pozitív tömeg. Így három súly legfeljebb 13 különböző pozitív tömeget ad.",
+        "fields": [
+          {
+            "id": "count",
+            "label": "Legkevesebb hány súlyra van szükség?",
+            "answer": 4,
+            "kind": "number"
+          },
+          {
+            "id": "weights",
+            "label": "Mekkorák az egyes súlyok grammban?",
+            "answer": [
+              1,
+              3,
+              9,
+              27
+            ],
+            "kind": "numberSet"
+          },
+          {
+            "id": "minimum",
+            "label": "Miért elég ez a készlet, és miért nem elég kevesebb súly?",
+            "kind": "text"
+          }
+        ]
+      },
+      {
+        "id": "kilenc",
+        "title": "Kilenc súly, egy nehezebb",
+        "tags": [
+          "mérlegelés",
+          "stratégia",
+          "minimum"
+        ],
+        "text": "Kilenc egyformának látszó súly közül az egyik 1 g-mal nehezebb. A többi nyolc pontosan egyforma tömegű. Kétkarú mérleggel keresed a nehezebbet.",
+        "hints": [
+          "Hányféle eredményt adhat egy mérés? Az egyensúly is mondhat valamit.",
+          "Bontsd három egyforma csoportra a súlyokat. Melyik csoport marad gyanús a három lehetséges kimenetelnél?"
+        ],
+        "solution": "Két mérés elég. Oszd a súlyokat három hármas csoportba, és hasonlíts össze két csoportot. Ha az egyik nehezebb, abban van a hibás, egyensúlynál pedig a kimaradó hármasban. A gyanús hármasból két súlyt mérj össze. Az egyik nehezebb lesz, vagy egyensúlynál a harmadik a keresett. Egy mérés csak háromféleképpen végződhet, így a kilenc lehetőséghez kevés.",
+        "fields": [
+          {
+            "id": "count",
+            "label": "Legkevesebb hány mérés elég?",
+            "answer": 2,
+            "kind": "number"
+          },
+          {
+            "id": "plan",
+            "label": "Írd le az első mérést, majd azt, mit tennél az egyes kimeneteleknél.",
+            "kind": "text"
+          }
+        ],
+        "activity": "scale"
+      },
+      {
+        "id": "tizenketto",
+        "title": "Tizenkét súly, egy hibás",
+        "tags": [
+          "mérlegelés",
+          "stratégia",
+          "minimum",
+          "esetszétválasztás"
+        ],
+        "text": "Tizenkét egyformának látszó súly közül az egyik 1 g-mal könnyebb vagy nehezebb a többinél. Keresd meg kétkarú mérleggel a hibás súlyt. Arra is gondolj, hogyan tudhatod meg, melyik irányban tér el a tömege.",
+        "hints": [
+          "Kezdj négy súly és négy súly összehasonlításával. Melyek lesznek biztosan jók, ha a mérleg egyensúlyban van? És ha elbillen?",
+          "Ha elbillent, az egyik oldal gyanús súlyai csak nehezebbek, a másik oldaléi csak könnyebbek lehetnek. A következő mérésben cserélj meg néhány súlyt, és használj egy biztosan jó súlyt is."
+        ],
+        "solution": "Három mérés elég. Először hasonlítsd össze az 1–4. súlyt az 5–8. súllyal.\nHa egyensúlyban vannak, mérd a 9., 10. és 11. súlyt három jó súllyal szemben. Egyensúlynál a 12. a hibás, az utolsó mérésben egy jó súllyal hasonlíthatod össze. Ha a mérleg elbillen, tudod, hogy a 9., 10., 11. közül keress nehezebbet vagy könnyebbet. A 9. és a 10. összehasonlítása dönt.\nHa az első mérés elbillent, a nehezebb oldal négy súlya legyen H₁, H₂, H₃, H₄, a könnyebb oldalé L₁, L₂, L₃, L₄. G legyen egy biztosan jó súly. Másodszor mérd H₁, H₂, L₁-et H₃, L₂, G ellenében. Balra billenésnél H₁, H₂ vagy L₂ gyanús. H₁-et H₂-vel mérd, egyensúlynál L₂ a hibás. Jobbra billenésnél H₃ vagy L₁ gyanús. H₃-at G-vel mérd. Egyensúlynál H₄, L₃ vagy L₄ gyanús. L₃-at L₄-gyel mérd, egyensúlynál H₄ a hibás.\nKét mérésnek legfeljebb 9 kimenetelsora lehet, ami még a 12 súly megkülönböztetéséhez is kevés.",
+        "fields": [
+          {
+            "id": "count",
+            "label": "Legkevesebb hány mérés elég?",
+            "answer": 3,
+            "kind": "number"
+          },
+          {
+            "id": "plan",
+            "label": "Írd le a mérési tervedet egyensúlyra és elbillenésre is.",
+            "kind": "text"
+          }
+        ]
+      },
+      {
+        "id": "alakzatok",
+        "title": "Alakzatok a mérlegen",
+        "tags": [
+          "mérlegelés",
+          "egyenlet",
+          "logika"
+        ],
+        "text": "Egészítsd ki mindkét ábrán az alsó mérleget úgy, hogy egyensúlyba kerüljön. A két ábra külön fejtörő. Egy ábrán belül az azonos alakzatok ugyanannyit nyomnak.",
+        "figure": "scales",
+        "hints": [
+          "Nézd meg a bal oldali második mérleget. Egy háromszög hány kört ér?",
+          "Jobb oldalon felezd el a második mérleg mindkét oldalát. Amit kaptál, helyettesítsd be az első mérlegen."
+        ],
+        "solution": "Balra egy háromszög és egy kör kerülhet. Egy háromszög négy kört ér. A felső mérlegen 2 négyzet + 2 kör = 3 háromszög = 12 kör, ezért egy négyzet öt kört ér. Így öt kör is jó megoldás.\nJobbra négy ötszög kerül. A második mérleg alapján egy háromszög annyit ér, mint egy négyzet és egy ötszög együtt. Ezt az első mérlegre behelyettesítve egy kör tömege két ötszögével egyenlő, két köré pedig négy ötszögével.",
+        "fields": [
+          {
+            "id": "left",
+            "label": "a) Milyen alakzatokat tennél a négyzettel szembe?",
+            "kind": "text"
+          },
+          {
+            "id": "right",
+            "label": "b) Hány ötszög egyensúlyozza ki a két kört?",
+            "answer": 4,
+            "kind": "number"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "geometria",
+    "title": "Geometria",
+    "description": "Tükrözés, szögfelezők és szögvadászat háromszögben, körben és trapézban.",
+    "tasks": [
+      {
+        "id": "hatszog",
+        "title": "Három tükörképből hatszög",
+        "tags": [
+          "geometria",
+          "szögek",
+          "tükrözés",
+          "szögfelező"
+        ],
+        "text": "Az ABC háromszög szögei rendre 40°, 60° és 80°. Az M pont a szögfelezők közös metszéspontja. Tükrözzük M-et az AB, BC és CA oldalegyenesekre. A tükörképek rendre U, V és W. Az A, U, B, V, C, W pontok ebben a sorrendben hatszöget alkotnak.",
+        "figure": "triangle",
+        "hints": [
+          "Nézd meg az A csúcsot. Az AM félegyeneshez képest hol fut az AU és az AW félegyenes?",
+          "A tükrözés miatt az AUB szög megegyezik az AMB szöggel. Az AMB háromszögben mennyi a két másik szög?"
+        ],
+        "solution": "A tükrözés megőrzi a szögeket. Az A csúcsnál a hatszög szöge három részből áll. Az AB és AC közötti 40°-hoz kívülről még 20° és 20° adódik hozzá. Hasonlóan a B csúcsnál 120°, a C csúcsnál 160° adódik.\nAz AUB szög az AMB tükörképe. Az AMB háromszögben a két másik szög 20° és 30°, így U-nál 130° van. V-nél 180° − 30° − 40° = 110°, W-nél 180° − 40° − 20° = 120°.\nAz A, U, B, V, C, W sorrendben tehát a szögek: 80°, 130°, 120°, 110°, 160°, 120°.",
+        "fields": [
+          {
+            "id": "angles",
+            "label": "Mekkorák a belső szögek az A, U, B, V, C, W sorrendben?",
+            "answer": [
+              80,
+              130,
+              120,
+              110,
+              160,
+              120
+            ],
+            "kind": "numberSequence"
+          }
+        ]
+      },
+      {
+        "id": "teglalap",
+        "title": "A téglalap átlói",
+        "tags": [
+          "geometria",
+          "szögek",
+          "felezőmerőleges"
+        ],
+        "text": "Egy téglalap átlójának felezőmerőlegese a téglalap egyik hosszabb oldalából akkora szakaszt metsz le, amekkora a rövidebb oldal hossza.",
+        "hints": [
+          "Legyen P az AC átló felezőmerőlegesének és az AB hosszabb oldalnak a metszéspontja. Melyik két távolság egyenlő?",
+          "A PC szakasz hosszabb a BC oldalnál. Az AP és a PB közül akkor melyik lehet BC hosszúságú?"
+        ],
+        "solution": "Jelölje P az AC felezőmerőlegesének és az AB oldalnak a metszéspontját. PA = PC, mert P egyenlő távol van A-tól és C-től. A PBC derékszögű háromszögben PC > BC, ezért AP nem lehet BC hosszúságú. Így PB = BC, tehát a CPB szög 45°.\nAz APC szög 135°, az egyenlő szárú APC háromszögben ezért a PAC szög 22,5°. A két átló a hosszabb oldallal ellentétes irányban zár be 22,5°-ot, így a kisebb metszésszög 45°.",
+        "fields": [
+          {
+            "id": "angle",
+            "label": "Mekkora a két átló kisebb metszésszöge fokban?",
+            "answer": 45,
+            "kind": "number"
+          }
+        ],
+        "figure": "rectangle"
+      },
+      {
+        "id": "kor",
+        "title": "Mekkora a COA szög?",
+        "tags": [
+          "geometria",
+          "szögek",
+          "kör",
+          "egyenlő szárú háromszög"
+        ],
+        "text": "Az ábrán O a kör középpontja, az AB átmérő. Az E pontból induló másik egyenes a kört D-ben és C-ben metszi. A CEA szög 18°, továbbá AB = 2 · DE.",
+        "figure": "circle",
+        "hints": [
+          "Az átmérő kétszerese melyik szakasznak a körben?",
+          "Húzd be az OD sugarat. Milyen háromszögek az EDO és az ODC? Használd a külső szöget is."
+        ],
+        "solution": "Húzzuk be az OD sugarat. Az AB átmérő kétszerese az OD sugárnak, így DE = OD. Az EDO egyenlő szárú háromszögben az EOD szög ezért 18°. Az ODC szög az EDO háromszög D-nél lévő külső szöge, így 36°. OD = OC miatt a DCO szög is 36°. A COA szög az EOC háromszög O-nál lévő külső szöge, ezért 18° + 36° = 54°.",
+        "fields": [
+          {
+            "id": "angle",
+            "label": "Mekkora a COA szög fokban?",
+            "answer": 54,
+            "kind": "number"
+          }
+        ]
+      },
+      {
+        "id": "fele",
+        "title": "Az egyik szög a másik fele",
+        "tags": [
+          "geometria",
+          "szögek",
+          "esetszétválasztás"
+        ],
+        "text": "Egy háromszög egyik szöge fele a másik kettő összegének. Van olyan szöge is, amelyik fele egy másik szögnek.",
+        "hints": [
+          "Ha az első szöget kétszerezed, a másik kettő összegét kapod. Mennyi így az összes szög összege?",
+          "Vedd külön, hogy a már kiszámolt szög fele egy másiknak, egy másik szög a fele neki, vagy a két fennmaradó szög van 1 : 2 arányban."
+        ],
+        "solution": "Az első feltétel szerint a háromszög teljes szögösszege háromszorosa az egyik szögnek. Ez a szög 60°.\nHa ez fele egy másik szögnek, akkor a másik 120° volna, és a harmadiknak 0° maradna. Ez kiesik. Ha egy másik szög a 60° fele, akkor az 30°, a harmadik 90°. Ha a két fennmaradó szög van 1 : 2 arányban, akkor a 120°-ot 40°-ra és 80°-ra osztják. A két lehetséges szöghármas tehát (30°, 60°, 90°) és (40°, 60°, 80°).",
+        "fields": [
+          {
+            "id": "angles",
+            "label": "Mekkorák a háromszög szögei? Add meg az összes lehetőséget.",
+            "answer": [
+              [
+                30,
+                60,
+                90
+              ],
+              [
+                40,
+                60,
+                80
+              ]
+            ],
+            "kind": "numberGroups"
+          }
+        ]
+      },
+      {
+        "id": "harom-resz",
+        "title": "A szög harmadolása",
+        "tags": [
+          "geometria",
+          "szögek",
+          "szögfelező"
+        ],
+        "text": "Az O középpontú körön X, A, B és Y pontok vannak. Az OA és az OB félegyenesek három egyenlő részre osztják a 180°-nál kisebb XOY szöget. Az XOA és az YOB szög felezői merőlegesek egymásra.",
+        "hints": [
+          "Nevezd el a három egyenlő rész mindegyikét α-nak. Rajzold be a két szögfelezőt.",
+          "Vizsgáld meg az X, A, B, Y és az X, B, A, Y sorrendet is. Mindegyik esetben hány α van a két szögfelező között?"
+        ],
+        "solution": "Jelölje α a három egyenlő rész egyikét. X, A, B, Y sorrendben a szögfelezők között α/2 + α + α/2 = 2α van. Ez 90°, tehát α = 45°, az XOY szög pedig 135°.\nFordított belső sorrendben, X, B, A, Y esetén a két szögfelező között α van. Ha ez 90°, a teljes szög 270° lenne. Ez a kitűzött 180°-nál kisebb tartományon kívül esik. A tágabb értelmezésben, ha a homorú szöget és az egyenesszögek felezését is megengedjük, a 270° is szóba jön.",
+        "fields": [
+          {
+            "id": "angle",
+            "label": "Mekkora az XOY szög fokban?",
+            "answer": 135,
+            "kind": "number"
+          }
+        ]
+      },
+      {
+        "id": "trapez",
+        "title": "A trapéz másik alapja",
+        "tags": [
+          "geometria",
+          "szögek",
+          "trapéz"
+        ],
+        "text": "Egy trapéznak van derékszöge. Az egyik alapja és a hosszabbik szára egyaránt 4 egység. A 4 egység hosszú alap derékszögű csúcsából induló átló 30°-os szöget zár be az ugyanebből a csúcsból induló szárral.",
+        "hints": [
+          "Mekkora szöget zár be az adott átló a 4 egység hosszú alappal?",
+          "Az ismert alap, a hosszabbik szár és az átló háromszöget alkot. Két oldala egyenlő, és az egyik alapon fekvő szögét ismered."
+        ],
+        "solution": "Legyen az ABCD trapéz 4 egység hosszú alapja AB, a derékszögű csúcs A, a hosszabbik szár BC. Az AC átló az AD szárral 30°-ot, ezért az AB alappal 60°-ot zár be. AB = BC, így az ABC egyenlő szárú háromszög C csúcsánál is 60° van. Az ABC tehát szabályos háromszög.\nLegyen T a C-ből az AB-re bocsátott merőleges talppontja. T felezi az AB szakaszt, így AT = 2. Az ATCD téglalapban DC = AT, ezért a másik alap 2 egység hosszú.",
+        "fields": [
+          {
+            "id": "base",
+            "label": "Hány egység hosszú a másik alap?",
+            "answer": 2,
+            "kind": "number"
+          }
+        ],
+        "figure": "trapezoid"
+      }
+    ]
   }
 ]</script>
-<script>const data = document.getElementById("jatszohaz-feladatsorok");
-(function startJatszohaz(root, sets, browser) {
+<script type="application/json" id="jatszohaz-abrai">{
+  "triangle": "\u003cfigure>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 -17 320 250\" role=\"img\" aria-label=\"ABC háromszög. M a három belső szögfelező metszéspontja.\">\n\u003cpolygon class=\"diagram-fill diagram-edge\" points=\"46,154 276,154 200.93908086339397,23.990674392579365\"/>\n\u003cpath class=\"diagram-edge diagram-guide\" d=\"M46,154 L187.06838364415287,102.65530735748315 M276,154 L187.06838364415287,102.65530735748315 M200.93908086339397,23.990674392579365 L187.06838364415287,102.65530735748315\"/>\n\u003ccircle class=\"diagram-point\" cx=\"187.06838364415287\" cy=\"102.65530735748315\" r=\"3.4\"/>\n\u003ctext x=\"37\" y=\"174\" text-anchor=\"middle\">A\u003c/text>\u003ctext x=\"283\" y=\"174\" text-anchor=\"middle\">B\u003c/text>\u003ctext x=\"204.93908086339397\" y=\"16\" text-anchor=\"middle\">C\u003c/text>\u003ctext x=\"203.06838364415287\" y=\"106.65530735748315\" text-anchor=\"middle\">M\u003c/text>\n\u003c/svg>\u003c/figure>",
+  "circle": "\u003cfigure>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 294 190\" role=\"img\" aria-label=\"Az E, B, O, A pontok egy egyenesen vannak. A kör középpontja O. Az E-ből induló felső félegyenes D-ben, majd C-ben metszi a kört. A jelölt szög a COA.\">\n\u003ccircle class=\"diagram-fill diagram-edge\" cx=\"195\" cy=\"114\" r=\"61\"/>\n\u003cpath class=\"diagram-edge\" d=\"M78.97110501199127,114 L256,114 M78.97110501199127,114 L230.85490038984085,64.6499633431282 L195,114\"/>\n\u003cpath class=\"diagram-edge diagram-accent\" d=\"M219,114 A24,24 0 0 0 209.10684605501936,94.58359213500125\"/>\n\u003ccircle class=\"diagram-point\" cx=\"78.97110501199127\" cy=\"114\" r=\"2.7\"/>\u003ccircle class=\"diagram-point\" cx=\"134\" cy=\"113.99999999999999\" r=\"2.7\"/>\u003ccircle class=\"diagram-point\" cx=\"195\" cy=\"114\" r=\"2.7\"/>\u003ccircle class=\"diagram-point\" cx=\"256\" cy=\"114\" r=\"2.7\"/>\u003ccircle class=\"diagram-point\" cx=\"136.98555250599563\" cy=\"95.1499633431282\" r=\"2.7\"/>\u003ccircle class=\"diagram-point\" cx=\"230.85490038984085\" cy=\"64.6499633431282\" r=\"2.7\"/>\n\u003ctext x=\"73.97110501199127\" y=\"133\" text-anchor=\"middle\">E\u003c/text>\u003ctext x=\"130\" y=\"133\" text-anchor=\"middle\">B\u003c/text>\u003ctext x=\"195\" y=\"133\" text-anchor=\"middle\">O\u003c/text>\u003ctext x=\"266\" y=\"133\" text-anchor=\"middle\">A\u003c/text>\u003ctext x=\"126.98555250599563\" y=\"87.1499633431282\" text-anchor=\"middle\">D\u003c/text>\u003ctext x=\"236.85490038984085\" y=\"54.649963343128206\" text-anchor=\"middle\">C\u003c/text>\n\u003c/svg>\u003c/figure>",
+  "scales": "\u003cdiv class=\"figure-grid\">\u003cfigure>\u003cfigcaption>a) A négyzet\u003c/figcaption>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 278 228\" role=\"img\" aria-label=\"A felső mérlegen két négyzet és két kör áll szemben három háromszöggel. Középen egy háromszög áll szemben négy körrel. Alul egy négyzettel szemben üres a serpenyő.\">\u003cg transform=\"translate(0 0)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight square\">\u003crect x=\"52.5\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003cg class=\"weight square\">\u003crect x=\"71.5\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"98.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"117.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M170,14 l9,17 h-18 z\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M189,14 l9,17 h-18 z\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M208,14 l9,17 h-18 z\"/>\u003c/g>\u003c/g>\u003cg transform=\"translate(0 74)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight triangle\">\u003cpath d=\"M89,14 l9,17 h-18 z\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"160.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"179.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"198.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"217.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003c/g>\u003cg transform=\"translate(0 148)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight square\">\u003crect x=\"81\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003ctext x=\"189\" y=\"29\" text-anchor=\"middle\">?\u003c/text>\u003c/g>\u003c/svg>\u003c/figure>\u003cfigure>\u003cfigcaption>b) A két kör\u003c/figcaption>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 278 228\" role=\"img\" aria-label=\"A felső mérlegen egy négyzet és egy kör áll szemben egy háromszöggel és egy ötszöggel. Középen két négyzet és két ötszög áll szemben két háromszöggel. Alul két körrel szemben üres a serpenyő.\">\u003cg transform=\"translate(0 0)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight square\">\u003crect x=\"71.5\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"98.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M179.5,14 l9,17 h-18 z\"/>\u003c/g>\u003cg class=\"weight pentagon\">\u003cpath d=\"M198.5,14 l9,6 -3.5,11 h-11 l-3.5,-11 z\"/>\u003c/g>\u003c/g>\u003cg transform=\"translate(0 74)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight square\">\u003crect x=\"52.5\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003cg class=\"weight square\">\u003crect x=\"71.5\" y=\"15\" width=\"16\" height=\"16\" rx=\"2\"/>\u003c/g>\u003cg class=\"weight pentagon\">\u003cpath d=\"M98.5,14 l9,6 -3.5,11 h-11 l-3.5,-11 z\"/>\u003c/g>\u003cg class=\"weight pentagon\">\u003cpath d=\"M117.5,14 l9,6 -3.5,11 h-11 l-3.5,-11 z\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M179.5,14 l9,17 h-18 z\"/>\u003c/g>\u003cg class=\"weight triangle\">\u003cpath d=\"M198.5,14 l9,17 h-18 z\"/>\u003c/g>\u003c/g>\u003cg transform=\"translate(0 148)\">\n    \u003cpath class=\"diagram-edge\" d=\"M48,32 h83 m16,0 h83 M48,32 l6,9 h71 l6,-9 m16,0 l6,9 h71 l6,-9 M90,41 v10 h98 V41 M139,51 l-12,17 h24 z\"/>\n    \u003cg class=\"weight round\">\u003ccircle cx=\"79.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003cg class=\"weight round\">\u003ccircle cx=\"98.5\" cy=\"23\" r=\"8\"/>\u003c/g>\u003ctext x=\"189\" y=\"29\" text-anchor=\"middle\">?\u003c/text>\u003c/g>\u003c/svg>\u003c/figure>\u003c/div>",
+  "rectangle": "\u003cfigure>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 307 204\" role=\"img\" aria-label=\"ABCD téglalap az AC átlóval. Az AB a hosszabb oldal.\">\u003cpath d=\"M42,158 L262,158 L262,66.87 L42,66.87 Z M42,158 L262,66.87\" class=\"diagram-edge\"/>\u003ctext x=\"32\" y=\"175\" text-anchor=\"middle\">A\u003c/text>\u003ctext x=\"271\" y=\"175\" text-anchor=\"middle\">B\u003c/text>\u003ctext x=\"272\" y=\"58.87301627791909\" text-anchor=\"middle\">C\u003c/text>\u003ctext x=\"32\" y=\"58.87301627791909\" text-anchor=\"middle\">D\u003c/text>\u003c/svg>\u003c/figure>",
+  "trapezoid": "\u003cfigure>\u003csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 279 216\" role=\"img\" aria-label=\"Derékszögű ABCD trapéz, AB és BC egyaránt 4 egység. Az AC átló szöge az AD szárral 30 fok.\">\u003cpath d=\"M55,178 L215,178 L135,39.44 L55,39.44 Z M55,178 L135,39.44 M65,178 V168 H55\" class=\"diagram-edge\"/>\u003cpath d=\"M55,149 A29,29 0 0 1 69.5,152.89\" class=\"diagram-edge\"/>\u003ctext x=\"65\" y=\"135\" text-anchor=\"middle\">30°\u003c/text>\u003ctext x=\"135\" y=\"172\" text-anchor=\"middle\">4\u003c/text>\u003ctext x=\"187\" y=\"105\" text-anchor=\"middle\">4\u003c/text>\u003ctext x=\"44\" y=\"197\" text-anchor=\"middle\">A\u003c/text>\u003ctext x=\"222\" y=\"197\" text-anchor=\"middle\">B\u003c/text>\u003ctext x=\"140\" y=\"28.43593539448983\" text-anchor=\"middle\">C\u003c/text>\u003ctext x=\"45\" y=\"28.43593539448983\" text-anchor=\"middle\">D\u003c/text>\u003c/svg>\u003c/figure>"
+}</script>
+<script type="application/json" id="jatszohaz-abra-segitsegei">{
+  "triangle": [
+    {
+      "drawing": "\u003cpath d=\"M46,154 L187.07,102.66\" class=\"geo-emphasis\"/>\u003cpath d=\"M75,154 A29,29 0 0 0 73.25108600279134,144.08141584355562\" class=\"geo-guide\"/>",
+      "caption": "Az AM szögfelezőt és az AB-vel bezárt szögét emeltük ki."
+    },
+    {
+      "drawing": "\u003cpath d=\"M46,154 L187.07,102.66 L276,154 Z\" class=\"geo-region \"/>\u003cpath d=\"M46,154 L187.07,205.34 L276,154 Z\" class=\"geo-region geo-reflection\"/>\u003cpath d=\"M187.07,102.66 L187.07,205.34\" class=\"geo-guide\"/>\u003cpath d=\"M187.07,102.66 L121.06,23.99\" class=\"geo-guide\"/>\u003cpath d=\"M276,154 L187.07,205.34 L46,154 L121.06,23.99\" class=\"geo-emphasis\"/>\u003ccircle class=\"geo-point\" cx=\"187.07\" cy=\"205.34\" r=\"3\"/>\u003ccircle class=\"geo-point\" cx=\"121.06\" cy=\"23.99\" r=\"3\"/>\u003ctext x=\"199.06838364415287\" y=\"218.34469264251686\" text-anchor=\"middle\">U\u003c/text>\u003ctext x=\"111.06091913660603\" y=\"17.99067439257938\" text-anchor=\"middle\">W\u003c/text>",
+      "caption": "U az AB-re, W az AC-re tükrözött pont. Az AMB és az AUB háromszög egymás tükörképe."
+    }
+  ],
+  "circle": [
+    {
+      "drawing": "\u003cpath d=\"M134,114 H256\" class=\"geo-emphasis\"/>",
+      "caption": "A kiemelt AB szakasz a kör átmérője."
+    },
+    {
+      "drawing": "\u003cpath d=\"M195,114 L136.99,95.15\" class=\"geo-guide\"/>",
+      "caption": "Szaggatott vonallal berajzoltuk az OD sugarat."
+    }
+  ],
+  "rectangle": [
+    {
+      "drawing": "\u003cpath d=\"M133.13,66.87 L170.87,158\" class=\"geo-guide\"/>\u003ccircle class=\"geo-point\" cx=\"170.87\" cy=\"158\" r=\"3\"/>\u003ctext x=\"170.87301627791908\" y=\"177\" text-anchor=\"middle\">P\u003c/text>",
+      "caption": "P az átló felezőmerőlegesének és az AB oldalnak a metszéspontja."
+    },
+    {
+      "drawing": "\u003cpath d=\"M170.87,158 L262,158 L262,66.87 Z\" class=\"geo-region \"/>\u003cpath d=\"M170.87,158 L262,158 L262,66.87\" class=\"geo-emphasis\"/>",
+      "caption": "A PB és a BC szakasz a kiemelt derékszögű háromszög két befogója."
+    }
+  ],
+  "trapezoid": [
+    {
+      "drawing": "\u003cpath d=\"M84,178 A29,29 0 0 0 69.5,152.89\" class=\"geo-emphasis\"/>",
+      "caption": "A kiemelt szög az alap és az átló között van."
+    },
+    {
+      "drawing": "\u003cpath d=\"M55,178 L215,178 L135,39.44 Z\" class=\"geo-region \"/>\u003cpath d=\"M55,178 L215,178 L135,39.44\" class=\"geo-emphasis\"/>",
+      "caption": "Az ABC háromszög két megadott oldala egyenlő."
+    }
+  ]
+}</script>
+<script>
+(() => {
+  const read = id => JSON.parse(document.getElementById(id).textContent);
+
+  function createScaleRules() {
+  const outcomes = ["left", "even", "right"];
+  const weights = Array.from({length:9}, (_,i)=>i+1);
+  const group = (layout, side) => weights.filter(weight => layout[weight-1] === side);
+  const weighed = (layout, weight) => layout[weight-1] || "even";
+  const valid = layout => group(layout,"left").length > 0
+    && group(layout,"left").length === group(layout,"right").length;
+
+  const suspectsFor = (model,first) => weights.filter(weight=>weighed(model.first,weight)===first);
+
+  function check(model) {
+    if (!valid(model.first)) return {type:"first"};
+    const checks = [];
+    for (const first of outcomes) {
+      const suspects = suspectsFor(model,first);
+      if (suspects.length === 1) {
+        checks.push({first,second:null,suspects});
+        continue;
+      }
+      const layout = model.second[first];
+      if (!valid(layout)) return {type:"second",first};
+      for (const second of outcomes) {
+        const found = suspects.filter(weight => weighed(layout,weight) === second);
+        if (found.length) checks.push({first,second,suspects:found});
+      }
+    }
+    const ambiguous = checks.find(entry=>entry.suspects.length>1);
+    if (ambiguous) return {type:"ambiguous",...ambiguous};
+    return {type:"success",checked:checks.length};
+  }
+
+  return {weights,group,valid,weighed,suspectsFor,check};
+}
+
+  function createSprintActivities({escape,save,redraw,attachPlan}, scaleRules) {
+  const sides = ["left","even","right"];
+  const labels = {left:"Bal nehezebb",even:"Egyensúly",right:"Jobb nehezebb"};
+  const placementLabel = {left:"bal serpenyő",right:"jobb serpenyő","":"a mérlegen kívül"};
+  const personas = ["Dobosi","Juli","Mobil","Zsuzsi"];
+  const {weights,group,valid,weighed,suspectsFor,check:checkScalePlan} = scaleRules;
+  const blankLayout = ()=>Array(weights.length).fill("");
+  const asList = numbers=>numbers.join(", ");
+  const truthFor = suspect=>[suspect==="Mobil",suspect!=="Juli",suspect==="Juli",suspect!=="Juli"];
+
+  function scaleState(record) {
+    return record.scale ??= {
+      first:blankLayout(), second:{left:blankLayout(),even:blankLayout(),right:blankLayout()},
+      stage:"first", target:"left", tested:false
+    };
+  }
+
+  function truthState(record) {
+    return record.truth ??= {selected:0, marks:personas.map(()=>Array(4).fill(null)), tested:[false,false,false,false]};
+  }
+
+  function describeWeighing(layout) {
+    return `balra ${asList(group(layout,"left"))}, jobbra ${asList(group(layout,"right"))}`;
+  }
+
+  function savedPlan(model) {
+    const second = sides.map(side=>{
+      const suspects=suspectsFor(model,side);
+      if (suspects.length===1) return `${labels[side]} esetén már megvan a nehezebb súly (${suspects[0]}).`;
+      const layout = model.second[side];
+      const route = suspects.map(weight=>`${labels[weighed(layout,weight)].toLowerCase()} esetén ${weight}`);
+      return `${labels[side]} esetén a második mérésben ${describeWeighing(layout)}. A keresett súly sorszáma ${route.join(", ")}.`;
+    });
+    return `Az első mérésnél ${describeWeighing(model.first)}.\n${second.join("\n")}`;
+  }
+
+  function reportScale(result) {
+    if (!result) return "";
+    if (result.type==="first") return "Az első méréshez mindkét serpenyőbe ugyanannyi súlyt tegyél.";
+    if (result.type==="second") return `„${labels[result.first]}” esetén még állíts össze egy szabályos második mérést.`;
+    if (result.type==="ambiguous") return `Az első mérésnél ${labels[result.first].toLowerCase()}, a másodiknál ${labels[result.second].toLowerCase()}. Így még több súly is gyanús (${asList(result.suspects)}).`;
+    return `Mind a ${result.checked} esetben egyetlen súly marad gyanús. A terved működik!`;
+  }
+
+  function tray(layout, side) {
+    const numbers = group(layout,side);
+    return `<div class="scale-tray"><strong>${side==="left"?"Bal":"Jobb"} serpenyő</strong>
+      <span>${numbers.length ? asList(numbers) : "Üres"}</span></div>`;
+  }
+
+  function scaleHtml(record) {
+    const model = scaleState(record);
+    const isFirst = model.stage==="first";
+    const layout = isFirst ? model.first : model.second[model.stage];
+    const suspects = isFirst ? [] : suspectsFor(model,model.stage);
+    const oneLeft = !isFirst && suspects.length===1;
+    const result = model.tested ? checkScalePlan(model) : null;
+    const successful = result?.type==="success";
+    const branches = [{id:"first",text:"Első mérés"},...sides.map(side=>({id:side,text:labels[side]}))];
+    const stageButtons = branches.map(({id,text}) =>
+      `<button class="button" type="button" data-action="s3-scale-stage" data-value="${id}" data-s3-focus="stage-${id}" aria-pressed="${model.stage===id}" ${id!=="first"&&!valid(model.first)?"disabled":""}>${text}</button>`).join("");
+    const targets = [["left","Balra teszem"],["right","Jobbra teszem"],["off","Leveszem"]];
+    const placementButtons = targets.map(([id,label])=>
+      `<button class="button" type="button" data-action="s3-scale-target" data-value="${id}" data-s3-focus="target-${id}" aria-pressed="${model.target===id}">${label}</button>`).join("");
+    const putWeights = weights.map(weight=>{
+      const at = layout[weight-1];
+      return `<button class="scale-weight" type="button" data-place="${at}" data-action="s3-scale-weight" data-value="${weight}" data-s3-focus="weight-${weight}"
+        aria-label="${weight}. súly, ${placementLabel[at]}">${weight}<small aria-hidden="true">${{left:"B",right:"J","":"·"}[at]}</small></button>`;
+    }).join("");
+    const balanceEditor = oneLeft
+      ? `<p>Már csak egy súly maradt gyanús (${suspects[0]}). Ennél a kimenetelnél elég volt az első mérés.</p>`
+      : `<div class="cluster" role="group" aria-label="Súly elhelyezése">${placementButtons}</div>
+        <div class="scale-weights" aria-label="A kilenc súly">${putWeights}</div>
+        <div class="scale-trays">${tray(layout,"left")}${tray(layout,"right")}</div>
+        <p class="muted">Mindkét serpenyőbe ugyanannyi súlyt tegyél.</p>`;
+    const branchNote = isFirst
+      ? valid(model.first) ? "Most tervezd meg, mit mérnél a három lehetséges kimenetelnél." : ""
+      : `Még gyanús súlyok (${asList(suspects)}).`;
+    return `<section class="activity" aria-label="Virtuális mérleg">
+      <h2>Próbáld ki a mérési terved!</h2>
+      <p>Válassz serpenyőt, majd jelöld ki a súlyokat. A második mérést az első eredménye alapján tervezd meg.</p>
+      <div class="cluster activity-steps" role="group" aria-label="Első mérés és a második mérés ágai">${stageButtons}</div>
+      ${branchNote ? `<p class="activity-note">${branchNote}</p>` : ""}
+      ${balanceEditor}
+      <div class="cluster activity-actions">
+        <button class="button primary" type="button" data-action="s3-scale-test" data-s3-focus="scale-test">Kipróbálom mind a 9 súllyal</button>
+        ${successful ? `<button class="button" type="button" data-action="s3-scale-copy" data-s3-focus="scale-copy">Beillesztem a tervet a válaszomba</button>`:""}
+      </div>
+      <p class="feedback" role="status" data-result="${successful?"correct":""}">${escape(reportScale(result))}</p>
+    </section>`;
+  }
+
+  function truthComplete(marks) {
+    return marks.every(mark=>typeof mark==="boolean");
+  }
+
+  function truthResult(model, index) {
+    if (!model.tested[index]) return "";
+    const marks=model.marks[index], suspect=personas[index];
+    if (!truthComplete(marks)) return "Jelöld meg, mely állítások igazak és melyek hamisak ebben a sorban.";
+    const count=truthFor(suspect).filter((value,i)=>value===marks[i]).length;
+    if (count!==4) return `${count} állítást jelöltél helyesen a négyből. Nézd át a kiemelt cellákat.`;
+    const yes=marks.filter(Boolean).length;
+    return `Ha ${suspect} a tettes, ${yes} igaz és ${4-yes} hamis állítás hangzik el.`;
+  }
+
+  function truthHtml(record) {
+    const model = truthState(record);
+    const rows = personas.map((suspect,row)=>{
+      const marks=model.marks[row], expected=truthFor(suspect);
+      const tested=model.tested[row]&&truthComplete(marks);
+      const th=`<th scope="row"><button class="truth-name" type="button" data-action="s3-truth-row" data-value="${row}" data-s3-focus="truth-row-${row}" aria-pressed="${model.selected===row}">${escape(suspect)}</button></th>`;
+      const cells=marks.map((mark,col)=>{
+        const sign=mark===null?"?":mark?"I":"H";
+        const verbal=mark===null?"nincs jelölve":mark?"igaz":"hamis";
+        return `<td><button class="truth-cell" type="button" data-action="s3-truth-mark" data-row="${row}" data-value="${col}" data-s3-focus="truth-mark-${row}-${col}" data-sign="${sign}" data-checked="${tested?(mark===expected[col]?"correct":"wrong"):""}"
+          aria-label="A feltételezett tettes ${escape(suspect)}. ${escape(personas[col])} állítása ${verbal}${tested?(mark===expected[col]?". Helyes jelölés.":". Próbáld újra."):""}">${sign}</button></td>`;
+      }).join("");
+      return `<tr class="${model.selected===row?"selected":""}">${th}${cells}</tr>`;
+    }).join("");
+    const marks=model.marks[model.selected];
+    const correct=model.tested[model.selected]&&marks.every((mark,col)=>mark===truthFor(personas[model.selected])[col]);
+    return `<section class="activity" aria-label="Igaz–hamis tábla">
+      <h2>Ki mondana igazat?</h2>
+      <p>Válassz feltételezett tettest. A sorában kattints az állításokra. Az I igazat, a H hamisat jelöl.</p>
+      <table class="truth-table"><thead><tr><th scope="col">Tettes</th>${personas.map(name=>`<th scope="col">${escape(name)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>
+      <button class="button" type="button" data-action="s3-truth-check" data-s3-focus="truth-check">Ellenőrzöm a kijelölt sort</button>
+      <p class="feedback" role="status" data-result="${correct?"correct":""}">${escape(truthResult(model,model.selected))}</p>
+    </section>`;
+  }
+
+  function handle(button, task, record) {
+    const {action,value,row,s3Focus}=button.dataset;
+    if (!action?.startsWith("s3-")) return false;
+    if (task.activity==="scale") {
+      const model=scaleState(record);
+      if (action==="s3-scale-stage") model.stage=value;
+      if (action==="s3-scale-target") model.target=value;
+      if (action==="s3-scale-weight") {
+        const layout=model.stage==="first"?model.first:model.second[model.stage];
+        const index=Number(value)-1;
+        const target=model.target==="off"?"":model.target;
+        layout[index]=layout[index]===target?"":target;
+        model.tested=false;
+      }
+      if (action==="s3-scale-test") model.tested=true;
+      if (action==="s3-scale-copy" && checkScalePlan(model).type==="success") {
+        attachPlan(savedPlan(model));
+        return true;
+      }
+    }
+    if (task.activity==="truth") {
+      const model=truthState(record);
+      if (action==="s3-truth-row") model.selected=Number(value);
+      if (action==="s3-truth-mark") {
+        model.selected=Number(row);
+        const marks=model.marks[model.selected];
+        const col=Number(value);
+        marks[col]=marks[col]===null?true:marks[col]===true?false:null;
+        model.tested[model.selected]=false;
+      }
+      if (action==="s3-truth-check") model.tested[model.selected]=true;
+    }
+    save();
+    redraw(s3Focus);
+    return true;
+  }
+
+  return {handle, html(task,record) {
+    if (task.activity==="scale") return scaleHtml(record);
+    if (task.activity==="truth") return truthHtml(record);
+    return "";
+  }};
+}
+
+  function startJatszohaz(root, sets, browser, figures, figureLayers, makeActivities, scaleRules) {
   const storageKey = "matematika-jatszohaz/progress/1";
   const statusLabels = {
     pending: "Hátravan", started: "Folyamatban", solved: "Megoldottad", reviewed: "Megoldást megnézted"
@@ -304,6 +1277,8 @@
     answers: {}, checked: {}, hints: 0, opened: false, visibleSolution: false, solved: false
   };
   const activeTask = () => set.tasks[current];
+  const answerText = value => String(value ?? "").trim();
+  const activities = makeActivities({escape,save,redraw:redrawActivity,attachPlan},scaleRules);
 
   function save() {
     if (!canSave) return;
@@ -320,7 +1295,8 @@
     const record = recordFor(series, task);
     if (record.solved) return "solved";
     if (record.opened) return "reviewed";
-    if (record.hints || Object.values(record.answers).some(answer => Array.isArray(answer) ? answer.length : String(answer).trim())) return "started";
+    const explored = record.scale?.first.some(Boolean) || record.truth?.marks.some(row=>row.some(mark=>mark!==null));
+    if (explored || record.hints || Object.values(record.answers).some(answer => Array.isArray(answer) ? answer.length : answerText(answer))) return "started";
     return "pending";
   }
 
@@ -410,11 +1386,58 @@
       return `<div class="field"><fieldset aria-describedby="${feedbackId}"><legend>${escape(field.label)}</legend>
         <div class="${field.kind === "cards" ? "playing-cards" : "options"}">${buttons}</div>${note}</fieldset></div>`;
     }
-    const attrs = `id="${id}" data-input="${escape(field.id)}" aria-describedby="${feedbackId}"`;
+    const listHelp = {
+      numberSet: "Az értékeket szóközzel vagy vesszővel válaszd el.",
+      numberSequence: "A felsorolás sorrendje számít. Az értékeket szóközzel vagy vesszővel válaszd el.",
+      numberGroups: "A szögeket szóközzel vagy vesszővel válaszd el. Ha több megoldás van, tegyél közéjük / jelet."
+    }[field.kind];
+    const describedBy = listHelp ? `${id}-help ${feedbackId}` : feedbackId;
+    const attrs = `id="${id}" data-input="${escape(field.id)}" aria-describedby="${describedBy}"`;
     const input = field.kind === "text"
       ? `<textarea ${attrs} maxlength="3000" rows="3"></textarea>`
-      : `<input type="text" inputmode="numeric" autocomplete="off" maxlength="12" value="${escape(value)}" ${attrs}>`;
-    return `<div class="field"><label for="${id}">${escape(field.label)}</label>${input}${note}</div>`;
+      : `<input type="text" ${field.kind === "number" ? 'inputmode="numeric"' : ""} autocomplete="off" maxlength="${listHelp ? 120 : 12}" value="${escape(value)}" ${attrs}>`;
+    const instructions = listHelp ? `<p class="muted" id="${id}-help">${listHelp}</p>` : "";
+    return `<div class="field"><label for="${id}">${escape(field.label)}</label>${instructions}${input}${note}</div>`;
+  }
+
+  function taskContext(task) {
+    const transcript = task.lines ? `<dl class="dialogue">${task.lines.map(([speaker, line]) =>
+      `<div><dt>${escape(speaker)}</dt><dd>„${escape(line)}”</dd></div>`).join("")}</dl>` : "";
+    const followup = task.followup ? `<p>${escape(task.followup)}</p>` : "";
+    const figure = task.figure ? '<div id="jh-task-figure"></div>' : "";
+    return `<div class="task-body"><p>${escape(task.text)}</p>${transcript}${followup}${figure}</div>`;
+  }
+
+  function syncFigure() {
+    const task = activeTask();
+    if (!task.figure) return;
+    const figure = figures[task.figure];
+    const shown = (figureLayers[task.figure] || []).slice(0,recordFor(set,task).hints);
+    const caption = shown.at(-1)?.caption;
+    const markup = shown.length ? figure
+      .replace("</svg>",() => `<g aria-hidden="true">${shown.map(layer=>layer.drawing).join("")}</g></svg>`)
+      .replace("</figure>",() => `<figcaption>${escape(caption)}</figcaption></figure>`)
+      : figure;
+    root.querySelector("#jh-task-figure").innerHTML = markup;
+  }
+
+  function redrawActivity(focusId) {
+    const task = activeTask();
+    root.querySelector("#jh-activity").innerHTML = activities.html(task,recordFor(set,task));
+    if (focusId) root.querySelector(`#jh-activity [data-s3-focus="${focusId}"]`)?.focus({preventScroll:true});
+    syncProgress();
+  }
+
+  function attachPlan(plan) {
+    const task = activeTask();
+    const existing = recordFor(set,task).answers.plan || "";
+    const target = root.querySelector("#jh-field-plan");
+    if (!existing.includes(plan)) {
+      const combined = [existing.trim(),plan].filter(Boolean).join("\n\n");
+      writeAnswer("plan",combined);
+      target.value = combined;
+    }
+    target.focus();
   }
 
   function drawTask(focus) {
@@ -425,7 +1448,8 @@
       <div class="cluster" style="justify-content:space-between"><strong>${escape(set.title)}</strong><span class="meta" id="jh-count"></span></div>
       <nav class="task-nav" id="jh-task-nav" aria-label="Feladatválasztó"></nav>
       <h1 id="jh-title" tabindex="-1">${escape(task.title)}</h1>
-      <p class="task-body">${escape(task.text)}</p>
+      ${taskContext(task)}
+      ${task.activity ? '<div id="jh-activity"></div>' : ""}
       <form id="jh-form" novalidate>
         ${task.fields.map(field => fieldHtml(field,record)).join("")}
         <div class="cluster">
@@ -445,6 +1469,8 @@
     for (const field of task.fields) {
       if (field.kind === "text") root.querySelector("#jh-field-" + field.id).value = record.answers[field.id] ?? "";
     }
+    if (task.activity) redrawActivity();
+    syncFigure();
     syncProgress();
     syncSupport();
     syncFeedback();
@@ -462,6 +1488,13 @@
     }
   }
 
+  function canConfirmReflection(task, record) {
+    return task.fields.some(field => field.kind === "text") &&
+      task.fields.every(field => field.kind === "text"
+        ? answerText(record.answers[field.id]).length > 0
+        : record.checked[field.id] === "correct");
+  }
+
   function syncSupport() {
     const task = activeTask();
     const record = recordFor(set, task);
@@ -472,15 +1505,18 @@
     const solve = root.querySelector("#jh-solution");
     solve.textContent = record.visibleSolution ? "Elrejtem a megoldást" : "Mutasd a megoldást";
     solve.setAttribute("aria-expanded", String(record.visibleSolution));
+    const confirm = canConfirmReflection(task, record) && !record.solved
+      ? '<button class="button" type="button" data-action="confirm-reflection">Az indoklásom stimmel</button>'
+      : "";
     root.querySelector("#jh-support").innerHTML =
       task.hints.slice(0, record.hints).map((hint,i) => `<section><h3>${i + 1}. segítség</h3><p>${escape(hint)}</p></section>`).join("")
-      + (record.visibleSolution ? `<section class="solution"><h3>Megoldás</h3><p>${escape(task.solution)}</p></section>` : "");
+      + (record.visibleSolution ? `<section class="solution"><h3 id="jh-solution-title" tabindex="-1">Megoldás</h3><p>${escape(task.solution)}</p>${confirm}</section>` : "");
   }
 
   function syncFeedback(message = "", result = "") {
     const task = activeTask();
     const record = recordFor(set, task);
-    const messages = {correct:"Helyes.", retry:"Gondold át még egyszer.", empty:"Itt még nincs válasz."};
+    const messages = {correct:"Helyes.", retry:"Gondold át még egyszer.", empty:"Itt még nincs válasz.", format:"A megadott formában írd be az értékeket."};
     for (const field of task.fields) {
       const target = root.querySelector("#jh-feedback-" + field.id);
       target.dataset.result = record.checked[field.id] ?? "";
@@ -491,50 +1527,75 @@
     general.textContent = message;
   }
 
+  function parseList(typed, sort) {
+    const cleaned = typed.trim().replace(/^[([]\s*|\s*[)\]]$/g, "");
+    const parts = cleaned ? cleaned.split(/[,\s]+/) : [];
+    if (!parts.length || !parts.every(part => /^\+?\d+°?$/.test(part))) return null;
+    const values = parts.map(part => Number(part.replace("°", "")));
+    return sort ? values.sort((a,b) => a-b) : values;
+  }
+
   function evaluate(field, value) {
     if (field.kind === "cards") {
       if (!Array.isArray(value) || !value.length) return "empty";
       return value.length === field.answer.length && field.answer.every(card => value.includes(card)) ? "correct" : "retry";
     }
-    const typed = String(value ?? "").trim();
+    const typed = answerText(value);
     if (!typed) return "empty";
-    const correct = field.kind === "number" ? /^\+?\d+$/.test(typed) && Number(typed) === field.answer : typed === field.answer;
-    return correct ? "correct" : "retry";
+    if (field.kind === "text") return "written";
+    if (field.kind === "number") {
+      const input = field.label.includes("fokban") ? typed.replace(/\s*°$/, "") : typed;
+      return /^\+?\d+$/.test(input) && Number(input) === field.answer ? "correct" : "retry";
+    }
+    if (field.kind === "numberSet" || field.kind === "numberSequence") {
+      const ordered = field.kind === "numberSequence";
+      const got = parseList(typed, !ordered);
+      if (!got) return "format";
+      const expected = ordered ? field.answer : [...field.answer].sort((a,b) => a-b);
+      return got.length === expected.length && got.every((item,index) => item === expected[index]) ? "correct" : "retry";
+    }
+    if (field.kind === "numberGroups") {
+      const groups = typed.split(/[;/|]/).map(group => parseList(group,true));
+      if (groups.some(group => group === null)) return "format";
+      const key = groups => groups.map(group => [...group].sort((a,b) => a-b).join(",")).sort().join("|");
+      return key(groups) === key(field.answer) ? "correct" : "retry";
+    }
+    return typed === field.answer ? "correct" : "retry";
   }
 
   function submit() {
     const task = activeTask();
     const record = recordFor(set,task);
-    const checkedFields = task.fields.filter(field => field.kind !== "text");
-    if (!checkedFields.length) {
-      if (!task.fields.some(field => String(record.answers[field.id] ?? "").trim())) {
-        syncFeedback("Írd le előbb a saját ötletedet, vagy nyisd meg a megoldást.");
-        return;
-      }
-      record.opened = record.visibleSolution = true;
-      syncSupport();
-      syncFeedback("Nézd meg, miben egyezik a két gondolatmenet.");
-    } else {
-      for (const field of checkedFields) record.checked[field.id] = evaluate(field,record.answers[field.id]);
-      const allCorrect = checkedFields.every(field => record.checked[field.id] === "correct");
-      if (allCorrect && !record.opened) record.solved = true;
-      const message = allCorrect ? "Szép munka, minden válaszod helyes." : "";
-      syncFeedback(message, allCorrect ? "correct" : "");
+    const hasReflection = task.fields.some(field => field.kind === "text");
+    for (const field of task.fields) record.checked[field.id] = evaluate(field,record.answers[field.id]);
+    const allCorrect = task.fields.filter(field => field.kind !== "text")
+      .every(field => record.checked[field.id] === "correct");
+    let message = "";
+    if (!hasReflection && allCorrect) {
+      if (!record.opened) record.solved = true;
+      message = "Szép munka, minden válaszod helyes.";
     }
+    if (hasReflection && canConfirmReflection(task, record)) {
+      record.opened = record.visibleSolution = true;
+      message = "Vesd össze a gondolatmenetedet a mintamegoldással.";
+    }
+    syncSupport();
+    syncFeedback(message, allCorrect && !hasReflection ? "correct" : "");
     save();
     syncProgress();
   }
 
   function writeAnswer(fieldId, value) {
     const record = recordFor(set,activeTask());
+    if (record.answers[fieldId] === value) return;
     record.answers[fieldId] = value;
-    if (record.checked[fieldId]) {
-      delete record.checked[fieldId];
-      record.solved = false;
-    }
+    delete record.checked[fieldId];
+    record.solved = false;
+    record.selfReviewed = false;
     save();
     syncProgress();
     syncFeedback();
+    if (record.visibleSolution) syncSupport();
   }
 
   function visit(index) {
@@ -553,7 +1614,7 @@
     const title = remaining === 0 ? "Végigértél a feladatsoron!" : counts.solved || counts.reviewed ? "Szép munka!" : "A feladatsor állása";
     const detail = remaining === 0 ? "Bármelyik feladathoz visszanézhetsz." : `Még ${remaining} feladathoz visszatérhetsz.`;
     const list = set.tasks.map((task,i) => `<li><button class="summary-link" type="button" data-action="task" data-value="${i}">
-      <span>${i + 1}. ${escape(task.title)}</span><span>${statusLabels[status(set,task)]}</span></button></li>`).join("");
+      <span>${i + 1}. ${escape(task.title)}</span><span>${recordFor(set,task).selfReviewed ? "Önellenőrzéssel megoldva" : statusLabels[status(set,task)]}</span></button></li>`).join("");
     screen(`<section class="hero"><div><h1 id="jh-title" tabindex="-1">${title}</h1>
       <p>${counts.solved} megoldva · ${counts.reviewed} megoldás átnézve. ${detail}</p></div></section>
       <section class="surface"><h2>${escape(set.title)}</h2><ul class="summary-list">${list}</ul></section>`,
@@ -579,6 +1640,7 @@
   root.addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button || button.disabled) return;
+    if (page==="task" && activities.handle(button,activeTask(),recordFor(set,activeTask()))) return;
     const {action,value,field:id} = button.dataset;
     switch (action) {
       case "tag":
@@ -611,6 +1673,7 @@
         const record = recordFor(set,task);
         record.hints = Math.min(record.hints + 1,task.hints.length);
         save();
+        syncFigure();
         syncSupport();
         syncProgress();
         break;
@@ -622,6 +1685,18 @@
         save();
         syncSupport();
         syncProgress();
+        break;
+      }
+      case "confirm-reflection": {
+        const task = activeTask();
+        const record = recordFor(set,task);
+        if (!record.visibleSolution || !canConfirmReflection(task,record)) break;
+        record.solved = record.selfReviewed = true;
+        save();
+        syncProgress();
+        syncSupport();
+        syncFeedback("Megoldottad, és az indoklásodat is ellenőrizted.", "correct");
+        root.querySelector("#jh-solution-title").focus({preventScroll:true});
         break;
       }
       case "option": {
@@ -644,7 +1719,19 @@
   });
 
   drawHome(false);
-})(document.getElementById("matek-jatszohaz"), JSON.parse(data.textContent), window);</script>
+}
+
+  startJatszohaz(
+    document.getElementById("matek-jatszohaz"),
+    read("jatszohaz-feladatsorok"),
+    window,
+    read("jatszohaz-abrai"),
+    read("jatszohaz-abra-segitsegei"),
+    createSprintActivities,
+    createScaleRules()
+  );
+})();
+</script>
 <noscript>A feladatok használatához engedélyezd a JavaScriptet.</noscript>
 </body>
 </html>
