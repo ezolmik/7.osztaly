@@ -53,6 +53,14 @@
 #matek-jatszohaz input[inputmode=numeric] { max-width:160px }
 #matek-jatszohaz textarea { resize:vertical; min-height:96px }
 #matek-jatszohaz .search-area label { display:block; margin-bottom:9px; font-weight:650 }
+#matek-jatszohaz .topic-bar { gap:6px; margin-bottom:14px }
+#matek-jatszohaz .search-suggestions, #matek-jatszohaz .browse-tags { margin-top:12px }
+#matek-jatszohaz .search-suggestions .cluster, #matek-jatszohaz .browse-tags .cluster { gap:6px; margin-top:6px }
+#matek-jatszohaz .browse-tags > summary { min-height:44px; width:fit-content; max-width:100%; padding:9px 0; color:var(--accent); font-weight:650; cursor:pointer }
+#matek-jatszohaz .browse-tags > summary:focus-visible { outline:3px solid #9773ee; outline-offset:3px }
+#matek-jatszohaz .tag-list { max-height:17rem; overflow:auto; padding:4px; margin:-4px }
+#matek-jatszohaz .selected-tag:not(:empty) { margin-top:9px }
+#matek-jatszohaz .selected-tag > .tag { background:var(--pale); border-color:var(--accent) }
 #matek-jatszohaz .task-nav { display:grid; grid-template-columns:repeat(auto-fit,minmax(44px,1fr)); gap:6px; margin:10px 0 15px }
 #matek-jatszohaz .task-link { padding:5px 2px; font-variant-numeric:tabular-nums }
 #matek-jatszohaz .task-link[data-status=solved] { color:var(--green); background:var(--soft-green) }
@@ -162,7 +170,6 @@
         "id": "dobozok",
         "title": "A három doboz",
         "tags": [
-          "logika",
           "paritás"
         ],
         "text": "Szörnyellának 12 legális és 124 másolt CD-je van. Három dobozban tartja őket. Hogyan lehet, hogy mindegyik dobozban páratlan számú lemez van?",
@@ -177,6 +184,10 @@
             "label": "Hogyan rendeznéd el a dobozokat és a CD-ket?",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "logika",
+          "szamelmelet"
         ]
       },
       {
@@ -211,6 +222,9 @@
             "kind": "number",
             "answer": 28
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
@@ -233,6 +247,9 @@
             "kind": "number",
             "answer": 1
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
@@ -261,14 +278,16 @@
             "kind": "number",
             "answer": 540
           }
+        ],
+        "topics": [
+          "szamelmelet"
         ]
       },
       {
         "id": "nyelvek",
         "title": "Ki hány nyelvet tanul?",
         "tags": [
-          "halmazok",
-          "logika"
+          "halmazok"
         ],
         "text": "Egy 30 fős osztályban mindenki tanul legalább egy nyelvet. Angolul 16-an, németül 18-an, franciául 14-en tanulnak. Pontosan két nyelvet 16 tanuló tanul.",
         "hints": [
@@ -283,14 +302,17 @@
             "kind": "number",
             "answer": 1
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
         "id": "kartyak",
         "title": "Melyik lapot fordítanád meg?",
         "tags": [
-          "logika",
-          "állítások"
+          "állítások",
+          "feltételes állítás"
         ],
         "text": "Négy kártya egyik oldalán betű, a másikon szám van. A szabály így szól: „Ha az egyik oldalon magánhangzó van, akkor a másik oldalon páros számnak kell lennie.”",
         "hints": [
@@ -324,6 +346,9 @@
             ],
             "answer": "Magánhangzó"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       }
     ]
@@ -337,7 +362,6 @@
         "id": "hegyek",
         "title": "Melyik hegyen járnak?",
         "tags": [
-          "logika",
           "igaz-hamis",
           "ellentmondás"
         ],
@@ -382,13 +406,15 @@
             "answer": "747 m és 750 m között",
             "kind": "choice"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
         "id": "ablak",
         "title": "Ki törte be az ablakot?",
         "tags": [
-          "logika",
           "igaz-hamis"
         ],
         "text": "Dobosi, Juli, Mobil és Zsuzsi közül valaki betört egy ablakot. Ezt mondták a négyen.",
@@ -441,13 +467,15 @@
             "kind": "choice"
           }
         ],
-        "activity": "truth"
+        "activity": "truth",
+        "topics": [
+          "logika"
+        ]
       },
       {
         "id": "kirandulok",
         "title": "Hányan kirándulnak?",
         "tags": [
-          "logika",
           "egyenlőtlenség"
         ],
         "text": "Juli szerint huszonhatnál többen, Zsuzsi szerint huszonötnél többen vannak az osztálykiránduláson. Pontosan az egyik állítás igaz.",
@@ -463,13 +491,15 @@
             "answer": 26,
             "kind": "number"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
         "id": "kerekasztal",
         "title": "Tizenketten a kerekasztalnál",
         "tags": [
-          "logika",
           "igaz-hamis",
           "mintázat"
         ],
@@ -489,13 +519,15 @@
             ],
             "kind": "numberSet"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
         "id": "magassag",
         "title": "Öt ember, tíz állítás",
         "tags": [
-          "logika",
           "igaz-hamis",
           "ellentmondás"
         ],
@@ -553,13 +585,15 @@
             "label": "Indokold az a) választ, és adj példát a b) részhez.",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       },
       {
         "id": "csoki",
         "title": "Az öt eltűnt csoki",
         "tags": [
-          "logika",
           "igaz-hamis",
           "esetszétválasztás"
         ],
@@ -607,6 +641,9 @@
             "answer": 2,
             "kind": "number"
           }
+        ],
+        "topics": [
+          "logika"
         ]
       }
     ]
@@ -620,7 +657,6 @@
         "id": "ermek",
         "title": "Száz doboznyi érme",
         "tags": [
-          "mérlegelés",
           "stratégia"
         ],
         "text": "Száz dobozban száz-száz érme van. Pontosan egy dobozban minden érme hamis, a többi dobozban mindegyik valódi. A valódi érmék 10 g-osak, a hamisak 9 g-osak. A mérleg gramm pontossággal mutatja a rátett érmék össztömegét.",
@@ -641,13 +677,15 @@
             "label": "Mit tennél a mérlegre, és hogyan értelmeznéd az eredményt?",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "merlegeles"
         ]
       },
       {
         "id": "nyolc",
         "title": "Nyolc súly összehasonlítása",
         "tags": [
-          "mérlegelés",
           "stratégia",
           "minimum"
         ],
@@ -681,13 +719,15 @@
             "label": "Írd le röviden a három eljárást.",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "merlegeles"
         ]
       },
       {
         "id": "sulykeszlet",
         "title": "Egytől negyven grammig",
         "tags": [
-          "mérlegelés",
           "minimum",
           "mintázat"
         ],
@@ -720,13 +760,15 @@
             "label": "Miért elég ez a készlet, és miért nem elég kevesebb súly?",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "merlegeles"
         ]
       },
       {
         "id": "kilenc",
         "title": "Kilenc súly, egy nehezebb",
         "tags": [
-          "mérlegelés",
           "stratégia",
           "minimum"
         ],
@@ -749,13 +791,15 @@
             "kind": "text"
           }
         ],
-        "activity": "scale"
+        "activity": "scale",
+        "topics": [
+          "merlegeles"
+        ]
       },
       {
         "id": "tizenketto",
         "title": "Tizenkét súly, egy hibás",
         "tags": [
-          "mérlegelés",
           "stratégia",
           "minimum",
           "esetszétválasztás"
@@ -778,15 +822,16 @@
             "label": "Írd le a mérési tervedet egyensúlyra és elbillenésre is.",
             "kind": "text"
           }
+        ],
+        "topics": [
+          "merlegeles"
         ]
       },
       {
         "id": "alakzatok",
         "title": "Alakzatok a mérlegen",
         "tags": [
-          "mérlegelés",
-          "egyenlet",
-          "logika"
+          "egyenlet"
         ],
         "text": "Egészítsd ki mindkét ábrán az alsó mérleget úgy, hogy egyensúlyba kerüljön. A két ábra külön fejtörő. Egy ábrán belül az azonos alakzatok ugyanannyit nyomnak.",
         "figure": "scales",
@@ -807,6 +852,10 @@
             "answer": 4,
             "kind": "number"
           }
+        ],
+        "topics": [
+          "merlegeles",
+          "logika"
         ]
       }
     ]
@@ -820,7 +869,6 @@
         "id": "hatszog",
         "title": "Három tükörképből hatszög",
         "tags": [
-          "geometria",
           "szögek",
           "tükrözés",
           "szögfelező"
@@ -846,13 +894,15 @@
             ],
             "kind": "numberSequence"
           }
+        ],
+        "topics": [
+          "geometria"
         ]
       },
       {
         "id": "teglalap",
         "title": "A téglalap átlói",
         "tags": [
-          "geometria",
           "szögek",
           "felezőmerőleges"
         ],
@@ -870,13 +920,15 @@
             "kind": "number"
           }
         ],
-        "figure": "rectangle"
+        "figure": "rectangle",
+        "topics": [
+          "geometria"
+        ]
       },
       {
         "id": "kor",
         "title": "Mekkora a COA szög?",
         "tags": [
-          "geometria",
           "szögek",
           "kör",
           "egyenlő szárú háromszög"
@@ -895,13 +947,15 @@
             "answer": 54,
             "kind": "number"
           }
+        ],
+        "topics": [
+          "geometria"
         ]
       },
       {
         "id": "fele",
         "title": "Az egyik szög a másik fele",
         "tags": [
-          "geometria",
           "szögek",
           "esetszétválasztás"
         ],
@@ -929,13 +983,15 @@
             ],
             "kind": "numberGroups"
           }
+        ],
+        "topics": [
+          "geometria"
         ]
       },
       {
         "id": "harom-resz",
         "title": "A szög harmadolása",
         "tags": [
-          "geometria",
           "szögek",
           "szögfelező"
         ],
@@ -952,13 +1008,15 @@
             "answer": 135,
             "kind": "number"
           }
+        ],
+        "topics": [
+          "geometria"
         ]
       },
       {
         "id": "trapez",
         "title": "A trapéz másik alapja",
         "tags": [
-          "geometria",
           "szögek",
           "trapéz"
         ],
@@ -976,7 +1034,10 @@
             "kind": "number"
           }
         ],
-        "figure": "trapezoid"
+        "figure": "trapezoid",
+        "topics": [
+          "geometria"
+        ]
       }
     ]
   }
@@ -1261,6 +1322,7 @@
   } catch {}
   let page = "home";
   let query = "";
+  let topic = "";
   let tag = "";
   let set = null;
   let current = 0;
@@ -1268,10 +1330,14 @@
   const escape = value => String(value ?? "").replace(/[&<>"']/g, c => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
   })[c]);
-  const normalize = value => value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase("hu");
-  const sortTags = tags => [...new Set(tags)].sort((a,b) => a.localeCompare(b, "hu"));
-  const setTags = series => sortTags(series.tasks.flatMap(task => task.tags));
-  const allTags = sortTags(sets.flatMap(setTags));
+  const normalize = value => value.normalize("NFD").replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("hu").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const topics = {
+    logika: "Logika", geometria: "Geometria", szamelmelet: "Számelmélet", merlegeles: "Mérlegelés"
+  };
+  const inTopic = task => !topic || task.topics.includes(topic);
+  const availableTags = () => [...new Set(sets.flatMap(series => series.tasks.filter(inTopic).flatMap(task => task.tags)))]
+    .sort((a,b) => a.localeCompare(b, "hu"));
   const bucketFor = series => progress[series.id] ??= { cursor: 0, tasks: {} };
   const recordFor = (series, task) => bucketFor(series).tasks[task.id] ??= {
     answers: {}, checked: {}, hints: 0, opened: false, visibleSolution: false, solved: false
@@ -1319,9 +1385,19 @@
       <div class="hero-cards" aria-hidden="true"><span>?</span><span>!</span></div>
     </section>
     <section class="surface search-area" aria-label="Feladatsorok keresése">
-      <label for="jh-search">Keresés cím vagy téma szerint</label>
-      <input id="jh-search" type="search" placeholder="Például oszthatóság" value="${escape(query)}">
-      <div id="jh-tags" class="cluster" style="margin-top:12px" aria-label="Témák"></div>
+      <div id="jh-topics" class="cluster topic-bar" role="group" aria-label="Fő témák">
+        ${[["", "Összes téma"], ...Object.entries(topics)].map(([id, label]) =>
+          `<button class="tag" type="button" data-action="topic" data-value="${id}" aria-pressed="${topic === id}">${label}</button>`
+        ).join("")}
+      </div>
+      <label for="jh-search">Keresés cím vagy címke szerint</label>
+      <input id="jh-search" type="search" autocomplete="off" placeholder="Például szögfelező" value="${escape(query)}" aria-controls="jh-suggestions jh-catalog">
+      <div id="jh-suggestions" class="search-suggestions" hidden></div>
+      <div id="jh-selected-tag" class="selected-tag"></div>
+      <details id="jh-browse-tags" class="browse-tags">
+        <summary>Összes címke</summary>
+        <div class="tag-list"><div id="jh-tags" class="cluster"></div></div>
+      </details>
     </section>
     <section id="jh-catalog" class="catalog" aria-label="Feladatsorok" aria-live="polite"></section>`);
     drawResults();
@@ -1329,16 +1405,34 @@
   }
 
   function drawResults() {
-    const tokens = normalize(query.trim()).split(/\s+/).filter(Boolean);
-    const tags = root.querySelector("#jh-tags");
-    if (!tags.childElementCount) {
-      tags.innerHTML = ["", ...allTags].map(option => `<button class="tag" type="button" data-action="tag" data-value="${escape(option)}" aria-pressed="false">${escape(option || "Mind")}</button>`).join("");
+    const search = normalize(query);
+    const tokens = search ? search.split(" ") : [];
+    for (const chip of root.querySelectorAll("#jh-topics button")) {
+      chip.setAttribute("aria-pressed", String(chip.dataset.value === topic));
     }
-    for (const chip of tags.querySelectorAll("button")) chip.setAttribute("aria-pressed", String(chip.dataset.value === tag));
+    const tagButton = (label, action) =>
+      `<button class="tag" type="button" data-action="${action}" data-value="${escape(label)}" aria-pressed="${tag === label}">${escape(label)}</button>`;
+    const topicTags = availableTags();
+    const tags = root.querySelector("#jh-tags");
+    tags.innerHTML = topicTags.map(label => tagButton(label,"tag")).join("") || '<p class="muted">Ehhez a témához még nincs címke.</p>';
+    const suggested = search
+      ? topicTags.map(label => ({label,key:normalize(label)}))
+        .filter(({key}) => tokens.every(token => key.includes(token)))
+        .sort((a,b) => Number(b.key.startsWith(search)) - Number(a.key.startsWith(search)))
+        .slice(0,6)
+      : [];
+    const suggestions = root.querySelector("#jh-suggestions");
+    suggestions.hidden = suggested.length === 0;
+    suggestions.innerHTML = suggested.length
+      ? `<p class="muted">Címkejavaslatok</p><div class="cluster">${suggested.map(({label}) => tagButton(label,"tag-suggestion")).join("")}</div>`
+      : "";
+    root.querySelector("#jh-selected-tag").innerHTML = tag
+      ? `<button class="tag" type="button" data-action="tag" data-value="${escape(tag)}" aria-label="${escape(tag)} címkeszűrő törlése">${escape(tag)} <span aria-hidden="true">×</span></button>`
+      : "";
     const matches = sets.flatMap(series => {
       const tasks = series.tasks.filter(task => {
-        if (tag && !task.tags.includes(tag)) return false;
-        const terms = normalize([series.title, task.title, ...task.tags].join(" "));
+        if (!inTopic(task) || (tag && !task.tags.includes(tag))) return false;
+        const terms = normalize([series.title, task.title, ...task.topics.map(id=>topics[id]), ...task.tags].join(" "));
         return tokens.every(token => terms.includes(token));
       });
       return tasks.length ? [{series,tasks}] : [];
@@ -1347,10 +1441,12 @@
     catalog.innerHTML = matches.length ? matches.map(({series,tasks}) => {
       const counts = tally(series);
       const started = bucketFor(series).opened;
-      const hasFilter = tag || tokens.length;
+      const hasFilter = topic || tag || tokens.length;
       const matchedNumbers = tasks.map(task => series.tasks.indexOf(task) + 1).join(", ");
       const matchedDetails = hasFilter ? `<p class="matched">Illeszkedő feladatok · ${matchedNumbers}</p>` : "";
-      const tagsHtml = setTags(series).map(topic => `<span class="tag-label">${escape(topic)}</span>`).join("");
+      const seriesTopics = new Set(tasks.flatMap(task=>task.topics));
+      const tagsHtml = Object.entries(topics).filter(([id])=>seriesTopics.has(id))
+        .map(([,label])=>`<span class="tag-label">${label}</span>`).join("");
       return `<article class="surface set-card">
         <div><h2>${escape(series.title)}</h2>
         <p>${escape(series.description)}</p>
@@ -1643,9 +1739,21 @@
     if (page==="task" && activities.handle(button,activeTask(),recordFor(set,activeTask()))) return;
     const {action,value,field:id} = button.dataset;
     switch (action) {
-      case "tag":
-        tag = tag === value ? "" : value;
+      case "topic":
+        topic = value;
+        if (tag && !availableTags().includes(tag)) tag = "";
         drawResults();
+        break;
+      case "tag-suggestion":
+      case "tag":
+        if (action === "tag-suggestion") {
+          query = "";
+          root.querySelector("#jh-search").value = "";
+        }
+        tag = tag === value ? "" : value;
+        root.querySelector("#jh-browse-tags").open = false;
+        drawResults();
+        root.querySelector(tag ? "#jh-selected-tag button" : "#jh-search").focus({preventScroll:true});
         break;
       case "open":
         set = sets.find(series => series.id === value);
